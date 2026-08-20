@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Dividend Appropriation Confirmation{% endblock %}
+
+{% block content %}
+<style>
+    .table-dark thead th {
+        background-color: #1e293b !important;
+        color: #ffffff !important;
+    }
+</style>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h4>Dividend Appropriation Completed</h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> <strong>Success!</strong> Draft transactions have been created for all eligible members.
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6>Total Members</h6>
+                            <h3>{{ total_members }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6>Total Shares</h6>
+                            <h3>{{ total_shares|intcomma }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6>Dividend per Share</h6>
+                            <h3>₵{{ per_share|floatformat:4 }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6>Total Dividend Paid</h6>
+                            <h3>₵{{ total_dividend|floatformat:2|intcomma }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h5>Created Draft Transactions</h5>
+            <div class="table-responsive">
+                <table class="table table-dark table-striped table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Member Name</th>
+                            <th>Dividend Period</th>
+                            <th>Date</th>
+                            <th class="text-end">Shares</th>
+                            <th class="text-end">Dividend (₵)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in transactions %}
+                        <tr>
+                            <td>{{ item.member.full_name }}</td>
+                            <td>{{ item.dividend_period}} </td>
+                            <td>{{ item.dividend_date}}</td>
+                            <td class="text-end">{{ item.member.tot_shares|intcomma }}</td>
+                            <td class="text-end">₵{{ item.dividend|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-secondary">
+                        <tr>
+                            <th class="text-end">TOTALS</th>
+                            <th> </th>
+                            <th> </th>
+                            <th class="text-end">{{ total_shares|intcomma }}</th>
+                            <th class="text-end">₵{{ total_dividend|floatformat:2|intcomma }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                <p class="text-info">
+                    <i class="fas fa-info-circle"></i> Batch Number: <strong>{{ batch_number }}</strong><br>
+                    Created at: {{ created_at|date:"d/m/Y H:i:s" }}
+                </p>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'Supervisor:super_home' %}" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Supervisor Menu
+                    </a>
+                    <a href="{% url 'RecPayApp:batch_posting_dashboard' %}" class="btn btn-warning">
+                        <i class="fas fa-cogs"></i> Go to Batch Posting
+                    </a>
+                    <a href="{% url 'Supervisor:dividend_appropriation_preview' %}" class="btn btn-secondary">
+                        <i class="fas fa-plus"></i> New Appropriation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

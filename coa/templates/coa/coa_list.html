@@ -1,0 +1,260 @@
+<!-- coa/templates/coa/coa_list.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart of Accounts</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        h1 {
+            color: #2c3e50;
+            margin: 0;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        .summary-cards {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .card {
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            min-width: 100px;
+        }
+        .card-asset { border-left-color: #2ecc71; }
+        .card-liability { border-left-color: #e74c3c; }
+        .card-equity { border-left-color: #9b59b6; }
+        .card-income { border-left-color: #3498db; }
+        .card-expense { border-left-color: #f39c12; }
+        .card strong {
+            font-size: 24px;
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background-color: #34495e;
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .level-indent {
+            display: inline-block;
+            width: 20px;
+        }
+        .account-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .type-ASSET { background-color: #d5f5e3; color: #1e8449; }
+        .type-LIABILITY { background-color: #fadbd8; color: #c0392b; }
+        .type-EQUITY { background-color: #e8daef; color: #8e44ad; }
+        .type-INCOME { background-color: #d6eaf8; color: #2471a3; }
+        .type-EXPENSE { background-color: #fdebd0; color: #d35400; }
+        .behavior-badge {
+            background-color: #e0e0e0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .btn-sm {
+            padding: 4px 8px;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 12px;
+            margin: 0 2px;
+            display: inline-block;
+        }
+        .btn-edit {
+            background-color: #f39c12;
+            color: white;
+        }
+        .btn-edit:hover {
+            background-color: #e67e22;
+        }
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+        .btn-view {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-view:hover {
+            background-color: #2980b9;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chart of Accounts</h1>
+            <div>
+                <a href="{% url 'coa:coa_home' %}" class="btn-primary">+ Exit To Main Menu</a>
+                <a href="{% url 'coa:coa_create' %}" class="btn-primary">+ New Account</a>
+                <a href="{% url 'coa:account_visibility_manager' %}" class="btn-primary">+ Account Management</a>
+                <a href="{% url 'coa:coa_pdf' %}" class="btn-primary">+ Generate PDF</a>
+                <a href="{% url 'coa:coa_excel' %}" class="btn-primary">+ Export To Excel</a>
+                <a href="{% url 'coa:coa_reset' %}" class="btn-danger" 
+
+                   onclick="return confirm('Are you sure you want to reset ALL accounts? This cannot be undone!')">
+                    Reset All
+                </a>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="card card-asset">
+                <div>Assets</div>
+                <strong>{{ asset_count|default:"0" }}</strong>
+            </div>
+            <div class="card card-liability">
+                <div>Liabilities</div>
+                <strong>{{ liability_count|default:"0" }}</strong>
+            </div>
+            <div class="card card-equity">
+                <div>Equity</div>
+                <strong>{{ equity_count|default:"0" }}</strong>
+            </div>
+            <div class="card card-income">
+                <div>Income</div>
+                <strong>{{ income_count|default:"0" }}</strong>
+            </div>
+            <div class="card card-expense">
+                <div>Expenses</div>
+                <strong>{{ expense_count|default:"0" }}</strong>
+            </div>
+            <div class="card" style="border-left-color: #7f8c8d;">
+                <div>Total</div>
+                <strong>{{ total_accounts|default:"0" }}</strong>
+            </div>
+        </div>
+
+        <!-- Accounts Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Account No</th>
+                    <th>Account Name</th>
+                    <th>Type</th>
+                    <th>Behavior</th>
+                    <th>Level</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in root_accounts %}
+                <tr>
+                    <td style="font-weight: bold;">{{ account.accountno }}</td>
+                    <td>
+                        {% for i in ""|ljust:account.level %}
+                            <span class="level-indent"></span>
+                        {% endfor %}
+                        {% if account.level > 0 %}
+                            <span style="color: #999;">↳</span>
+                        {% endif %}
+                        {{ account.name }}
+                        {% if not account.is_active %}
+                            <span style="color: #999; font-style: italic;">(inactive)</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="account-type type-{{ account.account_type }}">
+                            {{ account.get_account_type_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if account.behavior != 'NORMAL' %}
+                            <span class="behavior-badge">{{ account.get_behavior_display }}</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ account.level }}</td>
+                    <td>
+                        <a href="{% url 'coa:coa_detail' account.id %}" class="btn-sm btn-view">View</a>
+                        <a href="{% url 'coa:coa_edit' account.id %}" class="btn-sm btn-edit">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        No accounts found. 
+                        <a href="{% url 'coa:coa_create' %}" style="color: #3498db;">Create your first account</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

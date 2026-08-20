@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {% if object %}
+                            <i class="fas fa-edit"></i> Edit Opening Balance
+                        {% else %}
+                            <i class="fas fa-plus-circle"></i> Add Opening Balance
+                        {% endif %}
+                    </h4>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Non-field errors -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Account -->
+                        <div class="mb-3">
+                            <label for="{{ form.account.id_for_label }}" class="form-label fw-bold">
+                                Account <span class="text-danger">*</span>
+                            </label>
+                            {{ form.account }}
+                            {% if form.account.errors %}
+                                <div class="text-danger small">{{ form.account.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Select the account for which you are entering the opening balance.</div>
+                        </div>
+
+                        <!-- Date -->
+                        <div class="mb-3">
+                            <label for="{{ form.date.id_for_label }}" class="form-label fw-bold">
+                                Date <span class="text-danger">*</span>
+                            </label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                                <div class="text-danger small">{{ form.date.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">The date as of which this opening balance is valid.</div>
+                        </div>
+
+                        <!-- Debit and Credit side by side -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.debit.id_for_label }}" class="form-label fw-bold">
+                                    Debit
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"></span>
+                                    {{ form.debit }}
+                                </div>
+                                {% if form.debit.errors %}
+                                    <div class="text-danger small">{{ form.debit.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Enter debit amount (if any).</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.credit.id_for_label }}" class="form-label fw-bold">
+                                    Credit
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"></span>
+                                    {{ form.credit }}
+                                </div>
+                                {% if form.credit.errors %}
+                                    <div class="text-danger small">{{ form.credit.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Enter credit amount (if any).</div>
+                            </div>
+                        </div>
+
+                        <!-- Form actions -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a href="{% url 'OpenBals:opening_balance_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 
+                                {% if object %}Update{% else %}Save{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-3 text-center">
+                <small class="text-muted">
+                    <a href="{% url 'OpenBals:list' %}" class="text-decoration-none">← Back to list</a>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-body input, .card-body select {
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+    .card-body input:focus, .card-body select:focus {
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+    }
+</style>
+{% endblock %}

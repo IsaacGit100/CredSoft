@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Master Records</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    
+</form>
+    <div class="container mt-4">
+        <form method="get" class="d-flex mb-3">
+            <input type="text" name="q" value="{{ request.GET.q }}" class="form-control me-2" placeholder="Search by Name or ID or Telephone No">
+            <button type="submit" class="btn btn-success">Search</button>
+              {% if request.GET.q %}
+               <a href="{#}" class="btn btn-secondary ms-2">Clear</a>
+              {% endif %}
+</form>
+
+
+        <h1>Master Records</h1>
+        <a href="{#}" class="btn btn-primary mb-3">Add New Master</a>
+        <a href="{#}" class="btn btn-primary mb-3">Exit To Main Menu</a>
+    
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Admit Fees</th>
+                    <th>Savings</th>
+                    <th>Telephone No</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for master in masters %}
+                <tr>
+                    <td>{{ master.id}}
+                    <td>{{ master.admit_fees }}</td>
+                    <td>{{ master.savings_tot }}</td>
+                    <td>{{ master.shares_tot }}</td>
+                    <td>{{ master.telephone2}}</td>
+                    <td>
+                        <a href="{#}" class="btn btn-info btn-sm">View</a>
+                        <a href="{#}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="{#}" class="btn btn-danger btn-sm">Delete</a>
+                        <a href="{#}" class="btn btn-secondary btn-sm">PDF</a>
+                        <a href="{#}" class="btn btn-primary btn-sm">Print</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

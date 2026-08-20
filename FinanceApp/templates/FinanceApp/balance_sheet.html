@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Balance Sheet{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Balance Sheet</h2>
+    <p>As at {{ as_at_date|date:"d/m/Y" }}</p>
+
+    <div class="row">
+        <!-- LEFT: ASSETS -->
+        <div class="col-md-6">
+            <h4>Assets</h4>
+
+            <!-- Fixed Assets -->
+            <!-- templates/FinanceApp/balance_sheet.html (snippet) -->
+            <h4>Fixed Assets</h4>
+            <table class="table table-sm">
+                {% for item in fixed_asset_data %}
+                <tr>
+                    <td><strong>{{ item.category.name }}</strong></td>
+                    <td class="text-end"></td>
+                </tr>
+                <tr>
+                    <td style="padding-left: 20px;">Cost</td>
+                    <td class="text-end">{{ item.cost|floatformat:2|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td style="padding-left: 20px;">Less: Accumulated Depreciation</td>
+                    <td class="text-end">({{ item.accumulated_depreciation|floatformat:2|intcomma }})</td>
+                </tr>
+                <tr>
+                    <td style="padding-left: 20px;"><strong>Net Book Value</strong></td>
+                    <td class="text-end"><strong>{{ item.net_book_value|floatformat:2|intcomma }}</strong></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2">No fixed assets.</td></tr>
+                {% endfor %}
+                <tr class="fw-bold">
+                    <td>Total Fixed Assets</td>
+                    <td class="text-end">{{ total_fixed_assets_nbv|floatformat:2|intcomma }}</td>
+                </tr>
+            </table>
+
+            <!-- Other Assets -->
+            <h5>Current Assets</h5>
+            <table class="table table-sm">
+                {% for item in other_assets %}
+                <tr>
+                    <td>{{ item.account.name }}</td>
+                    <td class="text-end">{{ item.balance|floatformat:2|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2">No other assets.</td></tr>
+                {% endfor %}
+                <tr class="fw-bold">
+                    <td>Total Other Assets</td>
+                    <td class="text-end">{{ total_assets|add:total_fixed_assets_nbv|floatformat:2|intcomma }}</td>
+                </tr>
+            </table>
+
+            <hr>
+            <h5 class="fw-bold">Total Assets = <span class="text-primary">{{ total_assets|floatformat:2|intcomma }}</span></h5>
+        </div>
+
+        <!-- RIGHT: LIABILITIES & EQUITY -->
+        <div class="col-md-6">
+            <h4>Liabilities</h4>
+            <table class="table table-sm">
+                {% for item in liabilities %}
+                <tr>
+                    <td>{{ item.account.name }}</td>
+                    <td class="text-end">{{ item.balance|floatformat:2|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2">No liabilities.</td></tr>
+                {% endfor %}
+                <tr class="fw-bold">
+                    <td>Total Liabilities</td>
+                    <td class="text-end">{{ total_liabilities|floatformat:2|intcomma }}</td>
+                </tr>
+            </table>
+
+            <h4 class="mt-3">Equity</h4>
+            <table class="table table-sm">
+                {% for item in equity %}
+                <tr>
+                    <td>{{ item.account.name }}</td>
+                    <td class="text-end">{{ item.balance|floatformat:2|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2">No equity.</td></tr>
+                {% endfor %}
+                <tr class="fw-bold">
+                    <td>Total Equity</td>
+                    <td class="text-end">{{ total_equity|floatformat:2|intcomma }}</td>
+                </tr>
+            </table>
+
+            <hr>
+            <h5>Total Liabilities + Equity = <span class="text-primary">{{ total_liabilities|add:total_equity|floatformat:2|intcomma }}</span></h5>
+            {% if is_balanced %}
+                <span class="text-success">✅ BALANCED</span>
+            {% else %}
+                <span class="text-danger">❌ OUT OF BALANCE</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

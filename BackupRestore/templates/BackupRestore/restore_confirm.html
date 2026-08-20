@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Confirm Restore{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h3>⚠️ Restore Safety Check</h3>
+        </div>
+        <div class="card-body">
+            <p>You are about to restore <strong>{{ backup_file }}</strong> to table <strong>{{ table_name }}</strong>.</p>
+            {% if safety_issues %}
+            <div class="alert alert-warning">
+                <h5>Potential issues:</h5>
+                <ul>
+                    {% for issue in safety_issues %}
+                    <li>{{ issue }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            <p>This action will:</p>
+            <ul>
+                <li>Create a pre‑restore backup automatically.</li>
+                <li>Drop the current table <strong>{{ table_name }}</strong> (if it exists).</li>
+                <li>Recreate the table from the backup file.</li>
+                <li>Drop any conflicting foreign key constraints found on other tables.</li>
+            </ul>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="backup_file" value="{{ backup_file }}">
+                <input type="checkbox" name="force" value="on" id="forceCheck" required>
+                <label for="forceCheck"> I understand the risks and want to proceed.</label><br>
+                <input type="checkbox" name="dry_run" value="on" id="dryRunCheck">
+                <label for="dryRunCheck"> Dry run (only simulate, no changes).</label><br><br>
+                <button type="submit" class="btn btn-danger">Confirm Restore</button>
+                <a href="{% url 'BackupRestore:backup_panel' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

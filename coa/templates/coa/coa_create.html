@@ -1,0 +1,164 @@
+<!-- coa/templates/coa/coa_create.html -->
+{% extends "base.html" %}
+
+{% block title %}Create Account - Chart of Accounts{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Create New Account</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label required-field">Account Type</label>
+                            <select name="account_type" class="form-select" required>
+                                <option value="">Select Account Type...</option>
+                                {% for code, label in account_types %}
+                                <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                Determines the first digits of the account number
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Parent Account</label>
+                            <select name="parent_account" class="form-select">
+                                <option value="">-- Top Level Account --</option>
+                                {% for account in accounts %}
+                                <option value="{{ account.id }}">
+                                    {{ account.accountno }} - {{ account.name }}
+                                    {% if account.is_data_filled %}(Filled){% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text text-warning">
+                                <i class="fas fa-info-circle"></i>
+                                Only accounts without ledger entries can have sub-accounts.
+                                Headings should NOT be marked as Data Entry accounts.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label required-field">Account Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                            <div class="form-text">
+                                Examples: "Cash in Hand", "Member Savings", "Loan Interest Income"
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Behavior</label>
+                            <select name="behavior" class="form-select">
+                                {% for code, label in behavior_choices %}
+                                <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                Defines how the account behaves in transactions
+                            </div>
+                        </div>
+                        
+                        <!-- ACCOUNT DISPLAY SETTINGS -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Account Display Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <!-- is_data_entry - REQUIRED for leaf accounts -->
+                                <div class="form-check mb-3">
+                                    <input type="checkbox" name="is_data_entry" id="is_data_entry" 
+                                           class="form-check-input">
+                                    <label class="form-check-label" for="is_data_entry">
+                                        <strong>Data Entry Account</strong>
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="form-text text-muted">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Check this ONLY if this account will receive direct data entry (e.g., Cash, Bank, Savings).</strong>
+                                        <br>Headings and group accounts (like "ASSETS", "CASH AND CASH EQUIVALENTS") should NOT be checked.
+                                    </div>
+                                </div>
+                                
+                                <!-- is_data_view -->
+                                <div class="form-check">
+                                    <input type="checkbox" name="is_data_view" id="is_data_view" 
+                                           class="form-check-input" checked>
+                                    <label class="form-check-label" for="is_data_view">
+                                        <strong>Show in Selection Lists</strong>
+                                    </label>
+                                    <div class="form-text text-muted">
+                                        If checked, this account appears in dropdown selection lists throughout the system.
+                                        You can change this later.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- IMPORTANT NOTE -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb"></i>
+                            <strong>Best Practices:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li><strong>Headings (e.g., ASSETS, LIABILITIES):</strong> Leave "Data Entry Account" UNCHECKED</li>
+                                <li><strong>Group Accounts (e.g., CASH AND CASH EQUIVALENTS):</strong> Leave UNCHECKED</li>
+                                <li><strong>Leaf Accounts (e.g., Cash in Hand, Member Savings):</strong> CHECK "Data Entry Account"</li>
+                                <li>Once an account has ledger entries, it cannot have sub-accounts added</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Note:</strong> The "Data Filled" flag is automatically set when ledger entries exist.
+                            Once set, no sub-accounts can be added to this account.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'coa:coa_list' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Account</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Example Structure Card -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Recommended Account Structure</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>✅ Correct Setup</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>10000000 - ASSETS</strong> <span class="badge bg-secondary">Not Data Entry</span></li>
+                                <li>&nbsp;&nbsp;<strong>11000000 - CASH AND CASH EQUIVALENTS</strong> <span class="badge bg-secondary">Not Data Entry</span></li>
+                                <li>&nbsp;&nbsp;&nbsp;&nbsp;<strong>1110000 - Cash in Hand</strong> <span class="badge bg-success">Data Entry ✓</span></li>
+                                <li>&nbsp;&nbsp;&nbsp;&nbsp;<strong>1120000 - Cash at Bank</strong> <span class="badge bg-secondary">Not Data Entry</span></li>
+                                <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>1120001 - GCB Bank</strong> <span class="badge bg-success">Data Entry ✓</span></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>❌ Incorrect Setup</h6>
+                            <ul class="list-unstyled text-muted">
+                                <li><strong>10000000 - ASSETS</strong> <span class="badge bg-danger">Data Entry ✗</span></li>
+                                <li>&nbsp;&nbsp;<strong>11000000 - CASH</strong> <span class="badge bg-danger">Data Entry ✗</span></li>
+                            </ul>
+                            <div class="alert alert-danger mt-2">
+                                <small>Headings should NOT be marked as Data Entry accounts!</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

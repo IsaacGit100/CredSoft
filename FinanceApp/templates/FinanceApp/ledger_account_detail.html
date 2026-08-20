@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load comma_format %}
+{% load date_format %}
+
+{% block title %}Account Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>General Ledger Account Details</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th style="width: 40%">Account Number</th>
+                            <td>{{ account.accountno }}</td>
+                        </tr>
+                        <tr>
+                            <th>Account Name</th>
+                            <td>{{ account.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Account Type</th>
+                            <td>{{ account.account_type }}</td>
+                        </tr>
+                        <tr>
+                            <th>Normal Balance</th>
+                            <td>{{ account.behavior }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td>{% if account.is_active %}Active{% else %}Inactive{% endif %}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th style="width: 40%">Opening Balance</th>
+                            <td class="text-end">₵{{ ledger.opening_balance|default:0|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <th>Opening Balance Date</th>
+                            <td>{{ ledger.open_bal_date|dmy|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Current Balance</th>
+                            <td class="text-end">₵{{ ledger.current_balance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <th>Period Balance</th>
+                            <td class="text-end">₵{{ ledger.period_balance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <th>Year to Date</th>
+                            <td class="text-end">₵{{ ledger.year_to_date|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-3">
+                <a href="{% url 'FinanceApp:ledger_opening_balance' %}?account_id={{ account.id }}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Edit Opening Balance
+                </a>
+                <a href="{% url 'FinanceApp:ledger_opening_balance' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Opening Balance
+                </a>
+                <a href="{% url 'coa:coa_home' %}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> Chart of Accounts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

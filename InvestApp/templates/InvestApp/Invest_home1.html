@@ -1,0 +1,171 @@
+<!-- templates/home.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - My Django Project</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e88e5 0%, #90caf9 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+             padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+
+        .content {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #1976d2, #42a5f5);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #1565c0, #1e88e5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to My St Andrews Credit Union</h1>
+            <p>This is the Loan Processing Schedule Program</p>
+        </div>
+
+        <div class="content">
+            <h2>About Our Project</h2>
+            <p>This is a modern Django project .</p>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <h3>Feature One</h3>
+                    <p>Lorem ipsum dolor sit amet,.</p>
+                </div>              
+            </div>
+
+
+            <a href="#" class="btn">Continue</a>
+            <a href="{% url 'investment_list' %}" class="btn" style="background: linear-gradient(45deg, #e53935, #ef5350); margin-left: 10px;">create Investments</a>
+            <a href="{% url 'bank_list' %}" class="btn" style="background: linear-gradient(45deg, #e53935, #ef5350); margin-left: 10px;">Create Banks</a>
+            
+            <a href="{% url 'investment_export_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-outline-danger">
+                <i class="fas fa-file-pdf me-2"></i>Export PDF </a>
+            <a href="{% url 'investment_export_excel' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success">
+               <i class="fas fa-file-excel me-2"></i>Export Excel </a>
+            <a href="{% url 'investment_export_print' %}?{{ request.GET.urlencode }}" target="_blank" class="btn btn-outline-info">
+               <i class="fas fa-print me-2"></i>Print </a>
+
+
+            <a href="{#}" class="btn" style="background: linear-gradient(45deg, #e53935, #ef5350); margin-left: 10px;">Back</a>
+            <!-- Add this to your template after the filter section -->
+<div class="export-buttons mb-4">
+    <div class="btn-group">
+<!--
+        <a href="{% url 'investment_export_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-outline-danger">
+            <i class="fas fa-file-pdf me-2"></i>Export PDF </a>
+        <a href="{% url 'investment_export_excel' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success">
+            <i class="fas fa-file-excel me-2"></i>Export Excel </a>
+        <a href="{% url 'investment_export_print' %}?{{ request.GET.urlencode }}" target="_blank" class="btn btn-outline-info">
+            <i class="fas fa-print me-2"></i>Print </a>
+        -->
+    </div>
+</div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2024 My Django Project. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

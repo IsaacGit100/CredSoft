@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 50px;">
+    <h1>➕ Add Account</h1>
+    <p><strong>Entity:</strong> {{ entity.name }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Add Account</button>
+        <a href="{% url 'djan_led:chart_of_accounts' entity.slug %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

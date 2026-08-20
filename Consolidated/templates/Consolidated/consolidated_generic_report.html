@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "Consolidated/sidebar.html" %}
+    <div class="flex-grow-1 p-4" style="margin-left: 250px;">
+        <h1>{{ title|default:"Report" }}</h1>
+        {% if error %}
+            <div class="alert alert-warning">{{ error }}</div>
+        {% else %}
+            <p class="text-muted">This report is under construction. Please check back later.</p>
+        {% endif %}
+        <a href="{% url 'Consolidated:dashboard' %}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

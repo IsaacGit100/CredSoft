@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "djan_led/sidebars/finance_sidebar.html" %}
+    <div class="flex-grow-1 p-4" style="margin-left: 250px;">
+        <h2>📋 Draft Journal Entries</h2>
+        <p><strong>Entity:</strong> {{ entity.name }}</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="select-all"></th>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Debit</th>
+                        <th>Credit</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                    <tr>
+                        <td><input type="checkbox" name="selected_ids" value="{{ entry.id }}" {% if entry.journal_status == 'POSTED' %}disabled{% endif %}></td>
+                        <td>{{ entry.date|date:"Y-m-d" }}</td>
+                        <td>{{ entry.description }}</td>
+                        <td>{{ entry.debit_account_code }}</td>
+                        <td>{{ entry.credit_account_code }}</td>
+                        <td>{{ entry.amount|floatformat:2 }}</td>
+                        <td><span class="badge {% if entry.journal_status == 'POSTED' %}bg-success{% else %}bg-warning{% endif %}">{{ entry.journal_status }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7">No draft entries.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="mt-3">
+                <label>Action:</label>
+                <select name="action" class="form-select w-auto d-inline">
+                    <option value="post">Post Selected</option>
+                </select>
+                <button type="submit" class="btn btn-success">Apply</button>
+                <a href="{% url 'djan_led:manual_journal_entry_create' entity.slug %}" class="btn btn-primary">+ New Entry</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('select-all').addEventListener('change', function(e) {
+        document.querySelectorAll('input[name="selected_ids"]:not(:disabled)').forEach(cb => cb.checked = e.target.checked);
+    });
+</script>
+{% endblock %}

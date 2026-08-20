@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 80px;">
+    <div class="card shadow-lg border-danger">
+        <div class="card-header bg-danger text-white">
+            <h3 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Access Denied</h3>
+        </div>
+        <div class="card-body text-center">
+            <div style="font-size: 60px; color: #dc3545; margin-bottom: 20px;">
+                🔒
+            </div>
+            <h4 class="card-title">You do not have permission to access this entity.</h4>
+            <p class="card-text text-muted">
+                You are trying to access <strong>{{ entity.name }}</strong>, but this entity is not assigned to your profile.
+            </p>
+            <p class="card-text text-muted">
+                Please contact your system administrator to request access.
+            </p>
+            <hr>
+            <a href="{% url 'djan_led:entity_dashboard' entity.slug %}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Go to My Dashboard
+            </a>
+            <a href="{% url 'logout' %}" class="btn btn-secondary">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

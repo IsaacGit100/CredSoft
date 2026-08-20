@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+{% load humanize %}
+<head>
+
+    <title>Master Records</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h3>Journal Records    Total Debit  {{ total_debit|floatformat:2|intcomma }} Total Credit: {{ total_credit|floatformat:2|intcomma }}</h3>
+         
+            <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Date</th>
+                    <th>R/V No</th>
+                    <th>Activity</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Details</th>
+                    <th>Purpose</th>
+                    <th>Mem ID</th>
+                    <th>Name</th>
+                    <th>Ledger</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for jour in jours %}
+                <tr>
+                    <td>{{ jour.id}}</td>
+                    <td>{{ jour.date|date:"d/m/Y" }}</td>
+                    <td>{{ jour.rec_vou_no|default:'' }}</td>
+                    <td>{{ jour.activity|default:'' }}</td>
+                    <td>{{ jour.debit|default_if_none:"0.00"|intcomma:2 }}</td>
+                    <td>{{ jour.credit|default_if_none:"0.00"|intcomma:2 }}</td>
+                    <td>{{ jour.details|default:'' }}</td>
+                    <td>{{ jour.purpose|default:'' }}</td>
+                    <td>{{ jour.member_id|default:''}}</td>
+                    <td>{{ jour.name|default:''}}</td>
+                    <td>{{ jour.ledger_id|default:''}}</td>
+                    <td>
+                        <a href="{% url 'journal_view' jour.id %}" class="btn btn-info btn-sm">View Record</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

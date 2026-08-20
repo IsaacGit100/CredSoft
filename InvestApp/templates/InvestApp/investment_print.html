@@ -1,0 +1,83 @@
+<!-- templates/investments/investment_print.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Investment Portfolio Report</title>
+    <style>
+        @media print {
+            body { font-family: Arial, sans-serif; font-size: 12px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            .totals-row { font-weight: bold; background-color: #e9e9e9; }
+            .positive-interest { color: green; font-weight: bold; }
+            .no-print { display: none; }
+            h2 { text-align: center; }
+        }
+        @page { size: landscape; }
+    </style>
+</head>
+<body>
+    <h2>Investment Portfolio Report</h2>
+    <p>Report Date: {% now "d/m/Y" %}</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Cert No</th>
+                <th>Bank/Company</th>
+                <th>Branch</th>
+                <th>Investment Amount</th>
+                <th>Rate (%)</th>
+                <th>Period</th>
+                <th>Interest Expected</th>
+                <th>Interest Earned</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% load humanize %}
+            {% for investment in investments %}
+            <tr>
+                <td>{{ investment.date|date:"d/m/Y" }}</td>
+                <td>{{ investment.certificate_no }}</td>
+                <td>{{ investment.get_bank_company_display }}</td>
+                <td>{{ investment.branch }}</td>
+                <td>${{ investment.amount|intcomma }}</td>
+                <td>{{ investment.rate }}</td>
+                <td>{{ investment.get_period_display }}</td>
+                <td>${{ investment.interest_expected|floatformat:2|intcomma }}</td>
+                <td class="{% if investment.interest_earned > 0 %}positive-interest{% endif %}">
+                    ${{ investment.interest_earned|floatformat:2|intcomma }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="totals-row">
+                <td colspan="4">TOTAL</td>
+                <td>${{ total_invested|floatformat:2|intcomma }}</td>
+                <td></td>
+                <td></td>
+                <td>${{ total_interest_expected|floatformat:2|intcomma }}</td>
+                <td class="{% if total_interest_earned > 0 %}positive-interest{% endif %}">
+                    ${{ total_interest_earned|floatformat:2|intcomma }}
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+    
+    <div class="no-print">
+        <br>
+        <button onclick="window.print()">Print</button>
+        <button onclick="window.close()">Close</button>
+    </div>
+    
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

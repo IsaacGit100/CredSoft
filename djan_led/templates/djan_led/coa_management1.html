@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>📊 Chart of Accounts Management</h1>
+    <p class="text-muted">View COA status for each entity. Use the Django Admin to add or modify COAs.</p>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Entity Name</th>
+                    <th>Slug</th>
+                    <th>COA Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entity in entities %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ entity.name }}</td>
+                    <td>{{ entity.slug }}</td>
+                    <td>
+                        {% if entity.default_coa %}
+                            <span class="badge bg-success"> Exists</span>
+                        {% else %}
+                            <span class="badge bg-secondary"> None</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin:django_ledger_chartofaccountmodel_add' %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                             Add in Admin
+                        </a>
+                        {% if entity.default_coa %}
+                            <a href="{% url 'djan_led:chart_of_accounts' entity.slug %}" class="btn btn-sm btn-outline-secondary">
+                                 View COA
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No entities found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

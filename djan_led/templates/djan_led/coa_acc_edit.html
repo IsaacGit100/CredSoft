@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "djan_led/sidebars/finance_sidebar.html" %}
+    <div class="flex-grow-1 p-4" style="margin-left: 250px;">
+        <h2> Edit Account</h2>
+        <p><strong>Entity:</strong> {{ entity.name }}</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Code</label>
+                <input type="text" name="code" class="form-control" value="{{ account.code }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" class="form-control" value="{{ account.name }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Role</label>
+                <select name="role" class="form-select" required>
+                    {% for r in account.ROLE_CHOICES %}
+                    <option value="{{ r.0 }}" {% if r.0 == account.role %}selected{% endif %}>{{ r.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Balance Type</label>
+                <select name="balance_type" class="form-select" required>
+                    <option value="debit" {% if account.balance_type == 'debit' %}selected{% endif %}>Debit</option>
+                    <option value="credit" {% if account.balance_type == 'credit' %}selected{% endif %}>Credit</option>
+                </select>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="is_active" class="form-check-input" {% if account.active %}checked{% endif %}>
+                <label class="form-check-label">Active</label>
+            </div>
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="{% url 'djan_led:coa_list_manage' entity.slug %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

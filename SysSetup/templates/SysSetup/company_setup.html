@@ -1,0 +1,673 @@
+<!-- SysSetup/templates/SysSetup/company_setup.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}System Configuration{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nav-tabs .nav-link {
+        color: #495057;
+        font-weight: 500;
+        padding: 12px 20px;
+    }
+    .nav-tabs .nav-link:hover {
+        border-color: #dee2e6 #dee2e6 #fff;
+        isolation: isolate;
+    }
+    .nav-tabs .nav-link.active {
+        color: #4e73df;
+        font-weight: 600;
+        border-bottom: 3px solid #4e73df;
+    }
+    .tab-pane {
+        padding: 20px 0;
+    }
+    .section-card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        margin-bottom: 20px;
+    }
+    .section-header {
+        background: #f8f9fc;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e3e6f0;
+        border-radius: 10px 10px 0 0;
+        font-weight: 600;
+        color: #4e73df;
+    }
+    .section-body {
+        padding: 20px;
+    }
+    .help-text {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    .required-field::after {
+        content: "*";
+        color: red;
+        margin-left: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>System Configuration
+                    </h4>
+                    <p class="mb-0 mt-2">Configure your Credit Union system settings</p>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Tabs Navigation -->
+                    <ul class="nav nav-tabs" id="systemTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="company-tab" data-bs-toggle="tab" data-bs-target="#company" type="button" role="tab">
+                                <i class="fas fa-building me-2"></i>Company
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="financial-tab" data-bs-toggle="tab" data-bs-target="#financial" type="button" role="tab">
+                                <i class="fas fa-chart-line me-2"></i>Financial
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="loan-tab" data-bs-toggle="tab" data-bs-target="#loan" type="button" role="tab">
+                                <i class="fas fa-hand-holding-usd me-2"></i>Loan
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="savings-tab" data-bs-toggle="tab" data-bs-target="#savings" type="button" role="tab">
+                                <i class="fas fa-piggy-bank me-2"></i>Savings
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="banking-tab" data-bs-toggle="tab" data-bs-target="#banking" type="button" role="tab">
+                                <i class="fas fa-university me-2"></i>Banking
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="coa-tab" data-bs-toggle="tab" data-bs-target="#coa" type="button" role="tab">
+                                <i class="fas fa-book me-2"></i>Chart of Accounts
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+                                <i class="fas fa-shield-alt me-2"></i>Security
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab">
+                                <i class="fas fa-cogs me-2"></i>System
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="systemTabsContent">
+                            
+                            <!-- ============================================ -->
+                            <!-- COMPANY TAB -->
+                            <!-- ============================================ -->
+                            <div class="tab-pane fade show active" id="company" role="tabpanel">
+                                <div class="section-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-info-circle me-2"></i>Basic Information
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label required-field">Company Name</label>
+                                                {{ form.company_name }}
+                                                <div class="help-text">Official registered name of the credit union</div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Short Name</label>
+                                                {{ form.company_short_name }}
+                                                <div class="help-text">Abbreviated name for displays</div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Registration Number</label>
+                                                {{ form.company_registration }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Tax ID / PIN</label>
+                                                {{ form.company_tax_id }}
+                                            </div>
+                                            <div class="col-12 mb-3">
+                                                <label class="form-label">Address</label>
+                                                {{ form.company_address }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">City</label>
+                                                {{ form.company_city }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Region/State</label>
+                                                {{ form.company_region }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Country</label>
+                                                {{ form.company_country }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Phone</label>
+                                                {{ form.company_phone }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Email</label>
+                                                {{ form.company_email }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Website</label>
+                                                {{ form.company_website }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Company Logo</label>
+                                                {{ form.company_logo }}
+                                                {% if settings.company_logo %}
+                                                <div class="mt-2">
+                                                    <img src="{{ settings.company_logo.url }}" alt="Logo" style="max-height: 80px;">
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Favicon</label>
+                                                {{ form.company_favicon }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ============================================ -->
+                            <!-- FINANCIAL TAB -->
+                            <!-- ============================================ -->
+                            <div class="tab-pane fade" id="financial" role="tabpanel">
+                                <div class="section-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-chart-line me-2"></i>Financial Settings
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="row">
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label">Currency Code</label>
+                                                {{ form.currency }}
+                                                <div class="help-text">e.g., GHS, USD, GBP</div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label">Currency Symbol</label>
+                                                {{ form.currency_symbol }}
+                                                <div class="help-text">e.g., ₵, $, £</div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label">Date Format</label>
+                                                {{ form.date_format }}
+                                                <div class="help-text">dd/mm/yyyy or mm/dd/yyyy</div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label">Fiscal Year Start</label>
+                                                {{ form.fiscal_year_start }}
+                                                <div class="help-text">Month number (1=January)</div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Accounting Method</label>
+                                                {{ form.accounting_method }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Default Items Per Page</label>
+                                                {{ form.default_items_per_page }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ============================================ -->
+                            <!-- LOAN TAB -->
+                            <!-- ============================================ -->
+                            <div class="tab-pane fade" id="loan" role="tabpanel">
+                                <div class="section-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-hand-holding-usd me-2"></i>Loan Settings
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="row">
+
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Default Interest Rate (%)</label>
+                                                {{ form.default_interest_rate }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Default Loan Term (months)</label>
+                                                {{ form.default_loan_term }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Loan Calculation Method </label>
+                                                {{ form.loan_calc_method }}
+                                                <p><strong> Interest on Reducing Balance </strong></p> 
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Minimum Loan Amount</label>
+                                                {{ form.min_loan_amount }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Maximum Loan Amount</label>
+                                                {{ form.max_loan_amount }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Late Payment Penalty (%)</label>
+                                                {{ form.late_payment_penalty }}
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ============================================ -->
+                            <!-- SAVINGS TAB -->
+                            <!-- ============================================ -->
+                            <div class="tab-pane fade" id="savings" role="tabpanel">
+                                <div class="section-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-piggy-bank me-2"></i>Savings Settings
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="row">
+                                             
+                                        <fieldset>
+                                            <legend>Please select one of the following</legend>
+                                            {{ form.savings_calc_type }}
+                                        </fieldset>
+
+                                            <div class="section-header">
+                                                <i class="fas fa-piggy-bank me-2"></i>Simple Interest Calculation on Day's Balance 
+                                             </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Minimum Balance To Attract Interest </label>
+                                                {{ form.min_savings_balance }}
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label">Interest Rate (%)</label>
+                                                {{ form.simple_sav_interest_rate }}
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label">Interest Application</label>
+                                                {{ form.simple_sav_interest_appl }}
+                                            </div>
+                                            
+
+
+                                            <div class="section-header">
+                                                <i class="fas fa-piggy-bank me-2"></i>Interest Calculation on Minimum Balance Over a Period
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label">Minimum Days To Attract Savings Interest</label>
+                                                {{ form.sav_min_days_int_calc }}
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label">Max Days Within To Attract Savings Interest </label>
+                                                {{ form.sav_no_days_int_calc }}
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label">Interest Rate (%)</label>
+                                                {{ form.minimum_sav_interest_rate }}
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label">Interest Application</label>
+                                                {{ form.minimum_sav_interest_appl }}
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ============================================ -->
+                            <!-- BANKING TAB -->
+                            <!-- ============================================ -->
+                            <div class="tab-pane fade" id="banking" role="tabpanel">
+                                <div class="section-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-university me-2"></i>Primary Bank Account
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Bank Name</label>
+                                                {{ form.bank_name1 }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Account Name</label>
+                                                {{ form.bank_account_name1 }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Account Number</label>
+                                                {{ form.bank_account_number1 }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Branch</label>
+                                                {{ form.bank_branch1 }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="section-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-university me-2"></i>Secondary Bank Account
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Bank Name</label>
+                                                {{ form.bank_name2 }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Account Name</label>
+                                                {{ form.bank_account_name2 }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Account Number</label>
+                                                {{ form.bank_account_number2 }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Branch</label>
+                                                {{ form.bank_branch2 }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ============================================ -->
+                            <!-- CHART OF ACCOUNTS TAB -->
+                            <!-- ============================================ -->
+                            <div class="tab-pane fade" id="coa" role="tabpanel">
+                                <div class="section-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-book me-2"></i>Chart of Accounts Summary
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            The Chart of Accounts is managed in the COA module. 
+                                            <a href="{% url 'coa:coa_list' %}" class="alert-link">Go to Chart of Accounts</a>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="card mb-3">
+                                                    <div class="card-body">
+                                                        <h6><i class="fas fa-chart-pie text-primary me-2"></i>Account Distribution</h6>
+                                                        <canvas id="accountTypeChart" height="200"></canvas>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card mb-3">
+                                                    <div class="card-body">
+                                                        <h6><i class="fas fa-list me-2 text-success"></i>Quick Links</h6>
+                                                        <div class="list-group">
+                                                            <a href="{% url 'coa:coa_list' %}" class="list-group-item list-group-item-action">
+                                                                <i class="fas fa-list"></i> View Full Chart of Accounts
+                                                            </a>
+                                                            <a href="{% url 'coa:coa_create' %}" class="list-group-item list-group-item-action">
+                                                                <i class="fas fa-plus"></i> Add New Account
+                                                            </a>
+                                                            <a href="{% url 'coa:account_visibility_manager' %}" class="list-group-item list-group-item-action">
+                                                                <i class="fas fa-eye"></i> Account Visibility Manager
+                                                            </a>
+                                                            <a href="{% url 'coa:coa_pdf' %}" class="list-group-item list-group-item-action">
+                                                                <i class="fas fa-file-pdf"></i> Generate PDF Report
+                                                            </a>
+                                                            <a href="{% url 'coa:coa_excel' %}" class="list-group-item list-group-item-action">
+                                                                <i class="fas fa-file-pdf"></i> Export To Excel 
+                                                            </a>      
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Recent Accounts -->
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0">Recent Accounts</h6>
+                                            </div>
+                                            <div class="card-body p-0">
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm table-hover mb-0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Account No</th>
+                                                                <th>Account Name</th>
+                                                                <th>Type</th>
+                                                                <th>Data Entry</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for account in recent_accounts %}
+                                                            <tr>
+                                                                <td><code>{{ account.accountno }}</code></td>
+                                                                <td>{{ account.name }}</td>
+                                                                <td>{{ account.get_account_type_display }}</td>
+                                                                <td>{% if account.is_data_entry %}✓{% endif %}</td>
+                                                            </tr>
+                                                            {% empty %}
+                                                            <tr>
+                                                                <td colspan="4" class="text-center text-muted">No accounts found</td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ============================================ -->
+                            <!-- SECURITY TAB -->
+                            <!-- ============================================ -->
+                            <div class="tab-pane fade" id="security" role="tabpanel">
+                                <div class="section-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-shield-alt me-2"></i>Security Settings
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Max Login Attempts</label>
+                                                {{ form.max_login_attempts }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Session Timeout (minutes)</label>
+                                                {{ form.session_timeout }}
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Password Expiry (days)</label>
+                                                {{ form.password_expiry_days }}
+                                            </div>
+                                            <div class="col-md-12 mb-3 form-check">
+                                                {{ form.require_strong_password }}
+                                                <label class="form-check-label">Require Strong Password</label>
+                                                <div class="help-text">Passwords must contain uppercase, lowercase, numbers, and special characters</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ============================================ -->
+                            <!-- SYSTEM TAB -->
+                            <!-- ============================================ -->
+                            <div class="tab-pane fade" id="system" role="tabpanel">
+                                <div class="section-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-cogs me-2"></i>System Settings
+                                    </div>
+                                    <div class="section-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">System Name</label>
+                                                {{ form.system_name }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">System Version</label>
+                                                {{ form.system_version }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Admin Email</label>
+                                                {{ form.admin_email }}
+                                            </div>
+                                            <div class="col-12 mb-3">
+                                                <label class="form-label">Report Footer</label>
+                                                {{ form.report_footer }}
+                                                <div class="help-text">Text to appear on all printed reports</div>
+                                            </div>
+                                            <div class="col-md-6 mb-3 form-check">
+                                                {{ form.email_notifications }}
+                                                <label class="form-check-label">Enable Email Notifications</label>
+                                            </div>
+                                            <div class="col-md-6 mb-3 form-check">
+                                                {{ form.sms_notifications }}
+                                                <label class="form-check-label">Enable SMS Notifications</label>
+                                            </div>
+                                            <div class="col-md-6 mb-3 form-check">
+                                                {{ form.show_audit_trail }}
+                                                <label class="form-check-label">Show Audit Trail</label>
+                                            </div>
+                                            <div class="col-md-6 mb-3 form-check">
+                                                {{ form.maintenance_mode }}
+                                                <label class="form-check-label text-warning">Maintenance Mode</label>
+                                                <div class="help-text">Only admins can access the system</div>
+                                            </div>
+                                            <div class="col-md-6 mb-3 form-check">
+                                                {{ form.debug_mode }}
+                                                <label class="form-check-label text-danger">Debug Mode</label>
+                                                <div class="help-text">Shows detailed error messages (not for production)</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="mt-4 d-flex justify-content-between">
+                            <div>
+                                <a href="{% url 'SysSetup:dashboard' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                                </a>
+                            </div>
+                            <div>
+                                <button type="reset" class="btn btn-warning">
+                                    <i class="fas fa-undo"></i> Reset
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save All Settings
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Chart for account distribution
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('accountTypeChart')?.getContext('2d');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Assets', 'Liabilities', 'Equity', 'Income', 'Expenses'],
+                datasets: [{
+                    data: [{{ asset_count|default:0 }}, {{ liability_count|default:0 }}, 
+                           {{ equity_count|default:0 }}, {{ income_count|default:0 }}, 
+                           {{ expense_count|default:0 }}],
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const simpleRadio = document.querySelector('input[value="Simple_Sav_Interest"]');
+    const minimumRadio = document.querySelector('input[value="Minimum_Sav_Interest"]');
+    
+    const simpleFields = [
+        document.querySelector('#id_min_savings_balance'),
+        document.querySelector('#id_simple_sav_interest_rate'),
+        document.querySelector('#id_simple_sav_interest_appl')
+    ];
+    
+    const minimumFields = [
+        document.querySelector('#id_sav_min_days_int_calc'),
+        document.querySelector('#id_sav_no_days_int_calc'),
+        document.querySelector('#id_minimum_sav_interest_rate'),
+        document.querySelector('#id_minimum_sav_interest_appl')
+    ];
+    
+    function toggleFields() {
+        if (simpleRadio.checked) {
+            simpleFields.forEach(f => f && (f.disabled = false));
+            minimumFields.forEach(f => f && (f.disabled = true));
+            if (simpleFields[0]) simpleFields[0].focus();
+        } else if (minimumRadio.checked) {
+            simpleFields.forEach(f => f && (f.disabled = true));
+            minimumFields.forEach(f => f && (f.disabled = false));
+            if (minimumFields[0]) minimumFields[0].focus();
+        } else {
+            // No selection yet – default to Simple (check it and enable its fields)
+            if (simpleRadio) {
+                simpleRadio.checked = true;
+                toggleFields(); // recursive call but now simpleRadio.checked is true
+            }
+        }
+    }
+    
+    // Add listeners
+    if (simpleRadio && minimumRadio) {
+        simpleRadio.addEventListener('change', toggleFields);
+        minimumRadio.addEventListener('change', toggleFields);
+        // Initial call – will handle default selection
+        toggleFields();
+    }
+});
+
+
+
+</script>
+{% endblock %}

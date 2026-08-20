@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "pos/sidebar.html" %}
+    <div class="flex-grow-1 p-3" style="margin-left: 250px; background: #f4f7fa; min-height: 100vh;">
+        <h2 class="mb-3">💵 Sales & Payments</h2>
+       
+        <div class="row">
+            <!-- Left: Sale Panel -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">🛒 Sale</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'pos:save_sale' entity.slug %}">
+                            {% csrf_token %}
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Date</label>
+                                    <input type="date" name="date" class="form-control" value="{{ today|date:'Y-m-d' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Customer</label>
+                                    <select name="customer" class="form-select">
+                                        <option value="">Walk‑in</option>
+                                        {% for c in customers %}
+                                        <option value="{{ c.id }}">{{ c.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="sale-lines">
+                                <div class="row mb-2 line-row">
+                                    <div class="col-4">
+                                        <label class="form-label">Product</label>
+                                        <select name="product_id[]" class="form-select product-select">
+                                            <option value="">-- Select --</option>
+                                            {% for p in products %}
+                                            <option value="{{ p.id }}" data-price="{{ p.selling_price }}">{{ p.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <label class="form-label">Qty</label>
+                                        <input type="number" name="quantity[]" class="form-control qty-input" value="1" min="1">
+                                    </div>
+                                    <div class="col-3">
+                                        <label class="form-label">Unit Price</label>
+                                        <input type="number" name="unit_price[]" class="form-control price-input" step="0.01">
+                                    </div>
+                                    <div class="col-2">
+                                        <label class="form-label">Ext Price</label>
+                                        <input type="text" class="form-control ext-price" readonly>
+                                    </div>
+                                    <div class="col-1">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="button" class="btn btn-danger btn-sm remove-line">✕</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-secondary" id="add-line">+ Add Line</button>
+                            <div class="mt-2">
+                                <strong>Total: </strong><span id="sale-total">0.00</span>
+                            </div>
+                            <button type="submit" class="btn btn-success mt-2">💾 Save Sale</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Payment Panel -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">💰 Payment</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'pos:save_payment' entity.slug %}">
+                            {% csrf_token %}
+                            
+
+                            
+
+
+
+                            <div class="col-mb-6">
+                                <label class="form-label">Sale Transaction No.</label>
+                                <select name="sale_id" class="form-select">
+                                    <option value="">-- Select Sale --</option>
+                                    {% for s in sales %}
+                                    <option value="{{ s.id }}">#{{ s.id }} - {{ s.customer.name|default:"Walk‑in" }} - {{ s.total_amount }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+
+
+
+                            <div class="mb-3">
+                                <label class="form-label">Method</label>
+                                <select name="method" class="form-select" id="payment-method">
+                                    <option value="Cash">Cash</option>
+                                    <option value="Momo">Mobile Money</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="Credit">Credit</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Amount</label>
+                                <input type="number" name="amount" class="form-control" step="0.01" required>
+                            </div>
+                            <div id="momo-details" style="display:none;">
+                                <div class="mb-2"><label class="form-label">Momo Name</label><input type="text" name="momo_name" class="form-control"></div>
+                                <div class="mb-2"><label class="form-label">Momo No.</label><input type="text" name="momo_no" class="form-control"></div>
+                            </div>
+                            <div id="cheque-details" style="display:none;">
+                                <div class="mb-2"><label class="form-label">Cheque No.</label><input type="text" name="cheque_no" class="form-control"></div>
+                                <div class="mb-2"><label class="form-label">Bank Name</label><input type="text" name="bank_name" class="form-control"></div>
+                                <div class="mb-2"><label class="form-label">Branch</label><input type="text" name="bank_branch" class="form-control"></div>
+                            </div>
+                            <button type="submit" class="btn btn-success mt-2">💾 Save Payment</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction List -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">📋 Transactions</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in transactions %}
+                                <tr>
+                                    <td><span class="badge {% if t.type == 'Sale' %}bg-primary{% else %}bg-success{% endif %}">{{ t.type }}</span></td>
+                                    <td>{{ t.date|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ t.customer }}</td>
+                                    <td>{{ t.amount|floatformat:2 }}</td>
+                                     <td>
+                                        <a href="{% url 'pos:sale_edit' entity.slug t.id %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                        <a href="{% url 'pos:sale_delete' entity.slug t.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this sale?')"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4">No transactions.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr><th colspan="3" class="text-end">Total Sales</th><th>{{ total_sales|floatformat:2 }}</th></tr>
+                                <tr><th colspan="3" class="text-end">Total Payments</th><th>{{ total_payments|floatformat:2 }}</th></tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== Add / Remove Sale Lines =====
+    document.getElementById('add-line').addEventListener('click', function() {
+        const clone = document.querySelector('.line-row').cloneNode(true);
+        clone.querySelectorAll('input').forEach(inp => inp.value = '');
+        clone.querySelector('.price-input').value = '';
+        clone.querySelector('.ext-price').value = '';
+        clone.querySelector('.qty-input').value = 1;
+        document.getElementById('sale-lines').appendChild(clone);
+        attachLineEvents(clone);
+    });
+
+    function attachLineEvents(row) {
+        const priceInput = row.querySelector('.price-input');
+        const qtyInput = row.querySelector('.qty-input');
+        const extInput = row.querySelector('.ext-price');
+        const productSelect = row.querySelector('.product-select');
+
+        productSelect.addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            if (selected && selected.dataset.price) {
+                priceInput.value = selected.dataset.price;
+                updateExt();
+            }
+        });
+
+        function updateExt() {
+            const qty = parseFloat(qtyInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            extInput.value = (qty * price).toFixed(2);
+            updateTotal();
+        }
+
+        qtyInput.addEventListener('input', updateExt);
+        priceInput.addEventListener('input', updateExt);
+
+        row.querySelector('.remove-line').addEventListener('click', function() {
+            if (document.querySelectorAll('.line-row').length > 1) {
+                row.remove();
+                updateTotal();
+            }
+        });
+
+        updateExt();
+    }
+
+    function updateTotal() {
+        let total = 0;
+        document.querySelectorAll('.ext-price').forEach(el => {
+            total += parseFloat(el.value) || 0;
+        });
+        document.getElementById('sale-total').textContent = total.toFixed(2);
+    }
+
+    document.querySelectorAll('.line-row').forEach(row => attachLineEvents(row));
+
+    // ===== Payment Method Toggle =====
+    document.getElementById('payment-method').addEventListener('change', function() {
+        const val = this.value;
+        document.getElementById('momo-details').style.display = val === 'Momo' ? 'block' : 'none';
+        document.getElementById('cheque-details').style.display = val === 'Cheque' ? 'block' : 'none';
+    });
+</script>
+{% endblock %}

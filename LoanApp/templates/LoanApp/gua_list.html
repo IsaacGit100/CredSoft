@@ -1,0 +1,107 @@
+<!-- templates/loans/simple_list.html -->
+<!DOCTYPE html>
+<html>
+{%load humanize%}
+<head>
+    <title>Loan List</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        .search-box { margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        tr:hover { background-color: #f5f5f5; }
+        .export-buttons { margin: 20px 0; }
+        .btn { padding: 8px 16px; text-decoration: none; border-radius: 4px; }
+        .btn-pdf { background-color: #dc3545; color: white; }
+        .btn-excel { background-color: #28a745; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Loan List</h1>
+    
+    <!-- Search Box -->
+    <div class="search-box">
+        <form method="get">
+            <input type="text" name="search" placeholder="Search by loan ID or member name..." 
+                   value="{{ search }}" style="width: 300px; padding: 8px;">
+            <button type="submit">Search</button>
+            {% if search %}
+                <a href="?">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+    
+    <!-- Export Buttons -->
+    <div class="export-buttons">
+        <a href="{% url 'LoanApp:gua_list_pdf' entity.slug %}" class="btn btn-pdf">Export as PDF</a>
+        <a href="{% url 'LoanApp:gua_list_excel' entity.slug %}" class="btn btn-excel">Export as Excel</a>
+        <a href="{% url 'LoanApp:loans_home' entity.slug %}" class="btn btn-excel">Exit</a>
+    </div>
+    
+    <!-- Loans Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Loan ID</th>
+                <th>Member ID</th>
+                <th>Member Name</th>
+                <th>Balance</th>
+                <th>Principal</th>
+                <th>Interest Rate</th>
+                <th>Term</th>
+                <th>Shortfall</th>
+                <th>Guarantors</th>
+                <th>Tot Guaranteed</th>
+                <th>Tot Guaranted</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+            <tr>
+                <td>
+                    <a href="{#}">
+                        {{ loan.id }}
+                    </a>
+                </td>
+                <td>{{ loan.master_id }}</td>
+                <td>{{ loan.master_name }}</td>
+                <td>{{ loan.master_avail_bal|intcomma:2 }}</td>
+                <td>{{ loan.loan_balance|intcomma:2 }}</td>
+                <td>{{ loan.int_rate }}%</td>
+                <td>{{ loan.term }} months</td>
+                <td>
+                    {% if loan.shortfall > 0 %}
+                    <span style="color: red;">GHS {{ loan.shortfall }}</span>
+                    {% else %}
+                    <span style="color: green;">Paid</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if loan.guarantor_count > 0 %}
+                    {{ loan.guarantee_details|truncatechars:50 }}
+                    {% else %}
+                    No guarantors
+                    {% endif %}
+                </td>
+                <td>GHS {{ loan.master_id.tot_guaranteed|intcomma:2 }}</td>
+                <td>GHS {{ loan.master_id.tot_guaranted|intcomma:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" style="text-align: center;">No loans found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="9" style="text-align: right; font-weight: bold;">
+                    Total Loans: {{ total_loans }}
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>

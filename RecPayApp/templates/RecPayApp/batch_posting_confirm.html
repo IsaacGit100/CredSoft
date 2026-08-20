@@ -1,0 +1,169 @@
+<!-- RecPayApp/templates/RecPayApp/batch_posting_confirm.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Batch Posting Results{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header {% if results.success %}bg-success{% else %}bg-danger{% endif %} text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Batch Posting Results
+                    </h4>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Results Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h2>{{ success_count }}</h2>
+                                    <p>Successful Posts</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center">
+                                    <h2>{{ error_count }}</h2>
+                                    <p>Failed Posts</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h2>{{ total_processed }}</h2>
+                                    <p>Total Processed</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Successfully Posted Transactions -->
+                    {% if posted_journals %}
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-check-circle me-2"></i>Successfully Posted Transactions
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-bordered mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Transaction No</th>
+                                            <th>Journal Entry</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in posted_journals %}
+                                        <tr>
+                                            <td><strong>{{ item.trans_no }}</strong></td>
+                                            <td>{{ item.journal }}</td
+                                            <td class="text-end">₵{{ item.amount|floatformat:2|intcomma }}</td
+                                            <td>
+                                                <span class="badge bg-success">Posted</span>
+                                            </td>
+                                         </tr
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Failed Transactions -->
+                    {% if error_details %}
+                    <div class="card mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Failed Transactions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Transaction</th>
+                                            <th>Error Message</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for error in error_details %}
+                                        <tr>
+                                            <td><strong>{{ error.trans_no|default:"Unknown" }}</strong></td
+                                            <td class="text-danger">{{ error.message|default:error }}</td
+                                         </tr
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Summary Statistics -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Posting Summary
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Total Amount Posted:</strong><br>
+                                    <h3 class="text-success">₵{{ total_amount|floatformat:2|intcomma }}</h3>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Total Journal Entries Created:</strong><br>
+                                    <h3 class="text-primary">{{ posted_journals|length }}</h3>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <small class="text-muted">Processed by:</small><br>
+                                    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-muted">Processed at:</small><br>
+                                    <strong>{{ processed_at|date:"Y-m-d H:i:s" }}</strong>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-muted">IP Address:</small><br>
+                                    <strong>{{ ip_address|default:"-" }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="mt-4 d-flex justify-content-between">
+                        <a href="{% url 'RecPayApp:batch_posting_dashboard' %}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <a href="{% url 'FinanceApp:journal_entry_manage' %}" class="btn btn-info">
+                            <i class="fas fa-book"></i> View Journal Entries
+                        </a>
+                        <a href="{% url 'FinanceApp:ledger_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-database"></i> View Ledger
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

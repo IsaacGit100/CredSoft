@@ -1,0 +1,367 @@
+<!-- members/templates/members/member_detail.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ member.full_name }} - Member Details{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-user-circle me-2"></i>{{ member.full_name }}</h2>
+            <p class="text-muted">Member ID: {{ member.id }} | Status: 
+                {% if member.is_deleted %}
+                    <span class="badge bg-danger">Deleted</span>
+                {% else %}
+                    <span class="badge bg-success">Active</span>
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'MembersApp:member_edit' entity.slug member.id %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'MembersApp:member_single_setting' entity.slug pk %}" class="btn btn-info">
+                <i class="fas fa-sliders-h"></i> Settings
+            </a>
+            <a href="{% url 'MembersApp:member_list_manage' entity.slug %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Personal Information -->
+        <div class="col-md-6">
+            <!-- Add this to member_detail.html to display images -->
+<div class="card mb-3">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-images me-2"></i>Images</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 text-center">
+                {% if member.profile_image %}
+                    <img src="{{ member.profile_image.url }}" alt="Profile" 
+                         style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                {% else %}
+                    <div style="width: 100px; height: 100px; border-radius: 50%; background: #f0f0f0; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-user fa-2x text-muted"></i>
+                    </div>
+                {% endif %}
+                <div class="mt-2">
+                    <a href="{% url 'MembersApp:member_images' entity.slug member.id %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-edit"></i> Manage Images
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="row">
+                    <div class="col-md-4">
+                        <small class="text-muted">Signature:</small><br>
+                        {% if member.signature %}
+                            <img src="{{ member.signature.url }}" alt="Sig" style="max-height: 50px;">
+                        {% else %}
+                            <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">ID Card:</small><br>
+                        {% if member.id_card_front %}
+                            <i class="fas fa-check-circle text-success"></i> Uploaded
+                        {% else %}
+                            <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="40%">Title:</th>
+                            <td>{{ member.get_title_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>First Name:</th>
+                            <td>{{ member.first_name|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Last Name:</th>
+                            <td>{{ member.last_name|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Other Names:</th>
+                            <td>{{ member.other_names|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Gender:</th>
+                            <td>{{ member.get_gender_display|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Marital Status:</th>
+                            <td>{{ member.get_marital_status_display|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date of Birth:</th>
+                            <td>{{ member.date_of_birth|date:"Y-m-d"|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date Enrolled:</th>
+                            <td>{{ member.date_enrolled|date:"Y-m-d"|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Profession:</th>
+                            <td>{{ member.profession|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Role:</th>
+                            <td>{{ member.get_role_display|default:"Member" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Church Member:</th>
+                            <td>{{ member.church_member|default:"-" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-address-card me-2"></i>Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="40%">Telephone 1:</th>
+                            <td>{{ member.telephone1|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Telephone 2:</th>
+                            <td>{{ member.telephone2|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ member.email_address|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>City:</th>
+                            <td>{{ member.city|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>GPS:</th>
+                            <td>{{ member.gps|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Postal Address:</th>
+                            <td>{{ member.postal_address|default:"-"|linebreaks }}</td>
+                        </tr>
+                        <tr>
+                            <th>Residential Address:</th>
+                            <td>{{ member.residential_address|default:"-"|linebreaks }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Financial Information -->
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Financial Summary</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="50%">Total Deposits:</th>
+                            <td class="text-end">GHS {{ member.tot_deposits|default:"0"|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Deposit Withdrawals:</th>
+                            <td class="text-end">GHS {{ member.tot_deposit_withdrawal|default:"0"|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Shares:</th>
+                            <td class="text-end">GHS {{ member.tot_shares|default:"0"|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Shares Withdrawals:</th>
+                            <td class="text-end">GHS {{ member.tot_shares_withdrawal|default:"0"|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Interest Accrued:</th>
+                            <td class="text-end">GHS {{ member.tot_interest_accrued|default:"0"|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Dividend:</th>
+                            <td class="text-end">GHS {{ member.tot_dividend|default:"0"|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Available Balance:</th>
+                            <td class="text-end"><strong>GHS {{ member.available_balance|floatformat:2 }}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Interest Rate Settings -->
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-percent me-2"></i>Interest Rate Settings</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="50%">Savings Interest Rate:</th>
+                            <td class="text-end"><strong>{{ member.sav_int_rate|default:"0" }}%</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Loan Interest Rate:</th>
+                            <td class="text-end"><strong>{{ member.loan_int_rate|default:"0" }}%</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Defer Interest Application:</th>
+                            <td class="text-end">
+                                {% if member.sav_defer_int_appl %}
+                                    <span class="badge bg-warning">Deferred</span>
+                                {% else %}
+                                    <span class="badge bg-success">Active</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Next of Kin Information -->
+            <div class="card mb-3">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Next of Kin</h5>
+                </div>
+                <div class="card-body">
+                    {% if member.nok_name1 %}
+                    <div class="mb-2">
+                        <strong>1. {{ member.nok_name1 }}</strong><br>
+                        <small>Relation: {{ member.nok_relation1|default:"-" }} | Phone: {{ member.nok_telephone1|default:"-" }}<br>
+                        Percentage: {{ member.nok_percent1|default:"0" }}%</small>
+                    </div>
+                    {% endif %}
+                    
+                    {% if member.nok_name2 %}
+                    <div class="mb-2">
+                        <strong>2. {{ member.nok_name2 }}</strong><br>
+                        <small>Relation: {{ member.nok_relation2|default:"-" }} | Phone: {{ member.nok_telephone2|default:"-" }}<br>
+                        Percentage: {{ member.nok_percent2|default:"0" }}%</small>
+                    </div>
+                    {% endif %}
+                    
+                    {% if member.nok_name3 %}
+                    <div class="mb-2">
+                        <strong>3. {{ member.nok_name3 }}</strong><br>
+                        <small>Relation: {{ member.nok_relation3|default:"-" }} | Phone: {{ member.nok_telephone3|default:"-" }}<br>
+                        Percentage: {{ member.nok_percent3|default:"0" }}%</small>
+                    </div>
+                    {% endif %}
+                    
+                    {% if not member.nok_name1 and not member.nok_name2 and not member.nok_name3 %}
+                    <p class="text-muted">No next of kin recorded</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Loan Summary -->
+            <div class="card mb-3">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-hand-holding-usd me-2"></i>Loan Summary</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="50%">Total Loan Balance:</th>
+                            <td class="text-end">GHS {{ member.tot_loan_balance|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Active Loans:</th>
+                            <td class="text-end">{{ member.active_loans_count }}</td>
+                        </tr>
+                        <tr>
+                            <th>Completed Loans:</th>
+                            <td class="text-end">{{ member.completed_loans_count }}</td>
+                        </tr>
+                        <tr>
+                            <th>Loan Health Status:</th>
+                            <td class="text-end">
+                                {% if member.loan_health_status == 'Critical' %}
+                                    <span class="badge bg-danger">Critical</span>
+                                {% elif member.loan_health_status == 'High Risk' %}
+                                    <span class="badge bg-warning">High Risk</span>
+                                {% elif member.loan_health_status == 'Active' %}
+                                    <span class="badge bg-info">Active</span>
+                                {% else %}
+                                    <span class="badge bg-success">Clean</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Guarantee Summary -->
+            <div class="card mb-3">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Guarantee Summary</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="50%">Total Guaranteed (for others):</th>
+                            <td class="text-end">GHS {{ member.tot_guaranteed|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Redeemed:</th>
+                            <td class="text-end">GHS {{ member.tot_redeemed|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Outstanding Guarantee:</th>
+                            <td class="text-end">GHS {{ member.tot_outstanding_guarantee|floatformat:2 }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Information -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Audit Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <small class="text-muted">Created:</small><br>
+                    {{ member.date_created|date:"Y-m-d H:i:s" }}
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted">Last Updated:</small><br>
+                    {{ member.date_updated|date:"Y-m-d H:i:s" }}
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted">Enrollment Date:</small><br>
+                    {{ member.date_enrolled|date:"Y-m-d"|default:"-" }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

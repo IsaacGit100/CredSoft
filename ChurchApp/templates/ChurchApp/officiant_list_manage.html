@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>🕊️ Officiants – {{ entity.name }}</h1>
+        <a href="{% url 'ChurchApp:officiant_create' entity.slug %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Officiant
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Member</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for officiant in officiants %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ officiant.name }}</strong></td>
+                    <td>{{ officiant.description|truncatechars:40|default:"—" }}</td>
+                    <td>{{ officiant.member.full_name|default:"—" }}</td>
+                    <td>
+                        <a href="{% url 'ChurchApp:officiant_detail' entity.slug officiant.pk %}" class="btn btn-sm btn-outline-info">View</a>
+                        <a href="{% url 'ChurchApp:officiant_update' entity.slug officiant.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a href="{% url 'ChurchApp:officiant_delete' entity.slug officiant.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No officiants found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

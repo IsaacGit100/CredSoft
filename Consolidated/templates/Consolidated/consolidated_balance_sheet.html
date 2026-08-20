@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "Consolidated/sidebar.html" %}
+    <div class="flex-grow-1 p-4" style="margin-left: 250px;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>📊 {{ title }}</h1>
+            <span class="text-muted">{{ root_entity.name }}</span>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h5>Total Assets</h5>
+                        <h2>{{ total_assets|floatformat:2 }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-danger">
+                    <div class="card-body">
+                        <h5>Total Liabilities</h5>
+                        <h2>{{ total_liabilities|floatformat:2 }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <h5>Total Equity</h5>
+                        <h2>{{ total_equity|floatformat:2 }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Entity Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr><th>Entity</th><th class="text-end">Assets</th><th class="text-end">Liabilities</th><th class="text-end">Equity</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for item in entity_data %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td class="text-end">{{ item.assets|floatformat:2 }}</td>
+                            <td class="text-end">{{ item.liabilities|floatformat:2 }}</td>
+                            <td class="text-end">{{ item.equity|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4">No entities found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

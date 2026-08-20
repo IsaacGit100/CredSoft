@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>{% if member %}Edit{% else %}Add{% endif %} Member</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="accordion" id="memberFormAccordion">
+
+            <!-- Personal Details -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingPersonal">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePersonal" aria-expanded="true">
+                        Personal Details
+                    </button>
+                </h2>
+                <div id="collapsePersonal" class="accordion-collapse collapse show" data-bs-parent="#memberFormAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-3">{{ form.title.label_tag }} {{ form.title }}</div>
+                            <div class="col-md-3">{{ form.first_name.label_tag }} {{ form.first_name }}</div>
+                            <div class="col-md-3">{{ form.other_names.label_tag }} {{ form.other_names }}</div>
+                            <div class="col-md-3">{{ form.last_name.label_tag }} {{ form.last_name }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">{{ form.date_of_birth.label_tag }} {{ form.date_of_birth }}</div>
+                            <div class="col-md-3">{{ form.date_baptised.label_tag }} {{ form.date_baptised }}</div>
+                            <div class="col-md-3">{{ form.date_confirmed.label_tag }} {{ form.date_confirmed }}</div>
+                            <div class="col-md-3">{{ form.date_enrolled.label_tag }} {{ form.date_enrolled }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">{{ form.education_level.label_tag }} {{ form.education_level }}</div>
+                            <div class="col-md-3">{{ form.profession.label_tag }} {{ form.profession }}</div>
+                            <div class="col-md-3">{{ form.ghana_card_no.label_tag }} {{ form.ghana_card_no }}</div>
+                            <div class="col-md-3">{{ form.no_of_children.label_tag }} {{ form.no_of_children }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">{{ form.children_names.label_tag }} {{ form.children_names }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact & Address -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingContact">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContact">
+                        Contact & Address
+                    </button>
+                </h2>
+                <div id="collapseContact" class="accordion-collapse collapse" data-bs-parent="#memberFormAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-4">{{ form.email.label_tag }} {{ form.email }}</div>
+                            <div class="col-md-4">{{ form.telephone1.label_tag }} {{ form.telephone1 }}</div>
+                            <div class="col-md-4">{{ form.telephone2.label_tag }} {{ form.telephone2 }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">{{ form.postal_address.label_tag }} {{ form.postal_address }}</div>
+                            <div class="col-md-6">{{ form.res_address.label_tag }} {{ form.res_address }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">{{ form.near_landmark.label_tag }} {{ form.near_landmark }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guilds -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingGuilds">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGuilds">
+                        Guilds
+                    </button>
+                </h2>
+                <div id="collapseGuilds" class="accordion-collapse collapse" data-bs-parent="#memberFormAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-4">{{ form.guild_first.label_tag }} {{ form.guild_first }}</div>
+                            <div class="col-md-4">{{ form.guild_second.label_tag }} {{ form.guild_second }}</div>
+                            <div class="col-md-4">{{ form.guild_third.label_tag }} {{ form.guild_third }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Office Information -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOffice">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOffice">
+                        Office Details
+                    </button>
+                </h2>
+                <div id="collapseOffice" class="accordion-collapse collapse" data-bs-parent="#memberFormAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-6">{{ form.office_name.label_tag }} {{ form.office_name }}</div>
+                            <div class="col-md-6">{{ form.office_address.label_tag }} {{ form.office_address }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">{{ form.office_res_address.label_tag }} {{ form.office_res_address }}</div>
+                            <div class="col-md-6">{{ form.office_phone.label_tag }} {{ form.office_phone }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">{{ form.office_email.label_tag }} {{ form.office_email }}</div>
+                            <div class="col-md-6">{{ form.nature_of_business.label_tag }} {{ form.nature_of_business }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spouse -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingSpouse">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSpouse">
+                        Spouse Information
+                    </button>
+                </h2>
+                <div id="collapseSpouse" class="accordion-collapse collapse" data-bs-parent="#memberFormAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-3">{{ form.spouse_title.label_tag }} {{ form.spouse_title }}</div>
+                            <div class="col-md-3">{{ form.spouse_name.label_tag }} {{ form.spouse_name }}</div>
+                            <div class="col-md-3">{{ form.spouse_telephone.label_tag }} {{ form.spouse_telephone }}</div>
+                            <div class="col-md-3">{{ form.spouse_email_address.label_tag }} {{ form.spouse_email_address }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">{{ form.spouse_postal_address.label_tag }} {{ form.spouse_postal_address }}</div>
+                            <div class="col-md-4">{{ form.spouse_res_address.label_tag }} {{ form.spouse_res_address }}</div>
+                            <div class="col-md-4">{{ form.spouse_near_landmark.label_tag }} {{ form.spouse_near_landmark }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">{{ form.spouse_religion.label_tag }} {{ form.spouse_religion }}</div>
+                            <div class="col-md-3">{{ form.spouse_occupation.label_tag }} {{ form.spouse_occupation }}</div>
+                            <div class="col-md-3">{{ form.spouse_education_level.label_tag }} {{ form.spouse_education_level }}</div>
+                            <div class="col-md-3">{{ form.spouse_date_of_birth.label_tag }} {{ form.spouse_date_of_birth }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">{{ form.spouse_company_name.label_tag }} {{ form.spouse_company_name }}</div>
+                            <div class="col-md-6">{{ form.spouse_church.label_tag }} {{ form.spouse_church }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parents -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingParents">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseParents">
+                        Parents
+                    </button>
+                </h2>
+                <div id="collapseParents" class="accordion-collapse collapse" data-bs-parent="#memberFormAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-4">{{ form.father_name.label_tag }} {{ form.father_name }}</div>
+                            <div class="col-md-4">{{ form.father_res_address.label_tag }} {{ form.father_res_address }}</div>
+                            <div class="col-md-3">{{ form.father_telephone.label_tag }} {{ form.father_telephone }}</div>
+                            <div class="col-md-1">{{ form.father_deceased.label_tag }} {{ form.father_deceased }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">{{ form.mother_name.label_tag }} {{ form.mother_name }}</div>
+                            <div class="col-md-4">{{ form.mother_res_address.label_tag }} {{ form.mother_res_address }}</div>
+                            <div class="col-md-3">{{ form.mother_telephone.label_tag }} {{ form.mother_telephone }}</div>
+                            <div class="col-md-1">{{ form.mother_deceased.label_tag }} {{ form.mother_deceased }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="{% url 'ChurchApp:member_list_manage' entity.slug %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

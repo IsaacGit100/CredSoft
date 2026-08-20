@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Interest Accrual Preview</h1>
+    <p><strong>Entity:</strong> {{ entity.name }}</p>
+    <p>This is a preview of the interest accrual for the current period. No changes have been made yet.</p>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Total Accrued</h5>
+                    <h2>{{ results.total_accrued|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Total Applied</h5>
+                    <h2>{{ results.total_applied|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Failed</h5>
+                    <h2>{{ results.failed|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <h5 class="card-title">Days Since Last</h5>
+                    <h2>{{ results.days_since_last }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Accrued Members</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr><th>Member</th><th>Interest</th><th>Days</th><th>Daily Rate</th><th>Accrued Balance</th><th>Current Balance</th><th>Note</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in results.accrued %}
+                    <tr>
+                        <td>{{ item.member_name }}</td>
+                        <td>{{ item.interest|floatformat:2 }}</td>
+                        <td>{{ item.days }}</td>
+                        <td>{{ item.daily_rate|floatformat:4 }}</td>
+                        <td>{{ item.accrued_balance|floatformat:2 }}</td>
+                        <td>{{ item.current_balance|floatformat:2 }}</td>
+                        <td>{{ item.note|default:"" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7">No members with interest accrued.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Applied Members</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr><th>Member</th><th>Interest Applied</th><th>Frequency</th><th>New Balance</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in results.applied %}
+                    <tr>
+                        <td>{{ item.member_name }}</td>
+                        <td>{{ item.interest|floatformat:2 }}</td>
+                        <td>{{ item.frequency }}</td>
+                        <td>{{ item.new_balance|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">No members had interest applied.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if results.failed %}
+    <div class="card border-danger mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Failed Members</h5>
+        </div>
+        <div class="card-body">
+            <ul>
+                {% for item in results.failed %}
+                <li>{{ item.member_name }}: {{ item.error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to apply interest? This cannot be undone.')">
+            <i class="fas fa-check"></i> Apply Interest
+        </button>
+        <a href="{% url 'Supervisor:super_home' entity.slug %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

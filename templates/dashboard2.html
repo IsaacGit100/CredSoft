@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div style="max-width: 650px; margin: 0 auto; padding: 20px;">
+    <!-- Welcome Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #ddd; flex-wrap: wrap; gap: 5px;">
+        <div>
+            <h3 style="color: #1e2a3a; margin: 0; font-size: 1.4rem;">Welcome, {{ user.get_full_name|default:user.username }}! 👋</h3>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.9rem; font-weight: bold; color: #1e4a76;" id="currentDateTime"></div>
+        </div>
+    </div>
+
+    <style>
+        body {
+            background: #f0f2f5;
+        }
+        .buttons-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 16px; 
+            margin: 20px 0; 
+        }
+        
+        .module-button { 
+            background: linear-gradient(135deg, #2c3e50, #1a2632); 
+            color: white; 
+            border: none; 
+            padding: 14px 12px;
+            border-radius: 12px; 
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer; 
+            transition: transform 0.2s ease, box-shadow 0.2s ease; 
+            width: 100%;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+        
+        .module-button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg, #1e2a3a, #0f1722);
+        }
+        
+        /* Special styling for Batch Posting button */
+        .module-button.batch-post {
+            background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+        }
+        
+        .module-button.batch-post:hover {
+            background: linear-gradient(135deg, #991b1b, #5e1414);
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ccc;
+            color: #4a5568;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        @media (max-width: 550px) {
+            .buttons-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .module-button {
+                padding: 12px 10px;
+                font-size: 0.9rem;
+            }
+            h3 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+
+    <div class="buttons-grid">
+        <button class="module-button" onclick="location.href='{% url 'MembersApp:members_home' %}'">
+            👥 Member Management
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'RecPayApp:trans_home' %}'">
+            📋 Receipts & Payments
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'LoanApp:loans_home' %}'">
+            💰 Loan Processing
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'FinanceApp:finance_home' %}'">
+            🏦 Finance & Reports
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'InvestApp:invest_home' %}'">
+            💵 Investment Management
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'SysSetup:company_setup' %}'">
+            ⚙️ System Setup
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'userauth:user_list' %}'">
+            👥 User Management
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'Supervisor:super_home' %}'">
+            📆 Supervisor Menu
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'coa:coa_home' %}'">
+            📈 Chart of Accounts
+        </button>
+
+        <!-- Daily Interest Calculations – update URL when ready -->
+        <button class="module-button" onclick="location.href='{% url 'CustomReports:custom_report_builder' %}'">
+            🔧 Custom Reports Generation
+        </button>
+
+        <!-- Online Help (single button) -->
+        <button class="module-button" onclick="location.href='{% url 'help_module:dashboard' %}'">
+            📚 Online Help
+        </button>
+        
+        <!-- Secure Batch Posting -->
+        <button class="module-button batch-post" onclick="location.href='{% url 'RecPayApp:batch_posting_dashboard' %}'">
+            🔒 Secure Batch Posting
+        </button>
+
+    </div>
+    
+    <div class="footer">
+        <!-- EXIT BUTTON -->
+        <div style="margin-bottom: 15px;">
+            <form action="{% url 'core:logout' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="module-button" style="background: linear-gradient(135deg, #c53030, #9b2c2c); padding: 10px 24px; width: auto; font-size: 0.9rem;">
+                    🚪 Exit / Logout
+                </button>
+            </form>
+        </div>
+        
+        <p>&copy; {% now "Y" %} St. Andrews Co-Operative Credit Union</p>
+        <p>Powered by <strong>Hi-Waves Ventures</strong></p>
+    </div>
+</div>
+
+<script>
+    function updateDateTime() {
+        const now = new Date();
+        const options = { 
+            weekday: 'short',
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        const formattedDateTime = now.toLocaleDateString('en-US', options);
+        document.getElementById('currentDateTime').innerHTML = `📅 ${formattedDateTime}`;
+    }
+    updateDateTime();
+    setInterval(updateDateTime, 60000);
+</script>
+{% endblock %}

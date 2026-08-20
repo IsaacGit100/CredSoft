@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "djan_led/sidebars/finance_sidebar.html" %}
+    <div class="flex-grow-1 p-4" style="margin-left: 250px; background: #f8f9fa; min-height: 100vh;">
+        <h2>📝 Manual Journal Entry</h2>
+        <p><strong>Entity:</strong> {{ entity.name }}</p>
+
+        <form method="post" class="card p-4 shadow-sm" style="max-width: 600px;">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" name="date" id="date" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <input type="text" name="description" id="description" class="form-control" placeholder="e.g., Office rent payment" required>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="debit_account" class="form-label">Debit Account</label>
+                        <select name="debit_account" id="debit_account" class="form-select" required>
+                            <option value="">-- Select --</option>
+                            {% for acc in accounts %}
+                            <option value="{{ acc.code }}">{{ acc.code }} - {{ acc.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="credit_account" class="form-label">Credit Account</label>
+                        <select name="credit_account" id="credit_account" class="form-select" required>
+                            <option value="">-- Select --</option>
+                            {% for acc in accounts %}
+                            <option value="{{ acc.code }}">{{ acc.code }} - {{ acc.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="amount" class="form-label">Amount</label>
+                <input type="number" name="amount" id="amount" class="form-control" step="0.01" min="0.01" required>
+            </div>
+            <button type="submit" class="btn btn-success">Post Entry</button>
+            <a href="{% url 'djan_led:entity_dashboard' entity.slug %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Sidebar (fixed width) -->
+        <div class="col-auto" style="min-height: 100vh; width: 250px; background: #f8f9fa; border-right: 1px solid #dee2e6;">
+            {% include "djan_led/sidebars/credit_union_sidebar.html" %}
+        </div>
+
+        <!-- Main Content -->
+        <div class="col" style="background: #f4f6f9; min-height: 100vh; padding: 20px;">
+            <h1 class="mb-4">🏦 Credit Union Dashboard</h1>
+            <p><strong>Entity:</strong> {{ entity.name }}</p>
+            <p><small>Generated: {{ today|date:"Y-m-d" }}</small></p>
+
+            <!-- Statistics Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Members</h5>
+                            <h2>{{ total_members }}</h2>
+                            <small>Active: {{ active_members }}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Loans</h5>
+                            <h2>{{ total_loans }}</h2>
+                            <small>Active: {{ active_loans }}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Outstanding Loan Balance</h5>
+                            <h2>{{ total_loan_balance|floatformat:2 }}</h2>
+                            <small>Total Disbursed: {{ total_disbursed|floatformat:2 }}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Savings</h5>
+                            <h2>{{ total_savings|floatformat:2 }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">📋 Recent Transactions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Voucher</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Member</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trans in recent_trans %}
+                                <tr>
+                                    <td>{{ trans.date|date:"Y-m-d" }}</td>
+                                    <td>{{ trans.rec_vou_no }}</td>
+                                    <td>{{ trans.trans_type }}</td>
+                                    <td>{{ trans.amount|floatformat:2 }}</td>
+                                    <td>{{ trans.member.full_name|default:"Non‑member" }}</td>
+                                    <td>{{ trans.details|truncatechars:20 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center">No recent transactions.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="mt-4">
+                <a href="{% url 'LoanApp:create_loan' entity.slug %}" class="btn btn-primary">➕ New Loan</a>
+                <a href="{% url 'RecPayApp:trans_create' entity.slug %}" class="btn btn-success">💰 New Transaction</a>
+                <a href="{% url 'MembersApp:member_list_manage' entity.slug %}" class="btn btn-info">👥 View Members</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

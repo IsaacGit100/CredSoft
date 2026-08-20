@@ -1,0 +1,308 @@
+<!-- members/templates/members/delete_history_list.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Audit Trail - Deletion/Restoration History{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+    
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-history me-2 text-primary"></i>Audit Trail: Deletion/Restoration History</h2>
+            <p class="text-muted">Complete history of all member deletions and restorations</p>
+        </div>
+        <div>
+            <a href="{% url 'Supervisor:member_list_restore' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back
+            </a>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ total_members }}</h3>
+                    <p>Total Members</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ active_count }}</h3>
+                    <p>Active Members</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3>{{ deleted_count }}</h3>
+                    <p>Currently Deleted</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>{{ never_deleted }}</h3>
+                    <p>Never Deleted</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Search by name, ID, or phone..." 
+                           value="{{ search_query }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Members Table - ALL RECORDS -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Member Audit Records</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Member Name</th>
+                            <th>Phone</th>
+                            <th>Current Status</th>
+                            <th class="text-center">Times Deleted</th>
+                            <th class="text-center">Times Restored</th>
+                            <th>Last Deleted</th>
+                            <th>Last Restored</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr class="{% if member.is_deleted %}table-danger{% endif %}">
+                            <td>{{ member.id }}</td>
+                            <td>
+                                <strong>{{ member.full_name|default:"-" }}</strong>
+                            </td>
+                            <td>{{ member.telephone1|default:"-" }}</td>
+                            <td>
+                                {% if member.is_deleted %}
+                                    <span class="badge bg-danger">Deleted</span>
+                                {% else %}
+                                    <span class="badge bg-success">Active</span>
+                                {% endif %}
+                                {% if member.delete_history|length == 0 and not member.is_deleted %}
+                                    <span class="badge bg-info ms-1">Never Deleted</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if member.delete_history|length > 0 %}
+                                    <span class="badge bg-danger">{{ member.delete_history|length }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">0</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if member.restore_history|length > 0 %}
+                                    <span class="badge bg-success">{{ member.restore_history|length }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">0</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if member.delete_history %}
+                                    {% with last=member.delete_history|last %}
+                                        <small>{{ last.datetime|default:last.date|slice:":16"|default:"-" }}</small>
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if member.restore_history %}
+                                    {% with last=member.restore_history|last %}
+                                        <small>{{ last.datetime|default:last.date|slice:":16"|default:"-" }}</small>
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-info" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#historyModal{{ member.id }}">
+                                        <i class="fas fa-history"></i> History
+                                    </button>
+                                    {% if member.is_deleted %}
+                                    <form method="post" action="{% url 'Supervisor:member_restore' member.id %}" 
+                                          style="display: inline;" 
+                                          onsubmit="return confirm('Restore {{ member.full_name }}?')">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-undo"></i> Restore
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- History Modal -->
+                        <div class="modal fade" id="historyModal{{ member.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header {% if member.is_deleted %}bg-danger{% else %}bg-success{% endif %} text-white">
+                                        <h5 class="modal-title">
+                                            <i class="fas fa-history me-2"></i>
+                                            Audit History: {{ member.full_name }}
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <!-- Current Status -->
+                                        <div class="alert {% if member.is_deleted %}alert-danger{% else %}alert-success{% endif %} mb-3">
+                                            <strong>Current Status:</strong> 
+                                            {% if member.is_deleted %}
+                                                <span class="badge bg-danger">DELETED</span>
+                                            {% else %}
+                                                <span class="badge bg-success">ACTIVE</span>
+                                            {% endif %}
+                                            | Total Deletions: {{ member.delete_history|length }} 
+                                            | Total Restorations: {{ member.restore_history|length }}
+                                        </div>
+                                        
+                                        <!-- Deletion History -->
+                                        {% if member.delete_history %}
+                                        <h6 class="text-danger mt-3">📋 Deletion Events</h6>
+                                        <div class="table-responsive mb-3">
+                                            <table class="table table-sm table-bordered">
+                                                <thead class="table-danger">
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Date/Time</th>
+                                                        <th>Deleted By</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for delete in member.delete_history %}
+                                                    <tr>
+                                                        <td>{{ forloop.counter }}</td>
+                                                        <td>{{ delete.datetime|default:delete.date }}</td>
+                                                        <td>
+                                                            {% if member.delete_users and forloop.counter0 < member.delete_users|length %}
+                                                                {% with user_entry=member.delete_users|slice:forloop.counter|last %}
+                                                                    {{ user_entry.username|default:user_entry }}
+                                                                {% endwith %}
+                                                            {% else %}
+                                                                -
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <!-- Restoration History -->
+                                        {% if member.restore_history %}
+                                        <h6 class="text-success mt-3">🔄 Restoration Events</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered">
+                                                <thead class="table-success">
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Date/Time</th>
+                                                        <th>Restored By</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for restore in member.restore_history %}
+                                                    <tr>
+                                                        <td>{{ forloop.counter }}</td>
+                                                        <td>{{ restore.datetime|default:restore.date }}</td>
+                                                        <td>
+                                                            {% if member.restore_users and forloop.counter0 < member.restore_users|length %}
+                                                                {% with user_entry=member.restore_users|slice:forloop.counter|last %}
+                                                                    {{ user_entry.username|default:user_entry }}
+                                                                {% endwith %}
+                                                            {% else %}
+                                                                -
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if not member.delete_history and not member.restore_history %}
+                                        <div class="alert alert-info text-center">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            This member has never been deleted or restored.
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        {% if member.is_deleted %}
+                                        <form method="post" action="{% url 'Supervisor:member_restore' member.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-success" onclick="return confirm('Restore {{ member.full_name }}?')">
+                                                <i class="fas fa-undo"></i> Restore Member
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-5">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <h5>No members found</h5>
+                                <p class="text-muted">No matching records found</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table td {
+        vertical-align: middle;
+    }
+    .badge {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+    .table-danger {
+        background-color: #f8d7da;
+    }
+</style>
+{% endblock %}

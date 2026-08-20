@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "Consolidated/sidebar.html" %}
+    <div class="flex-grow-1 p-4" style="margin-left: 250px;">
+        <h1>{{ title }}</h1>
+        <p>This report is under construction. It will show consolidated financial data across all entities.</p>
+        <p>Please check back later.</p>
+        <a href="{% url 'Consolidated:dashboard' %}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>📊 Chart of Accounts</h1>
+    <p><strong>Entity:</strong> {{ entity.name }}</p>
+    <a href="{% url 'djan_led:add_account' entity.slug %}" class="btn btn-primary mb-3">➕ Add Account</a>
+    <div class="mb-3">
+    <a href="{% url 'djan_led:autofill_accounts' entity.slug 'general' %}" class="btn btn-secondary">📋 General</a>
+    <a href="{% url 'djan_led:autofill_accounts' entity.slug 'church' %}" class="btn btn-primary">⛪ Church</a>
+    <a href="{% url 'djan_led:autofill_accounts' entity.slug 'school' %}" class="btn btn-info">🏫 School</a>
+    <a href="{% url 'djan_led:autofill_accounts' entity.slug 'credit_union' %}" class="btn btn-success">🏦 Credit Union</a>
+    <a href="{% url 'djan_led:autofill_accounts' entity.slug 'pos' %}" class="btn btn-warning">💰 POS</a>
+</div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Balance Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td>{{ account.code }}</td>
+                <td>{{ account.name }}</td>
+                <td>{{ account.role }}</td>
+                <td>{{ account.balance_type }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">No accounts found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'Tech:tech_dashboard' entity.slug %}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

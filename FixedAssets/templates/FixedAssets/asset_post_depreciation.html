@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Post Depreciation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h4>Post Monthly Depreciation</h4>
+        </div>
+        <div class="card-body">
+            {% if preview %}
+                <h5>Preview of depreciation to be posted</h5>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Category</th>
+                            <th>Monthly Depreciation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in preview %}
+                        <tr>
+                            <td>{{ item.asset.name }}</td>
+                            <td>{{ item.asset.category.name }}</td>
+                            <td class="text-end">₵{{ item.monthly_dep|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3">No depreciation to post.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Post depreciation for all assets?')">Post Depreciation Now</button>
+                    <a href="{% url 'FixedAssets:dashboard' %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            {% else %}
+                <p>No depreciation to calculate. Ensure assets are active.</p>
+                <a href="{% url 'FixedAssets:dashboard' %}" class="btn btn-secondary">Back</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

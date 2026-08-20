@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Process Draft Transactions{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-warning">
+            <h3>Process Draft Transactions</h3>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <strong>Summary:</strong><br>
+                Total Drafts: {{ draft_count }}<br>
+                Total Amount: ₵{{ draft_total|floatformat:2|intcomma }}
+            </div>
+            
+            {% if drafts %}
+            <div class="table-responsive mb-4">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Voucher</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Member</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trans in drafts %}
+                        <tr>
+                            <td>{{ trans.rec_vou_no }}</td>
+                            <td>{{ trans.date|date:"d/m/Y" }}</td>
+                            <td>{{ trans.trans_type }}</td>
+                            <td class="text-end">₵{{ trans.amount|floatformat:2|intcomma }}</td>
+                            <td>{{ trans.member.full_name|default:trans.non_member_name|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+            
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Warning:</strong> This will process ALL {{ draft_count }} draft transactions.
+                This action cannot be undone.
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success" 
+                            onclick="return confirm('Process all {{ draft_count }} transactions?')">
+                        <i class="fas fa-play"></i> Process All ({{ draft_count }})
+                    </button>
+                    <a href="{% url 'RecPayApp:transaction_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+<!-- core/templates/core/confirm_run_process.html -->
+{% extends "base.html" %}
+
+{% block title %}Run {{ process.process_name }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto;">
+    <div class="card">
+        <div class="card-header bg-warning">
+            <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Process Execution</h4>
+        </div>
+        <div class="card-body">
+            <p>You are about to run:</p>
+            <div class="alert alert-info">
+                <strong>{{ process.process_name }}</strong><br>
+                Frequency: {{ process.frequency }}
+            </div>
+            
+            <p>Last run: 
+                {% if process.last_run %}
+                    {{ process.last_run|date:"Y-m-d H:i:s" }}
+                {% else %}
+                    Never
+                {% endif %}
+            </p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'core:batch_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-play"></i> Run Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

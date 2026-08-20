@@ -1,0 +1,51 @@
+<div class="list-group">
+    <a href="{#}" class="list-group-item list-group-item-action active">
+        <i class="fas fa-home"></i> Credit Union System Menu
+    </a>
+    <a href="{% url 'MembersApp:member_list_manage' entity.slug %}" class="list-group-item list-group-item-action action">
+        <i class="fas fa-home"></i> Members Management
+    </a>
+    <a href="{% url 'LoanApp:loans_home' entity.slug %}" class="list-group-item list-group-item-action"> 
+        <i class="fas fa-book"></i> Loans Management
+    </a>
+    <a href="{% url 'RecPayApp:recpay_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-list"></i> Receipts & Payments
+    </a>
+    <a href="{% url 'InvestApp:invest_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-balance-scale"></i> Investment Menu
+    </a>
+    
+    <a href="{% url 'djan_led:supervisor_cred_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-balance-scale"></i> Supervisor Operations
+    </a>
+    <a href="{% url 'djan_led:coa_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-balance-scale"></i> Chart Of Accounts
+    </a>
+    <a href="{% url 'OpenBals:opening_balance_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-balance-scale"></i> Opening Balances
+    </a>
+    
+    <a href="{% url 'djan_led:entity_settings' entity.slug%}" class="list-group-item list-group-item-action">
+        <i class="fas fa-chart-line"></i> System Settings
+    </a>
+     <a href="{% url 'djan_led:income_statement' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-balance-scale"></i> Income Statement
+    </a>
+    <a href="{% url 'djan_led:trial_balance' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-balance-scale"></i> Trial Balance
+    </a> 
+     <a href="{% url 'djan_led:cash_flow' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-balance-scale"></i> Cash Flow
+    </a>
+    <a href="{% url 'djan_led:balance_sheet' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-file-alt"></i> Balance Sheet
+    </a>
+    <a href="{% url 'FixedAssets:fixed_assets_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-money-bill-wave"></i> Fixed Assets
+    </a>
+     <a href="{#}" class="list-group-item list-group-item-action">
+        <i class="fas fa-money-bill-wave"></i> Dividend Appropriation
+    </a>
+
+    
+</div>

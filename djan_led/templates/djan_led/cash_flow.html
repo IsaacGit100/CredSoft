@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>💰 Cash Flow Statement</h1>
+    <p><strong>Entity:</strong> {{ entity.name }}</p>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Cash Inflows</h5>
+                    <h2>${{ cash_in|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Cash Outflows</h5>
+                    <h2>${{ cash_out|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white {% if net_cash >= 0 %}bg-primary{% else %}bg-warning{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title">Net Cash Flow</h5>
+                    <h2>${{ net_cash|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+    <a href="{% url 'djan_led:entity_dashboard' entity.slug %}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

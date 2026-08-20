@@ -1,0 +1,176 @@
+<!-- templates/dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div style="max-width: 550px; margin: 0 auto; padding: 15px;">
+    <!-- Welcome Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 5px;">
+        <div>
+            <h3 style="color: #2c3e50; margin: 0; font-size: 1.2em;">Welcome, {{ user.get_full_name|default:user.username }}! 👋</h3>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 11px; font-weight: bold; color: #2a5298;" id="currentDateTime"></div>
+        </div>
+    </div>
+
+    <style>
+        .buttons-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 12px; 
+            margin: 15px 0; 
+        }
+        
+        .module-button { 
+            background: linear-gradient(135deg, #3498db, #2980b9); 
+            color: white; 
+            border: none; 
+            padding: 12px 8px;
+            border-radius: 8px; 
+            font-size: 0.85em;
+            font-weight: 500;
+            cursor: pointer; 
+            transition: transform 0.2s ease; 
+            width: 100%;
+        }
+        
+        .module-button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Special styling for Batch Posting button */
+        .module-button.batch-post {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .module-button.batch-post:before {
+            content: "🔒";
+            margin-right: 8px;
+        }
+        
+        .module-button.batch-post:hover {
+            background: linear-gradient(135deg, #c82333, #a71d2a);
+            box-shadow: 0 4px 12px rgba(220,53,69,0.4);
+        }
+        
+        .footer {
+            margin-top: 20px;
+            padding-top: 12px;
+            border-top: 1px solid #ecf0f1;
+            color: #95a5a6;
+            font-size: 0.7em;
+            text-align: center;
+        }
+        
+        .footer p {
+            margin: 3px 0;
+        }
+        
+        @media (max-width: 550px) {
+            .buttons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <div class="buttons-grid">
+        <button class="module-button" onclick="location.href='{% url 'MembersApp:members_home' %}'">
+            👥 Member Management
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'RecPayApp:trans_home' %}'">
+            📋 Receipts & Payments
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'LoanApp:loans_home' %}'">
+            💰 Loan Processing
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'FinanceApp:finance_home' %}'">
+            🏦 Finance & Reports
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'InvestApp:invest_home' %}'">
+            💵 Investment Management
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'SysSetup:company_setup' %}'">
+            ⚙️ System Setup
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'userauth:user_list' %}'">
+            👥 User Management
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'Supervisor:super_home' %}'">
+            📆 Supervisor Menu
+        </button>
+        
+        <button class="module-button" onclick="location.href='{% url 'coa:coa_home' %}'">
+            📈 Chart of Accounts
+        </button>
+
+         
+        <button class="module-button" onclick="location.href='{% url 'coa:coa_home' %}'">
+            📈 Daily Interest Calculations
+        </button>
+
+        <button class="module-button" onclick="location.href='{#}'">
+            📈 Online Help
+        </button>
+        
+        <!-- UPDATED: Secure Batch Posting Button -->
+        <button class="module-button batch-post" onclick="location.href='{% url 'RecPayApp:batch_posting_dashboard' %}'">
+            🔒 Secure Batch Posting
+        </button>
+
+        <!-- UPDATED: Secure Batch Posting Button -->
+        <button class="module-button" onclick="location.href='{% url 'CustomReports:custom_report_builder' %}'">
+            🔒 Custom Reports Generation
+        </button>
+          
+        <button class="module-button" onclick="location.href='{#}'">
+            📈 Online Help
+        </button>
+
+    </div>
+    
+    <div class="footer">
+        <!-- EXIT BUTTON - Using core/logout URL -->
+        <div style="margin-bottom: 15px;">
+            <form action="{% url 'core:logout' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="module-button" style="background: linear-gradient(135deg, #e74c3c, #c0392b); padding: 10px 20px; width: auto;">
+                    🚪 Exit / Logout
+                </button>
+            </form>
+        </div>
+        
+        <p>&copy; {% now "Y" %} St. Andrews Co-Operative Credit Union</p>
+        <p>Powered by <strong>Hi-Waves Ventures</strong></p>
+    </div>
+</div>
+
+<script>
+    function updateDateTime() {
+        const now = new Date();
+        const options = { 
+            weekday: 'short',
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        const formattedDateTime = now.toLocaleDateString('en-US', options);
+        document.getElementById('currentDateTime').innerHTML = `📅 ${formattedDateTime}`;
+    }
+    updateDateTime();
+    setInterval(updateDateTime, 60000);
+</script>
+{% endblock %}

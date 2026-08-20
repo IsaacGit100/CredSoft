@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Asset Categories{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4><i class="fas fa-tags"></i> Asset Categories</h4>
+            <a href="{% url 'FixedAssets:asset_list_manage' entity.slug %}" class="btn btn-light btn-sm">+ Close</a>
+            <a href="{% url 'FixedAssets:category_create' entity.slug %}" class="btn btn-light btn-sm">+ Add Category</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                  
+                            <thead>
+                                <tr>
+                                    <th style="background-color: #1e293b; color: #ffffff;">Name</th>
+                                    <th style="background-color: #1e293b; color: #ffffff;">Depreciation Method</th>
+                                    <th style="background-color: #1e293b; color: #ffffff;">Useful Life (Years)</th>
+                                    <th style="background-color: #1e293b; color: #ffffff;">Salvage %</th>
+                                    <th style="background-color: #1e293b; color: #ffffff;">Depreciation Rate %</th>
+                                    <th style="background-color: #1e293b; color: #ffffff;">Asset Account</th>
+                                    <th style="background-color: #1e293b; color: #ffffff;">Accum Depr Acct</th>
+                                    <th style="background-color: #1e293b; color: #ffffff;">Depr Expense Acct</th>
+                                    <th style="background-color: #1e293b; color: #ffffff;">Actions</th>
+                                </tr>
+                            </thead>
+
+                    <tbody>
+                        {% for category in categories %}
+                        <tr>
+                            <td>{{ category.name }}</td>
+                            <td>{{ category.get_depreciation_method_display }}</td>
+                            <td>{{ category.useful_life_years }}</td>
+                            <td>{{ category.salvage_value_percent }}%</td>
+                            <td>{% if category.depreciation_rate %}
+                                    {{ category.depreciation_rate }}%
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %} </td>
+                            <td>
+                                {% if category.asset_account %}
+                                    {{ category.asset_account.code }}
+                                {% else %}
+                                    <span class="text-muted">Not assigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if category.accumulated_depreciation_account %}
+                                    {{ category.accumulated_depreciation_account.code }}
+                                {% else %}
+                                    <span class="text-muted">Not assigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if category.depreciation_expense_account %}
+                                    {{ category.depreciation_expense_account.code }}
+                                {% else %}
+                                    <span class="text-muted">Not assigned</span>
+                                {% endif %}
+                            </td>
+                            
+                            
+                            
+                           
+                            <td>
+                                
+                                <a href="{% url 'FixedAssets:depreciation_schedule' entity.slug %}" class="btn btn-info"> 
+                                     Depreciation Schedule
+                                </a>
+                                <a href="{% url 'FixedAssets:category_edit' entity.slug category.id %}" class="btn btn-sm btn-warning">Edit</a>
+                                <a href="{% url 'FixedAssets:category_delete' entity.slug category.id %}" class="btn btn-sm btn-danger">Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6">No categories found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,211 @@
+<!-- finance/templates/finance/trial_balance.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Trial Balance{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Trial Balance</h4>
+                        <div>
+                            <a href="{% url 'FinanceApp:trial_balance_pdf' %}" class="btn btn-danger">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </a>
+                            <a href="{% url 'FinanceApp:trial_balance_excel' %}" class="btn btn-success">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </a>
+                            <a href="{% url 'FinanceApp:finance_home' %}" class="btn btn-primary">
+                                <i class="fas fa-chart-bar"></i> Close
+                            </a>
+                            <button onclick="window.print()" class="btn btn-light btn-sm">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                    <p class="mb-0 mt-2">As at {{ as_at_date|date:"F d, Y" }}</p>
+                </div>
+                <div class="card-body">
+                    <!-- Filter Form -->
+                    <form method="get" class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label class="form-label">As at Date</label>
+                            <input type="date" name="as_at_date" class="form-control" value="{{ as_at_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">Run Report</button>
+                        </div>
+                    </form>
+
+                    <!-- ===== TABLE (PRINT‑FRIENDLY) ===== -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="trial-balance-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Account Code</th>
+                                    <th>Account Name</th>
+                                    <th class="text-end">Debit (₵)</th>
+                                    <th class="text-end">Credit (₵)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in trial_balance %}
+                                {% with accountno=item.account.accountno %}
+                                {% if accountno|slice:"-3:" == "000" %}
+                                    <!-- ===== HEADING (ends with 000) ===== -->
+                                    <tr class="heading-row">
+                                        <td class="heading">{{ accountno }}</td>
+                                        <td class="heading">{{ item.account.name }}</td>
+                                        <td class="text-end heading">
+                                            {% if item.debit > 0 %}{{ item.debit|floatformat:2 }}{% else %}-{% endif %}
+                                        </td>
+                                        <td class="text-end heading">
+                                            {% if item.credit > 0 %}{{ item.credit|floatformat:2 }}{% else %}-{% endif %}
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <!-- ===== DATA ITEM (indented) ===== -->
+                                    <tr>
+                                        <td class="indent">{{ accountno }}</td>
+                                        <td class="indent">{{ item.account.name }}</td>
+                                        <td class="text-end indent">
+                                            {% if item.debit > 0 %}{{ item.debit|floatformat:2 }}{% else %}-{% endif %}
+                                        </td>
+                                        <td class="text-end indent">
+                                            {% if item.credit > 0 %}{{ item.credit|floatformat:2 }}{% else %}-{% endif %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                {% endwith %}
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No data found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-active">
+                                <tr>
+                                    <th colspan="2">TOTAL</th>
+                                    <th class="text-end">₵{{ total_debit|floatformat:2 }}</th>
+                                    <th class="text-end">₵{{ total_credit|floatformat:2 }}</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="4" class="text-center">
+                                        {% if is_balanced %}
+                                        <span class="text-success">✓ TRIAL BALANCE IS BALANCED</span>
+                                        {% else %}
+                                        <span class="text-danger">✗ TRIAL BALANCE OUT OF BALANCE BY ₵{{ difference|floatformat:2 }}</span>
+                                        {% endif %}
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_css %}
+<style>
+    /* ===== SCREEN STYLES (normal view) ===== */
+    .heading {
+        font-weight: 700;
+    }
+    .indent {
+        padding-left: 24px !important;
+    }
+    .heading-row {
+        background-color: #f9f9f9;
+    }
+
+    /* ===== PRINT STYLES (when you click Print or Ctrl+P) ===== */
+    @media print {
+        /* Hide non‑printable elements */
+        .card-header .btn,
+        .card-header form,
+        .card-header .d-flex .btn,
+        .card-body .row.g-3,
+        .card-header .btn-light {
+            display: none !important;
+        }
+        .card-header {
+            background-color: #fff !important;
+            color: #000 !important;
+            border-bottom: 1px solid #ccc;
+        }
+        .card-header h4 {
+            color: #000 !important;
+        }
+
+        /* Remove borders from the table */
+        .table-bordered,
+        .table-bordered th,
+        .table-bordered td {
+            border: none !important;
+        }
+        .table th, .table td {
+            border: none !important;
+        }
+
+        /* Keep the table header light */
+        .table thead th {
+            background-color: #f2f2f2 !important;
+            color: #000 !important;
+        }
+
+        /* Indentation and headings */
+        .heading {
+            font-weight: 700;
+        }
+        .indent {
+            padding-left: 24px !important;
+        }
+        .heading-row {
+            background-color: #f9f9f9;
+        }
+
+        /* Remove background from table rows */
+        .table-active {
+            background-color: transparent !important;
+        }
+
+        /* Remove card borders and shadows */
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Remove buttons and forms entirely */
+        .btn, .form-control, .input-group, .row.g-3 {
+            display: none !important;
+        }
+
+        /* Make the table full width */
+        .table-responsive {
+            overflow: visible !important;
+        }
+
+        /* Show the total row with a border */
+        tfoot tr:first-child {
+            border-top: 2px solid #333 !important;
+        }
+
+        /* Footer (optional) */
+        .print-footer {
+            display: block !important;
+            margin-top: 20px;
+            font-size: 9pt;
+            color: #666;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            padding-top: 8px;
+        }
+    }
+</style>
+{% endblock %}

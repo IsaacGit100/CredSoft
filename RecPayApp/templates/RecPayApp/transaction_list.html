@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Transaction List{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3><i class="fas fa-list"></i> Transaction List</h3>
+                        <div>
+                            <a href="{% url 'RecPayApp:trans_create' entity.slug %}" class="btn btn-light">
+                                <i class="fas fa-plus"></i> New Transaction
+                            </a>
+                            <a href="{% url 'RecPayApp:process_transactions' entity.slug %}" class="btn btn-warning">
+                                <i class="fas fa-cogs"></i> Process Drafts
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Summary Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h6>Total Transactions</h6>
+                                    <h3>{{ summary.total_count|default:"0"|intcomma }}</h3>
+                                    <small>₵{{ summary.total_amount|default:"0"|floatformat:2|intcomma }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h6>Receipts</h6>
+                                    <h3>{{ summary.receipts_count|default:"0"|intcomma }}</h3>
+                                    <small>₵{{ summary.receipts_total|default:"0"|floatformat:2|intcomma }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h6>Payments</h6>
+                                    <h3>{{ summary.payments_count|default:"0"|intcomma }}</h3>
+                                    <small>₵{{ summary.payments_total|default:"0"|floatformat:2|intcomma }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body">
+                                    <h6>Draft Pending</h6>
+                                    <h3>{{ summary.draft_count|default:"0"|intcomma }}</h3>
+                                    <small>₵{{ summary.draft_total|default:"0"|floatformat:2|intcomma }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Filter Form -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h6><i class="fas fa-filter"></i> Filters</h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="get" class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Transaction Type</label>
+                                    <select name="trans_type" class="form-select">
+                                        <option value="">All</option>
+                                        <option value="Receipts" {% if filters.trans_type == 'Receipts' %}selected{% endif %}>Receipts</option>
+                                        <option value="Payments" {% if filters.trans_type == 'Payments' %}selected{% endif %}>Payments</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Status</label>
+                                    <select name="status" class="form-select">
+                                        <option value="">All</option>
+                                        <option value="DRAFT" {% if filters.status == 'DRAFT' %}selected{% endif %}>Draft</option>
+                                        <option value="POSTED" {% if filters.status == 'POSTED' %}selected{% endif %}>Posted</option>
+                                        <option value="VOID" {% if filters.status == 'VOID' %}selected{% endif %}>Void</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">From Date</label>
+                                    <input type="date" name="from_date" class="form-control" value="{{ filters.from_date }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">To Date</label>
+                                    <input type="date" name="to_date" class="form-control" value="{{ filters.to_date }}">
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Apply Filters
+                                    </button>
+                                    <a href="{% url 'RecPayApp:transaction_list' entity.slug %}" class="btn btn-secondary">
+                                        <i class="fas fa-undo"></i> Clear Filters
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Transactions Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Voucher No</th>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Member/Party</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trans in transactions %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ trans.rec_vou_no }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ trans.trans_no }}</small>
+                                    </td>
+                                    <td>{{ trans.date|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if trans.trans_type == 'Receipts' %}
+                                            <span class="badge bg-success">Receipt</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Payment</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if trans.member %}
+                                            <strong>{{ trans.member.full_name }}</strong>
+                                            <br>
+                                            <small class="text-muted">ID: {{ trans.member.id }}</small>
+                                        {% elif trans.non_member_name %}
+                                            <strong>{{ trans.non_member_name }}</strong>
+                                            <br>
+                                            <small class="text-muted">Non-Member</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>
+                                            {{ trans.ledger_name|default:"-" }}
+                                            <br>
+                                            <span class="text-muted">{{ trans.purpose|default:"" }}</span>
+                                        </small>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong class="{% if trans.trans_type == 'Receipts' %}text-success{% else %}text-danger{% endif %}">
+                                            ₵{{ trans.amount|floatformat:2|intcomma }}
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        {% if trans.status == 'DRAFT' %}
+                                            <span class="badge bg-warning text-dark">Draft</span>
+                                        {% elif trans.status == 'POSTED' %}
+                                            <span class="badge bg-success">Posted</span>
+                                        {% elif trans.status == 'VOID' %}
+                                            <span class="badge bg-danger">Void</span>
+                                        {% endif %}
+                                        {% if trans.posted_at %}
+                                            <br><small class="text-muted">{{ trans.posted_at|date:"d/m/Y H:i" }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'RecPayApp:transaction_detail' entity.slug trans.id %}" class="btn btn-info btn-sm" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if trans.status == 'DRAFT' %}
+                                                <a href="{% url 'RecPayApp:process_single_transaction' entity.slug trans.id %}" class="btn btn-success btn-sm" title="Post">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-5">
+                                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                                        <p>No transactions found.</p>
+                                        <a href="{% url 'RecPayApp:trans_create' entity.slug %}" class="btn btn-primary">
+                                            <i class="fas fa-plus"></i> Create First Transaction
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-secondary">
+                                <tr>
+                                    <td colspan="5" class="text-end"><strong>Total:</strong></td>
+                                    <td class="text-end"><strong>₵{{ summary.total_amount|floatformat:2|intcomma }}</strong></td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <!-- Info Footer -->
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle"></i>
+                        Showing {{ transactions|length }} transactions.
+                        {% if summary.draft_count > 0 %}
+                            <strong>{{ summary.draft_count }}</strong> draft transaction(s) pending processing.
+                            <a href="{% url 'RecPayApp:process_transactions' entity.slug %}" class="alert-link">Process them now</a>.
+                        {% endif %}
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

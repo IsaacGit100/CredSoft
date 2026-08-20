@@ -1,0 +1,285 @@
+<!-- templates/members/member_view.html -->
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Member Details - {{ member.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-circle me-2"></i>
+                    Member Details: {{ member.full_name }}
+                </h4>
+                <div>
+                    <span class="badge bg-light text-dark">ID: {{ member.id }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Action Buttons -->
+            <div class="mb-3">
+                <a href="{% url 'MembersApp:member_edit' entity.slug member.id %}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'MembersApp:member_pdf' entity.slug member.id %}" class="btn btn-danger" target="_blank">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+                <a href="{% url 'MembersApp:member_excel' entity.slug member.id %}" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i> Excel
+                </a>
+                <a href="{% url 'MembersApp:member_list_manage' entity.slug %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+            
+            <div class="row">
+                <!-- Personal Information -->
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Personal Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th style="width: 40%;">Full Name:</th>
+                                    <td>{{ member.full_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Title:</th>
+                                    <td>{{ member.title|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>First Name:</th>
+                                    <td>{{ member.first_name|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Last Name:</th>
+                                    <td>{{ member.last_name|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Other Names:</th>
+                                    <td>{{ member.other_names|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Date of Birth:</th>
+                                    <td>{{ member.date_of_birth|date:"d/m/Y"|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Age:</th>
+                                    <td>{{ age|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Gender:</th>
+                                    <td>{{ member.gender|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Marital Status:</th>
+                                    <td>{{ member.marital_status|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Church Member:</th>
+                                    <td>{{ member.church_member|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Profession:</th>
+                                    <td>{{ member.profession|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        <span class="badge {% if member.mem_status == 'Active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {{ member.mem_status|default:"-" }}
+                                        </span>
+                                    </td>
+                                 </tr>
+                                 <tr>
+                                    <th>Loan Status:</th>
+                                    <td>
+                                        <span class="badge {% if member.loan_status == 'Has Loan' %}bg-warning{% else %}bg-info{% endif %}">
+                                            {{ member.loan_status|default:"-" }}
+                                        </span>
+                                    </td>
+                                 </tr>
+                                 <tr>
+                                    <th>Role:</th>
+                                    <td>{{ member.role|default:"-" }}</td>
+                                 </tr>
+                             </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Contact Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                 <tr>
+                                    <th style="width: 40%;">Phone 1:</th>
+                                    <td>{{ member.telephone1|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Phone 2:</th>
+                                    <td>{{ member.telephone2|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Email:</th>
+                                    <td>{{ member.email_address|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Residential Address:</th>
+                                    <td>{{ member.residential_address|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Postal Address:</th>
+                                    <td>{{ member.postal_address|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>City:</th>
+                                    <td>{{ member.city|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Near Landmark:</th>
+                                    <td>{{ member.near_landmark|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>Street Name:</th>
+                                    <td>{{ member.street_name|default:"-" }}</td>
+                                 </tr>
+                                 <tr>
+                                    <th>GPS Address:</th>
+                                    <td>{{ member.gps|default:"-" }}</td>
+                                 </tr>
+                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Next of Kin Information -->
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Next of Kin Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- NOK 1 -->
+                        {% if member.nok_name1 %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <strong>NOK 1 ({{ member.nok_percent1|default:"0" }}%)</strong>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Name:</strong> {{ member.nok_name1 }}</p>
+                                    <p><strong>Relation:</strong> {{ member.nok_relation1|default:"-" }}</p>
+                                    <p><strong>Phone:</strong> {{ member.nok_telephone1|default:"-" }}</p>
+                                    <p><strong>Email:</strong> {{ member.nok_email1|default:"-" }}</p>
+                                    <p><strong>Address:</strong> {{ member.nok_address1|default:"-" }}</p>
+                                    <p><strong>GPS:</strong> {{ member.nok_gps1|default:"-" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- NOK 2 -->
+                        {% if member.nok_name2 %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <strong>NOK 2 ({{ member.nok_percent2|default:"0" }}%)</strong>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Name:</strong> {{ member.nok_name2 }}</p>
+                                    <p><strong>Relation:</strong> {{ member.nok_relation2|default:"-" }}</p>
+                                    <p><strong>Phone:</strong> {{ member.nok_telephone2|default:"-" }}</p>
+                                    <p><strong>Email:</strong> {{ member.nok_email2|default:"-" }}</p>
+                                    <p><strong>Address:</strong> {{ member.nok_address2|default:"-" }}</p>
+                                    <p><strong>GPS:</strong> {{ member.nok_gps2|default:"-" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- NOK 3 -->
+                        {% if member.nok_name3 %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <strong>NOK 3 ({{ member.nok_percent3|default:"0" }}%)</strong>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Name:</strong> {{ member.nok_name3 }}</p>
+                                    <p><strong>Relation:</strong> {{ member.nok_relation3|default:"-" }}</p>
+                                    <p><strong>Phone:</strong> {{ member.nok_telephone3|default:"-" }}</p>
+                                    <p><strong>Email:</strong> {{ member.nok_email3|default:"-" }}</p>
+                                    <p><strong>Address:</strong> {{ member.nok_address3|default:"-" }}</p>
+                                    <p><strong>GPS:</strong> {{ member.nok_gps3|default:"-" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if not member.nok_name1 and not member.nok_name2 and not member.nok_name3 %}
+                        <div class="col-12">
+                            <p class="text-muted text-center">No Next of Kin information available.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Financial Summary -->
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Financial Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <h3>₵{{ member.tot_deposits|floatformat:2|intcomma }}</h3>
+                            <p class="text-muted">Total Deposits</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h3>₵{{ member.tot_shares|floatformat:2|intcomma }}</h3>
+                            <p class="text-muted">Total Shares</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h3>₵{{ member.tot_loans|floatformat:2|intcomma }}</h3>
+                            <p class="text-muted">Total Loans</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h3>₵{{ member.tot_guaranteed|floatformat:2|intcomma }}</h3>
+                            <p class="text-muted">Guaranteed FOR Member</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Enrollment Information -->
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Enrollment Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Date Enrolled:</strong> {{ member.date_enrolled|date:"d/m/Y"|default:"-" }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Created At:</strong> {{ member.created_at|date:"d/m/Y H:i"|default:"-" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

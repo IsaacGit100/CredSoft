@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>🏛️ Select Entity</h1>
+    <p>You have access to multiple entities. Please select one:</p>
+    <div class="list-group">
+        {% for entity in entities %}
+        <a href="{% url 'entity_dashboard' entity.slug %}" class="list-group-item list-group-item-action">
+            {{ entity.name }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

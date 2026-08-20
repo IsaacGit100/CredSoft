@@ -1,0 +1,57 @@
+<!-- templates/registration/login.html -->
+{% extends 'base.html' %}
+
+{% block title %}Login | Credit Union System{% endblock %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 80px auto;">
+    <div class="card">
+        <div class="card-header bg-primary text-white text-center">
+            <h4 class="mb-0">
+                <i class="fas fa-hand-holding-usd me-2"></i>Credit Union System
+            </h4>
+            <p class="mb-0 mt-2 small">Please login to continue</p>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" placeholder="Enter username" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </button>
+                    <button type="button" class="btn-secondary" style="flex: 1; background: #6c757d; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer;" onclick="exitApplication()">
+                        <i class="fas fa-times me-2"></i>Exit
+                    </button>
+                </div>
+            </form>
+            
+            <div class="text-center mt-3">
+                <a href="{% url 'core:password_reset' %}" class="text-muted small">Forgot Password?</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function exitApplication() {
+        if (confirm('Are you sure you want to exit?')) {
+            window.close();
+            // If window.close doesn't work, show message
+            setTimeout(function() {
+                alert('Please close this browser tab manually.');
+            }, 100);
+        }
+    }
+</script>
+{% endblock %}

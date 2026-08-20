@@ -1,0 +1,339 @@
+<!-- RecPayApp/templates/RecPayApp/trans_edit.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Edit Transaction - {{ transaction.trans_no }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-edit me-2"></i>Edit Transaction
+                        </h4>
+                        <div>
+                            <a href="{% url 'RecPayApp:trans_view' entity.slug transaction.id %}" class="btn btn-light btn-sm">
+                                <i class="fas fa-eye me-1"></i> View
+                            </a>
+                            <a href="{% url 'RecPayApp:trans_list' entity.slug %}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i> Back
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    
+                    <form method="post" id="editForm">
+                        {% csrf_token %}
+                        
+                        <!-- Transaction Header Info (Read-only) -->
+                        <div class="alert alert-info mb-3">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Transaction Number:</strong> {{ transaction.trans_no }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Receipt/Voucher No:</strong> {{ transaction.rec_vou_no }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Created:</strong> {{ transaction.created_at|date:"d/m/Y H:i:s" }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Basic Information -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Basic Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Date *</label>
+                                        <input type="text" name="date" id="date" class="form-control" 
+                                               value="{{ transaction.date|date:'d/m/Y' }}" 
+                                               placeholder="dd/mm/yyyy" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Amount (₵) *</label>
+                                        <input type="number" name="amount" id="amount" class="form-control" 
+                                               value="{{ transaction.amount }}" step="0.01" min="0.01" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Payment Mode</label>
+                                        <select name="pay_mode" id="pay_mode" class="form-select">
+                                            <option value="Cash" {% if transaction.pay_mode == 'Cash' %}selected{% endif %}>Cash</option>
+                                            <option value="Cheque" {% if transaction.pay_mode == 'Cheque' %}selected{% endif %}>Cheque</option>
+                                            <option value="Transfer" {% if transaction.pay_mode == 'Transfer' %}selected{% endif %}>Transfer</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Transaction Type</label>
+                                        <select name="trans_type" id="trans_type" class="form-select">
+                                            <option value="Receipts" {% if transaction.trans_type == 'Receipts' %}selected{% endif %}>Receipts (Money In)</option>
+                                            <option value="Payments" {% if transaction.trans_type == 'Payments' %}selected{% endif %}>Payments (Money Out)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label">Description / Details</label>
+                                        <textarea name="details" class="form-control" rows="2">{{ transaction.details|default:"" }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Party Information -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Party Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Name Type</label>
+                                        <select name="name_type" id="name_type" class="form-select">
+                                            <option value="Member" {% if transaction.member %}selected{% endif %}>Member</option>
+                                            <option value="Non Member" {% if not transaction.member %}selected{% endif %}>Non Member</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-9 mb-3" id="member_section">
+                                        <label class="form-label">Member</label>
+                                        <select name="member_id" class="form-select">
+                                            <option value="">-- Select Member --</option>
+                                            {% for member in members %}
+                                            <option value="{{ member.id }}" {% if transaction.member and transaction.member.id == member.id %}selected{% endif %}>
+                                                {{ member.id }} - {{ member.full_name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3" id="non_member_name_section" style="display: none;">
+                                        <label class="form-label">Non-Member Name</label>
+                                        <input type="text" name="non_member_name" class="form-control" 
+                                               value="{{ transaction.non_member_name|default:'' }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3" id="non_member_contact_section" style="display: none;">
+                                        <label class="form-label">Contact</label>
+                                        <input type="text" name="non_member_contact" class="form-control" 
+                                               value="{{ transaction.non_member_contact|default:'' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Accounting Information -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-book me-2"></i>Accounting Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label">General Ledger Account *</label>
+                                        <select name="chart_account" id="chart_account" class="form-select" required>
+                                            <option value="">-- Select Ledger Account --</option>
+                                            {% for account in accounts %}
+                                            <option value="{{ account.id }},{{ account.accountno }},{{ account.name }}" 
+                                                    {% if transaction.ledger_id|stringformat:"s" == account.id|stringformat:"s" %}selected{% endif %}>
+                                                {{ account.accountno }} - {{ account.name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="ledger_id" id="ledger_id" value="{{ transaction.ledger_id }}">
+                                <input type="hidden" name="ledger_code" id="ledger_code" value="{{ transaction.ledger_code }}">
+                                <input type="hidden" name="ledger_name" id="ledger_name" value="{{ transaction.ledger_name }}">
+                            </div>
+                        </div>
+
+                        <!-- Cheque Details -->
+                        <div id="cheque_section" class="card mb-3" {% if transaction.pay_mode != 'Cheque' %}style="display: none;"{% endif %}>
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-money-check me-2"></i>Cheque Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Cheque Date</label>
+                                        <input type="text" name="cheque_date" class="form-control" 
+                                               value="{{ transaction.cheque_date|date:'d/m/Y'|default:'' }}" placeholder="dd/mm/yyyy">
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Cheque No</label>
+                                        <input type="text" name="cheque_no" class="form-control" value="{{ transaction.cheque_no|default:'' }}">
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Bank Name</label>
+                                        <input type="text" name="bank" class="form-control" value="{{ transaction.bank|default:'' }}">
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Branch Name</label>
+                                        <input type="text" name="bank_branch" class="form-control" value="{{ transaction.bank_branch|default:'' }}">
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Account No</label>
+                                        <input type="text" name="bank_no" class="form-control" value="{{ transaction.bank_no|default:'' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transfer Details -->
+                        <div id="transfer_section" class="card mb-3" {% if transaction.pay_mode != 'Transfer' %}style="display: none;"{% endif %}>
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-mobile-alt me-2"></i>Transfer Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Mobile Money No</label>
+                                        <input type="text" name="momo_no" class="form-control" value="{{ transaction.momo_no|default:'' }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Account Name</label>
+                                        <input type="text" name="momo_name" class="form-control" value="{{ transaction.momo_name|default:'' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loan Information (if applicable) -->
+                        {% if transaction.loan %}
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-hand-holding-usd me-2"></i>Loan Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <strong>Loan ID:</strong> {{ transaction.loan.id }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Principal:</strong> ₵{{ transaction.loan.principal|floatformat:2 }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Balance:</strong> ₵{{ transaction.loan.loan_balance|floatformat:2 }}
+                                    </div>
+                                </div>
+                                <input type="hidden" name="loan_id" value="{{ transaction.loan.id }}">
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'RecPayApp:trans_view' entity.slug transaction.id %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" name="save" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle sections based on payment mode
+document.getElementById('pay_mode').addEventListener('change', function() {
+    const chequeSection = document.getElementById('cheque_section');
+    const transferSection = document.getElementById('transfer_section');
+    
+    if (this.value === 'Cheque') {
+        chequeSection.style.display = 'block';
+        transferSection.style.display = 'none';
+    } else if (this.value === 'Transfer') {
+        chequeSection.style.display = 'none';
+        transferSection.style.display = 'block';
+    } else {
+        chequeSection.style.display = 'none';
+        transferSection.style.display = 'none';
+    }
+});
+
+// Toggle member/non-member sections
+document.getElementById('name_type').addEventListener('change', function() {
+    const memberSection = document.getElementById('member_section');
+    const nonMemberName = document.getElementById('non_member_name_section');
+    const nonMemberContact = document.getElementById('non_member_contact_section');
+    
+    if (this.value === 'Member') {
+        memberSection.style.display = 'block';
+        nonMemberName.style.display = 'none';
+        nonMemberContact.style.display = 'none';
+    } else {
+        memberSection.style.display = 'none';
+        nonMemberName.style.display = 'block';
+        nonMemberContact.style.display = 'block';
+    }
+});
+
+// Update ledger fields when chart_account changes
+document.getElementById('chart_account').addEventListener('change', function() {
+    const value = this.value;
+    if (value) {
+        const parts = value.split(',');
+        if (parts.length === 3) {
+            document.getElementById('ledger_id').value = parts[0];
+            document.getElementById('ledger_code').value = parts[1];
+            document.getElementById('ledger_name').value = parts[2];
+        }
+    }
+});
+
+// Date formatting
+function formatDateInput(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length >= 2) value = value.slice(0,2) + '/' + value.slice(2);
+    if (value.length >= 5) value = value.slice(0,5) + '/' + value.slice(5,9);
+    input.value = value;
+}
+
+document.getElementById('date').addEventListener('input', function() {
+    formatDateInput(this);
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Trigger change events to set initial state
+    document.getElementById('pay_mode').dispatchEvent(new Event('change'));
+    document.getElementById('name_type').dispatchEvent(new Event('change'));
+    
+    // Set initial ledger fields
+    const chartAccount = document.getElementById('chart_account');
+    if (chartAccount.value) {
+        const parts = chartAccount.value.split(',');
+        if (parts.length === 3) {
+            document.getElementById('ledger_id').value = parts[0];
+            document.getElementById('ledger_code').value = parts[1];
+            document.getElementById('ledger_name').value = parts[2];
+        }
+    }
+});
+</script>
+
+<style>
+    .form-label {
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+    .form-control, .form-select {
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #007BFF;
+        box-shadow: 0 0 3px rgba(0,123,255,0.3);
+    }
+</style>
+{% endblock %}

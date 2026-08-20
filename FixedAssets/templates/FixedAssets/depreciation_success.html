@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg border-success">
+        <div class="card-header bg-success text-white">
+            <h3 class="mb-0"><i class="fas fa-check-circle"></i> Depreciation Posted Successfully</h3>
+        </div>
+        <div class="card-body">
+            <p class="lead">
+                Depreciation has been posted for <strong>{{ posted_count }}</strong> asset(s).
+            </p>
+            {% if posted_count > 0 %}
+            <div class="table-responsive mt-3">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Asset</th>
+                            <th>Depreciation Amount</th>
+                            <th>Journal Entry</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in posted_assets %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ entry.asset.name }}</td>
+                            <td>{{ entry.amount|floatformat:2 }}</td>
+                            <td>
+                                <a href="{% url 'djan_led:journal_entry_detail' entity.slug entry.journal_entry.uuid %}" target="_blank">
+                                    {{ entry.journal_entry.uuid|truncatechars:8 }}
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert alert-info">
+                <strong>Total Depreciation Posted:</strong> {{ total_amount|floatformat:2 }}
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                No depreciation was posted. No assets were eligible.
+            </div>
+            {% endif %}
+            <div class="mt-4">
+                <a href="{% url 'FixedAssets:asset_dashboard' entity.slug %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <a href="{% url 'FixedAssets:post_depreciation' entity.slug %}" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i> Run Again
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

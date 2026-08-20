@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+{% load humanize %}
+<title>Custom Report Builder</title>
+<style>
+body { background-color: #E6F0FA; font-family: Arial; margin: 0; padding: 20px; }
+.container { max-width: 1400px; margin: 0 auto; }
+.header-container { text-align: center; margin-bottom: 20px; }
+.section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.section-title { background: #007BFF; color: white; padding: 10px 15px; margin: -20px -20px 20px -20px; border-radius: 10px 10px 0 0; font-size: 18px; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+.form-group select, .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+.checkbox-group { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 8px; 
+    max-height: 450px; 
+    overflow-y: auto; 
+    padding: 15px; 
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+    margin-top: 10px; 
+    background: #f9f9f9;
+}
+.checkbox-item { 
+    display: flex; 
+    align-items: center;
+    padding: 5px;
+    border-bottom: 1px solid #eee;
+}
+.checkbox-item:hover {
+    background: #e8f4f8;
+}
+.checkbox-item input { 
+    margin-right: 10px; 
+    cursor: pointer;
+}
+.checkbox-item label { 
+    font-size: 12px;
+    margin: 0;
+    cursor: pointer;
+}
+.filter-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+.buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+.btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+.btn-primary { background: #007BFF; color: white; }
+.btn-success { background: #28a745; color: white; }
+.btn-danger { background: #dc3545; color: white; }
+.btn-secondary { background: #6c757d; color: white; }
+.btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.loading { text-align: center; padding: 40px; color: #666; font-style: italic; }
+.error-message { background: #ffebee; border: 1px solid #f44336; padding: 10px; margin: 10px 0; border-radius: 5px; color: #d32f2f; }
+.field-count { font-size: 12px; color: #666; margin-left: 10px; }
+.select-buttons { margin-bottom: 10px; }
+.select-btn { background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-right: 5px; }
+.select-btn:hover { background: #5a6268; }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header-container">
+        <h3>St. Andrews Co-Operative Credit Union</h3>
+        <h3 style="color: #007BFF;">Custom Report Builder</h3>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">📊 Build Custom Report</div>
+        
+        <form method="post" id="reportForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Select Table / Data Source:</label>
+                <select name="table_name" id="tableSelect" required style="font-size: 14px; padding: 10px;">
+                    <option value="">-- Select Table --</option>
+                    {% for table in available_tables %}
+                    <option value="{{ table.value }}">{{ table.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div id="fieldsContainer" style="display: none;">
+                <div class="form-group">
+                    <label>Select Fields to Include:</label>
+                    <div class="select-buttons">
+                        <button type="button" class="select-btn" onclick="selectAll(true)">✓ Select All</button>
+                        <button type="button" class="select-btn" onclick="selectAll(false)">✗ Clear All</button>
+                        <span class="field-count" id="fieldCount">0 fields selected</span>
+                    </div>
+                    <div id="checkboxFields" class="checkbox-group">
+                        <div class="loading">⏳ Loading fields. Please wait...</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Filter Options (Optional):</label>
+                    <div class="filter-row">
+                        <div>
+                            <label>Date From:</label>
+                            <input type="date" name="date_from" id="date_from">
+                        </div>
+                        <div>
+                            <label>Date To:</label>
+                            <input type="date" name="date_to" id="date_to">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="buttons">
+                    <button type="submit" name="generate_pdf" class="btn btn-danger" onclick="return validateForm()">📄 Generate PDF</button>
+                    <button type="submit" name="generate_excel" class="btn btn-success" onclick="return validateForm()">📊 Generate Excel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Function to update field count
+function updateFieldCount() {
+    const checkboxes = document.querySelectorAll('input[name="selected_fields"]');
+    const checked = document.querySelectorAll('input[name="selected_fields"]:checked').length;
+    const total = checkboxes.length;
+    document.getElementById('fieldCount').innerHTML = `${checked} of ${total} fields selected`;
+}
+
+// Select/Deselect all fields
+function selectAll(select) {
+    const checkboxes = document.querySelectorAll('input[name="selected_fields"]');
+    checkboxes.forEach(cb => {
+        cb.checked = select;
+    });
+    updateFieldCount();
+}
+
+// Validate form before submit
+function validateForm() {
+    const checked = document.querySelectorAll('input[name="selected_fields"]:checked').length;
+    if (checked === 0) {
+        alert('Please select at least one field to generate the report.');
+        return false;
+    }
+    return true;
+}
+
+// Main function to load fields when table is selected
+document.getElementById('tableSelect').addEventListener('change', function() {
+    const tableName = this.value;
+    const fieldsContainer = document.getElementById('checkboxFields');
+    const mainContainer = document.getElementById('fieldsContainer');
+    
+    console.log("Table selected:", tableName);
+    
+    if (!tableName) {
+        mainContainer.style.display = 'none';
+        return;
+    }
+    
+    // Show the container and loading message
+    mainContainer.style.display = 'block';
+    fieldsContainer.innerHTML = '<div class="loading">⏳ Loading fields. Please wait...</div>';
+    
+    // Make the AJAX request
+    const url = '/custom-reports/get-table-columns/?table=' + encodeURIComponent(tableName);
+    console.log("Fetching from:", url);
+    
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => {
+        console.log("Response status:", response.status);
+        if (!response.ok) {
+            throw new Error('HTTP error! status: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Data received:", data);
+        console.log("Number of fields:", data.fields ? data.fields.length : 0);
+        
+        if (data.error) {
+            fieldsContainer.innerHTML = '<div class="error-message">❌ Error: ' + data.error + '</div>';
+            return;
+        }
+        
+        if (data.fields && data.fields.length > 0) {
+            // Build HTML for all fields
+            let html = '';
+            for (let i = 0; i < data.fields.length; i++) {
+                const field = data.fields[i];
+                html += `
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="selected_fields" value="${field.name}" id="chk_${field.name}" onchange="updateFieldCount()">
+                        <label for="chk_${field.name}"><strong>${field.verbose_name}</strong> <span style="color:#888; font-size:10px;">(${field.type})</span></label>
+                    </div>
+                `;
+            }
+            fieldsContainer.innerHTML = html;
+            updateFieldCount();
+            console.log("Successfully added", data.fields.length, "fields");
+        } else {
+            fieldsContainer.innerHTML = '<div class="error-message">⚠️ No fields found for this table</div>';
+        }
+    })
+    .catch(error => {
+        console.error("Error details:", error);
+        fieldsContainer.innerHTML = '<div class="error-message">❌ Error loading fields: ' + error.message + '. Please check that the server is running.</div>';
+    });
+});
+
+// Initial console log
+console.log("Custom Report Builder page loaded");
+</script>
+</body>
+</html>

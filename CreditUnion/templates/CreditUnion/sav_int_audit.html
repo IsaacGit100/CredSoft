@@ -1,0 +1,101 @@
+{% extends "base.html" %}  <!-- adjust to your base template -->
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Interest Audit – {{ entity.name }}</h4>
+        </div>
+        <div class="card-body">
+            <!-- Search Form -->
+            <form method="get" class="mb-4">
+                <div class="row">
+                    <div class="col-md-8">
+                        {{ form.search.label_tag }}
+                        {{ form.search }}
+                        {{ form.search.errors }}
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Search</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Results -->
+            {% if member %}
+                <h5>Member: {{ member.full_name }} (ID: {{ member.id }})</h5>
+                <p><strong>Current Balance:</strong> {{ member.sav_avail_bal }}</p>
+                <p><strong>Current Monthly Accrued:</strong> {{ member.tot_mnth_sav_int_accrued }}</p>
+                <hr>
+
+                <!-- Monthly Summary -->
+                {% if monthly_summary %}
+                    <h6>Monthly Summary</h6>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Total Interest</th>
+                                <th>Total Days</th>
+                                <th>Records</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for month in monthly_summary %}
+                            <tr>
+                                <td>{{ month.month|date:"M Y" }}</td>
+                                <td>{{ month.total_interest|floatformat:2 }}</td>
+                                <td>{{ month.total_days }}</td>
+                                <td>{{ month.record_count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                <!-- Daily Records -->
+                <h6>Daily Interest Records</h6>
+                {% if records %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Balance</th>
+                                    <th>Days</th>
+                                    <th>Rate (%)</th>
+                                    <th>Interest</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rec in records %}
+                                <tr>
+                                    <td>{{ rec.date }}</td>
+                                    <td>{{ rec.balance }}</td>
+                                    <td>{{ rec.no_of_days }}</td>
+                                    <td>{{ rec.sav_int_rate }}</td>
+                                    <td>{{ rec.sav_int }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5">No records for this member.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No records found.</p>
+                {% endif %}
+            {% elif form.errors %}
+                <div class="alert alert-warning">
+                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                    {% for field in form %}
+                        {% for error in field.errors %}{{ error }}{% endfor %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">Search for a member to view their interest audit.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

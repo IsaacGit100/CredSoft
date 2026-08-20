@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Financial Indicators Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4><i class="fas fa-chart-line"></i> Key Financial Indicators</h4>
+                    <div>
+                        <a href="{% url 'FinanceApp:finance_home' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>As at:</strong> {{ indicator.date|date:"d/m/Y" }}
+                        <span class="float-end"><i class="fas fa-clock"></i> Updated daily</span>
+                    </div>
+
+                    <div class="row">
+                        <!-- 1. Capital Adequacy Ratio -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">Capital Adequacy Ratio</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">{{ indicator.capital_adequacy_ratio|floatformat:2|default:"0.00" }}%</h2>
+                                    <small class="text-muted">Regulatory minimum: 10%</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Liquidity Ratio -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">Liquidity Ratio</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">{{ indicator.liquidity_ratio|floatformat:2|default:"0.00" }}%</h2>
+                                    <small class="text-muted">Target ≥ 20%</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Single Obligor Limit -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">Single Obligor Limit</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">{{ indicator.single_obligor_limit|floatformat:2|default:"0.00" }}%</h2>
+                                    <small class="text-muted">Regulatory max: 25%</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Primary Cash Reserves -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0">Primary Cash Reserves</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">{{ indicator.primary_cash_reserves|floatformat:2|default:"0.00" }}%</h2>
+                                    <small class="text-muted">Of total risk assets</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. Marketing Assets Ratio -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-dark text-white">
+                                    <h6 class="mb-0">Marketing Assets Ratio</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">{{ indicator.marketing_assets_ratio|floatformat:2|default:"0.00" }}%</h2>
+                                    <small class="text-muted">Marketing spend vs total assets</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 6. Top 5 Depositors -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">Top 5 Depositors</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">₵{{ indicator.top_5_depositors|floatformat:0|intcomma|default:"0" }}</h2>
+                                    <small class="text-muted">Total deposits of top 5 members</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 7. Top 5 Exposures -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="mb-0">Top 5 Exposures</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">₵{{ indicator.top_5_exposures|floatformat:0|intcomma|default:"0" }}</h2>
+                                    <small class="text-muted">Highest loan balances</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 8. Liquid Asset / Deposit Ratio -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">Liquid Asset / Deposit Ratio</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">{{ indicator.liquid_asset_deposit_ratio|floatformat:2|default:"0.00" }}%</h2>
+                                    <small class="text-muted">Liquidity coverage</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 9. Fixed Assets To Shareholders Funds -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0">Fixed Assets / Shareholders Funds</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">{{ indicator.fixed_assets_shareholders_ratio|floatformat:2|default:"0.00" }}%</h2>
+                                    <small class="text-muted">Capital tied in fixed assets</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 10. PAR (Portfolio at Risk) -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">PAR (Portfolio at Risk)</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">{{ indicator.par_ratio|floatformat:2|default:"0.00" }}%</h2>
+                                    <small class="text-muted">Loans overdue >30 days</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 11. Loan To Deposit Ratio -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">Loan To Deposit Ratio</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="display-4">{{ indicator.loan_to_deposit_ratio|floatformat:2|default:"0.00" }}%</h2>
+                                    <small class="text-muted">Lending activity vs deposits</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional context (raw totals) -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <strong>Summary Totals</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <strong>Total Assets:</strong> ₵{{ indicator.total_assets|floatformat:2|intcomma|default:"0" }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Total Deposits:</strong> ₵{{ indicator.total_deposits|floatformat:2|intcomma|default:"0" }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Total Loan Portfolio:</strong> ₵{{ indicator.total_loans|floatformat:2|intcomma|default:"0" }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-secondary mt-3">
+                        <i class="fas fa-chart-simple"></i> These indicators are calculated daily. <br>
+                        <small>For any regulatory queries, contact the financial controller.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

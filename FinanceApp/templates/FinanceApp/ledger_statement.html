@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}General Ledger Statement{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4>General Ledger Statement</h4>
+            <div>
+                <a href="{% url 'FinanceApp:finance_home' %}" class="btn btn-danger">Close</a>
+                <a href="{% url 'FinanceApp:ledger_statement_pdf' %}" class="btn btn-danger">PDF</a>
+                <a href="{% url 'FinanceApp:ledger_statement_excel' %}" class="btn btn-success">Excel</a>
+                <button onclick="window.print()" class="btn btn-light">Print</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label>Account Type</label>
+                    <select name="account_type" class="form-select">
+                        <option value="">All</option>
+                        <option value="ASSET">Asset</option>
+                        <option value="LIABILITY">Liability</option>
+                        <option value="EQUITY">Equity</option>
+                        <option value="INCOME">Income</option>
+                        <option value="EXPENSE">Expense</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label>Min Balance</label>
+                    <input type="number" step="0.01" name="min_balance" class="form-control" placeholder="e.g., 0">
+                </div>
+                <div class="col-md-3">
+                    <label>Max Balance</label>
+                    <input type="number" step="0.01" name="max_balance" class="form-control" placeholder="e.g., 10000">
+                </div>
+                <div class="col-md-3">
+                    <label>Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Account no. or name">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{% url 'FinanceApp:ledger_statement' %}" class="btn btn-secondary">Reset</a>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Account No</th>
+                            <th>Account Name</th>
+                            <th>Account Type</th>
+                            <th class="text-end">Current Balance (₵)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lg in ledgers %}
+                        <tr>
+                            <td>{{ lg.account.accountno }}</td>
+                            <td>{{ lg.account.name }}</td>
+                            <td>{{ lg.account.account_type }}</td>
+                            <td class="text-end">{{ lg.current_balance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4">No accounts found.{% endfor %}
+                    </tbody>
+                    <tfoot class="table-secondary">
+                        <tr>
+                            <th colspan="3" class="text-end">Total Debit Balances (Asset):</th>
+                            <th class="text-end">{{ total_debit_balance|floatformat:2|intcomma }}</th>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-end">Total Credit Balances (Liability+Equity):</th>
+                            <th class="text-end">{{ total_credit_balance|floatformat:2|intcomma }}</th>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-end">Net Balance (Assets - Liabilities):</th>
+                            <th class="text-end">{{ net_balance|floatformat:2|intcomma }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

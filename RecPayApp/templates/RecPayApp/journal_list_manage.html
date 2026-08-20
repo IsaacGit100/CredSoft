@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+{% load humanize %}
+<title>Add Statement</title>
+<style>
+body { 
+    background-color: #E6F0FA; 
+    font-family: Arial; 
+    margin: 0;
+    padding: 20px;
+    font-size: 14px; /* Reduced base font size */
+}
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 20px; 
+    font-size: 12px; /* Reduced table font size */
+}
+td, th { 
+    padding: 6px; /* Reduced padding */
+    border: 1px solid #ccc; 
+    text-align: left; 
+    font-size: 12px; /* Ensure consistent font size */
+}
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+button { 
+    background-color: #007BFF; 
+    color: white; 
+    border: none; 
+    padding: 6px 10px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-size: 12px; /* Reduced button font size */
+}
+.edit-btn { 
+    background-color: #28a745; 
+    color: white; 
+    text-decoration: none; 
+    padding: 4px 8px; 
+    border-radius: 3px; 
+    font-size: 11px; /* Reduced edit button font */
+    margin-right: 5px;
+}
+.view-btn { 
+    background-color: #007BFF; 
+    color: white; 
+    text-decoration: none; 
+    padding: 4px 8px; 
+    border-radius: 3px; 
+    font-size: 11px; /* Reduced view button font */
+    margin-right: 5px;
+}
+.button-container {
+    display: flex;
+    gap: 5px;
+    flex-wrap: nowrap;
+}
+.edit-btn:hover { background-color: #218838; }
+.view-btn:hover { background-color: #0056b3; }
+.error-message { 
+    background-color: #ffebee; 
+    border: 1px solid #f44336; 
+    padding: 10px; 
+    margin: 10px 0; 
+    border-radius: 8px; 
+    color: #d32f2f; 
+    font-weight: bold;
+    display: inline-block;
+}
+.success-message { 
+    background-color: #e8f5e8; 
+    border: 1px solid #4caf50; 
+    padding: 10px; 
+    margin: 10px 0; 
+    border-radius: 8px; 
+    color: #2e7d32; 
+    font-weight: bold;
+    display: inline-block;
+}
+.hidden { display: none; }
+.section { background-color: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #dee2e6; }
+.tab-button { padding: 8px 16px; margin: 5px; border: 1px solid #007BFF; background: white; color: #007BFF; cursor: pointer; border-radius: 4px; }
+.tab-button.active { background: #007BFF; color: white; }
+.dynamic-section { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+.header-container { text-align: center; margin-bottom: 20px; }
+.stats-container { 
+    background-color: #cce5ff; 
+    border: 1px solid #99ccff; 
+    padding: 10px; 
+    margin-bottom: 15px; 
+    border-radius: 8px; 
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    font-size: 13px; /* Reduced stats font size */
+}
+.stat-item {
+    padding: 0 10px;
+    border-right: 1px solid #99ccff;
+}
+.stat-item:last-child {
+    border-right: none;
+}
+.top-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.amount-zero {
+    color: #999;
+    font-style: italic;
+}
+/* NEW: Red color for zero difference */
+.zero-difference {
+    color: #ff0000 !important;
+    font-weight: bold;
+}
+/* Ensure all numeric cells align right */
+.numeric-cell {
+    text-align: right !important;
+    white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<!-- 🟩 HEADINGS - CENTERED -->
+<div class="header-container">
+    <h3 style="margin: 5px 0; font-size: 16px;">St. Andrews Co-Operative Credit Union</h3>
+    <h3 style="margin: 5px 0; color: #007BFF; font-size: 16px;">Journal Manage/View Report</h3>
+</div>
+
+<!-- 🟩 MESSAGES ON SAME LINE AS TOP MENU -->
+<div class="top-buttons">
+    <div style="flex-grow: 1; display: flex; align-items: center; gap: 10px;">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}error-message{% else %}success-message{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    
+    <div style="display: flex; gap: 10px;">
+        <a href="{% url 'trans_home' %}">
+            <button type="button">Close</button>
+        </a>
+    </div>
+</div>
+
+<!-- 🟩 STATISTICS - WITH SPACES FOR 0.00 VALUES -->
+<div class="stats-container">
+    <div class="stat-item">
+        <strong>Total Records:</strong> {{ total_count }}
+    </div>
+    <div class="stat-item">
+        <strong>Debit Count:</strong> {{ count_debit }}
+    </div>
+    <div class="stat-item">
+        <strong>Debit Total:</strong> 
+        {% if total_debit == 0.00 %}
+            <span class="amount-zero">-</span>
+        {% else %}
+            {{ total_debit|intcomma:2 }}
+        {% endif %}
+    </div>
+    <div class="stat-item">
+        <strong>Credit Count:</strong> {{ count_credit }}
+    </div>
+    <div class="stat-item">
+        <strong>Credit Total:</strong> 
+        {% if total_credit == 0.00 %}
+            <span class="amount-zero">-</span>
+        {% else %}
+            {{ total_credit|intcomma:2 }}
+        {% endif %}
+    </div>
+    <div class="stat-item">
+        <strong>Balance:</strong> 
+        {% if balance == 0.00 %}
+            <span class="zero-difference">0.00</span> <!-- Changed to red color -->
+        {% else %}
+            {{ balance|intcomma:2 }}
+        {% endif %}
+    </div>
+</div>
+
+<!-- 🟩 EXISTING TRANSACTIONS TABLE -->
+<h4 style="text-align: center; margin-top: 30px; font-size: 14px;">To Perform Any Modification (Addition, Modification, Deletion) Identify the Transaction ID, Go Back to Receipts/Payment, do modification and Update)</h4>
+<table>
+  <tr>
+    <th>Trans Date</th>
+    <th>TransID</th>
+    <th>Rec/Vou No</th>
+    <th>Mem ID</th>
+    <th>Mem Name</th>
+    <th>Non Mem Name</th>
+    <th>Non Mem Contacts</th>
+    <th>Ledger Code</th>
+    <th>Ledger Name</th>
+    <th>Details</th>
+    <th>Purpose</th>
+    <th>Debit</th>
+    <th>Credit</th>
+    <th>Actions</th>
+  </tr>
+  {% for j in journals %}
+    <tr>
+      <td>{{ j.trans_date|date:"d/m/Y" }}</td>
+      <td>{{ j.trans_id}}</td>
+      <td>{{ j.rec_vou_no }}</td>
+      <td>{{ j.member_no|default:" " }}</td>
+      <td>{{ j.member_name|default:" " }}</td>
+      <td>{{ j.non_member_name|default:" " }}</td>
+      <td>{{ j.non_member_contact|default:" " }}</td>
+      <td>{{ j.ledger_code|default:" " }}</td>
+      <td>{{ j.ledger_name|default:" " }}</td>
+      <td>{{ j.purpose }}</td>
+      <td>{{ j.details|default:" " }}</td>
+
+      <td class="numeric-cell">
+        {% if j.debit == 0.00 %}
+            <span class="amount-zero"> </span>
+        {% else %}
+            {{ j.debit|intcomma:2 }}
+        {% endif %}
+      </td>
+      <td class="numeric-cell">
+        {% if j.credit == 0.00 %}
+            <span class="amount-zero"> </span>
+        {% else %}
+            {{ j.credit|intcomma:2 }}
+        {% endif %}
+      </td>
+      <td>
+        <div class="button-container">
+          <a href="{% url 'journal_view' j.trans_id %}" class="view-btn">View</a>
+          <a href="{#}" class="edit-btn">PDF</a>
+        </div>
+      </td>
+    </tr>
+  {% empty %}
+    <tr>
+      <td colspan="14" style="text-align: center; padding: 20px; color: #666;">
+        No transactions found. Create your first transaction above.
+      </td>
+    </tr>
+  {% endfor %}
+</table>
+
+</body>
+</html>

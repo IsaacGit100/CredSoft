@@ -1,0 +1,88 @@
+<!-- RecPayApp/templates/RecPayApp/batch_post_select.html -->
+{% extends "base.html" %}
+
+{% block title %}Batch Post Transactions{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Batch Post Transactions to Journal & Ledger</h4>
+        </div>
+        <div class="card-body">
+            
+            <form method="post" action="{% url 'RecPayApp:batch_post_transactions' %}">
+                {% csrf_token %}
+                
+                <div class="alert alert-info">
+                    <strong>{{ total_count }}</strong> draft transaction(s) pending | 
+                    Total Amount: <strong>₵{{ total_amount|floatformat:2 }}</strong>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th width="5%">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th>Transaction No</th>
+                                <th>Date</th>
+                                <th>Member</th>
+                                <th>Type</th>
+                                <th class="text-end">Amount</th>
+                                <th>Description</th>
+                            </thead>
+                            <tbody>
+                                {% for trans in transactions %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="selected_ids[]" value="{{ trans.id }}" class="trans-checkbox">
+                                    </td>
+                                    <td>{{ trans.trans_no }}</td>
+                                    <td>{{ trans.date }}</td>
+                                    <td>{{ trans.member_name|default:"-" }}</td>
+                                    <td>{{ trans.trans_type }}</td>
+                                    <td class="text-end">₵{{ trans.amount|floatformat:2 }}</td>
+                                    <td>{{ trans.details|truncatechars:30 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">
+                                        No draft transactions found.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if transactions %}
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check-circle"></i> Post Selected Transactions
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="deselectBtn">
+                            Deselect All
+                        </button>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('selectAll')?.addEventListener('change', function() {
+        document.querySelectorAll('.trans-checkbox').forEach(cb => cb.checked = this.checked);
+    });
+    
+    document.getElementById('deselectBtn')?.addEventListener('click', function() {
+        document.querySelectorAll('.trans-checkbox').forEach(cb => cb.checked = false);
+        if(document.getElementById('selectAll')) {
+            document.getElementById('selectAll').checked = false;
+        }
+    });
+</script>
+{% endblock %}

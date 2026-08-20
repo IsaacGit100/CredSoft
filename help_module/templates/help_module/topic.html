@@ -1,0 +1,156 @@
+<!-- help_module/templates/help_module/topic.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ topic.title }} - Help Center{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'help_module:dashboard' %}">Help Center</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'help_module:category' topic.category.slug %}">{{ topic.category.name }}</a></li>
+            <li class="breadcrumb-item active">{{ topic.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="badge bg-primary">{{ topic.get_help_type_display }}</span>
+                            <span class="badge bg-secondary ms-2">{{ topic.module_display }}</span>
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-eye"></i> {{ topic.views_count }} views
+                        </small>
+                    </div>
+                    
+                    <h1 class="card-title">{{ topic.title }}</h1>
+                    
+                    <div class="mt-4">
+                        {{ topic.content|linebreaks }}
+                    </div>
+
+                    {% if articles %}
+                    <div class="mt-5">
+                        <h5>Related Articles</h5>
+                        <div class="list-group mt-3">
+                            {% for article in articles %}
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <i class="fas fa-file-alt me-2 text-primary"></i>
+                                {{ article.title }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if related_topics %}
+                    <div class="mt-5">
+                        <h5>You might also like</h5>
+                        <div class="row mt-3">
+                            {% for related in related_topics %}
+                            <div class="col-md-6 mb-2">
+                                <a href="{% url 'help_module:topic' related.slug %}" class="text-decoration-none">
+                                    <i class="fas fa-arrow-right me-1 text-primary"></i>
+                                    {{ related.title }}
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Was this helpful?</h5>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-success me-2" onclick="markHelpful({{ topic.id }})">
+                        <i class="fas fa-thumbs-up"></i> Yes ({{ topic.helpful_count }})
+                    </button>
+                    <button class="btn btn-danger" onclick="markNotHelpful({{ topic.id }})">
+                        <i class="fas fa-thumbs-down"></i> No ({{ topic.not_helpful_count }})
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Need More Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p>Still have questions? Our support team is ready to help.</p>
+                    <a href="/contact/" class="btn btn-primary w-100">
+                        <i class="fas fa-envelope"></i> Contact Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function markHelpful(topicId) {
+    fetch(`/help/feedback/${topicId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ was_helpful: true })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Thank you for your feedback!');
+            location.reload();
+        }
+    });
+}
+
+function markNotHelpful(topicId) {
+    const comment = prompt('What could be improved? (Optional)');
+    fetch(`/help/feedback/${topicId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ 
+            was_helpful: false,
+            comment: comment 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Thank you for helping us improve!');
+            location.reload();
+        }
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

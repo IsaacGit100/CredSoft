@@ -1,0 +1,52 @@
+<div class="list-group">
+    <a href="{% url 'djan_led:entity_dashboard' entity.slug %}" class="list-group-item list-group-item-action active">
+        <i class="fas fa-home"></i> Dashboard
+    </a>
+   
+    <a href="{% url 'djan_led:account_visibility' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-eye"></i> Account Visibility
+    </a>
+    <a href="{% url 'RecPayApp:finance_trans_create' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-plus-circle"></i>Receipts And Payments
+    </a>
+
+    <a href="{% url 'FixedAssets:fixed_assets_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-boxes"></i> Fixed Assets Menu
+    </a>
+    <a href="{% url 'djan_led:supervisor_trans_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-plus-circle"></i> New Transaction
+    </a>
+
+     <a href="{% url 'FinanceApp:finance_reports_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-boxes"></i> Finance Reports Menu
+    </a>
+
+
+    <a href="{% url 'djan_led:journal_entries' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-list"></i> Journal Entries
+    </a>
+    <a href="{% url 'djan_led:trial_balance' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-balance-scale"></i> Trial Balance
+    </a>
+    <a href="{% url 'djan_led:income_statement' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-chart-line"></i> Income Statement
+    </a>
+    <a href="{% url 'djan_led:balance_sheet' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-file-alt"></i> Balance Sheet
+    </a>
+    <a href="{% url 'djan_led:cash_flow' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-money-bill-wave"></i> Cash Flow
+    </a>
+    <a href="{% url 'djan_led:opening_balance_form' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-coins"></i> Opening Balance
+    </a>
+    <a href="{% url 'djan_led:coa_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Chart of Accounts
+    </a>
+    <a href="{#}" class="list-group-item list-group-item-action">
+        <i class="fas fa-chart-pie"></i> Budget
+    </a>
+    <a href="{#}" class="list-group-item list-group-item-action">
+        <i class="fas fa-file-pdf"></i> Reports
+    </a>
+</div>

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>📄 Journal Entry Detail</h1>
+    <p><strong>Entity:</strong> {{ entity.name }}</p>
+    <hr>
+    <p><strong>UUID:</strong> {{ entry.uuid }}</p>
+    <p><strong>Date:</strong> {{ entry.timestamp|date:"Y-m-d" }}</p>
+    <p><strong>Description:</strong> {{ entry.description }}</p>
+    <p><strong>Status:</strong> {% if entry.posted %}✅ Posted{% else %}📝 Draft{% endif %}</p>
+
+    <h3>Transactions</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Account</th>
+                <th>Amount</th>
+                <th>Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in transactions %}
+            <tr>
+                <td>{{ tx.account.code }} - {{ tx.account.name }}</td>
+                <td>{{ tx.amount|floatformat:2 }}</td>
+                <td>{{ tx.tx_type|capfirst }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3">No transactions found.</td></tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>Total Debits</th>
+                <td>{{ total_debits|floatformat:2 }}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Total Credits</th>
+                <td>{{ total_credits|floatformat:2 }}</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <a href="{% url 'djan_led:journal_entries' entity.slug %}" class="btn btn-secondary">Back to Journal Entries</a>
+</div>
+{% endblock %}

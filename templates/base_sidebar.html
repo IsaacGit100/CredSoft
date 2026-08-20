@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Credit Union System{% endblock %}</title>
+    <!-- Bootstrap 5 + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Sidebar styles */
+        .sidebar {
+            background-color: #1e2a3a;
+            min-height: 100vh;
+            width: 280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: all 0.3s;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar .nav-link {
+            color: #e2e8f0;
+            padding: 10px 20px;
+            transition: all 0.2s;
+            border-radius: 8px;
+            margin: 2px 8px;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #2d3748;
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            background-color: #2c5282;
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 28px;
+            margin-right: 10px;
+        }
+        /* Submenu styles */
+        .sidebar .submenu-note {
+            color: #a0aec0;
+            font-size: 0.90rem;
+            padding-left: 48px;
+            margin: 4px 0 8px 0;
+            font-style: italic;
+        }
+
+        .sidebar .submenu {
+            list-style: none;
+            padding-left: 48px;
+            margin-bottom: 5px;
+        }
+        .sidebar .submenu .nav-link {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        .sidebar .collapse-icon {
+            float: right;
+            transition: transform 0.2s;
+        }
+        .sidebar .nav-link[aria-expanded="true"] .collapse-icon {
+            transform: rotate(180deg);
+        }
+        .sidebar .brand {
+            padding: 20px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            border-bottom: 1px solid #2d3748;
+            margin-bottom: 16px;
+        }
+        .sidebar .brand small {
+            font-size: 0.8rem;
+            display: block;
+            color: #a0aec0;
+        }
+        .sidebar-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.75rem;
+            color: #a0aec0;
+        }
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            background-color: #f8fafc;
+            min-height: 100vh;
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                z-index: 1100;
+                background: #1e2a3a;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 12px;
+            }
+        }
+        @media (min-width: 769px) {
+            .menu-toggle {
+                display: none;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Mobile menu toggle -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+<!--        <div class="brand">
+            Credit Union<br><small>Management System</small>
+        </div> -->
+        <nav class="nav flex-column">
+            
+            <!-- ========= MEMBER MANAGEMENT ========= -->
+            <a href="#membersSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" class="nav-link">
+                <i class="fas fa-users"></i> Member Management
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </a>
+            <div class="collapse" id="membersSubmenu">
+                <div class="submenu">
+                    <a href="{% url 'MembersApp:member_create' %}" class="nav-link">➕ Add New Member</a>
+                    <a href="{% url 'MembersApp:member_list_manage' %}" class="nav-link">📋 Member List Manage</a>
+                        <p class="submenu-note">(Add, Edit, View, Settings)</p>
+                    <a href="{#}" class="nav-link">⚙️ Members Reports</a>
+                        <p class="submenu-note">(Reports relating to members, Excel, PDFs)</p>
+                    <a href="{% url 'MembersApp:min_sav_process' %}" class="nav-link">⚙️ Daily Processing</a>
+                    <a href="{% url 'MembersApp:sav_int_process_list' %}" class="nav-link">⚙️ Savings Interest List</a>
+                   
+                </div>
+            </div>
+
+            <!-- ========= RECEIPTS & PAYMENTS ========= -->
+            <a href="#transSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" class="nav-link">
+                <i class="fas fa-receipt"></i> Receipts & Payments
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </a>
+            <div class="collapse" id="transSubmenu">
+                <div class="submenu">
+                    <a href="{% url 'RecPayApp:trans_home' %}" class="nav-link">💰 New Transaction</a>
+                    <a href="{% url 'RecPayApp:trans_list' %}" class="nav-link">📄 Transaction List</a>
+                    <a href="{% url 'RecPayApp:batch_posting_dashboard' %}" class="nav-link">🔒 Batch Posting</a>
+                </div>
+            </div>
+
+            <!-- ========= LOAN PROCESSING ========= -->
+            <a href="#loanSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> Loan Processing
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </a>
+            <div class="collapse" id="loanSubmenu">
+                <div class="submenu">
+                    <a href="{% url 'LoanApp:search_master' %}">📝 Loan Applications</a></li>
+                    <a href="{% url 'LoanApp:loan_list' %}">📊 Manage Loan Records</a></li>
+                    <a href="{% url 'LoanApp:loan_list_financials' %}">💸 Loan List Financials</a></li>
+                    <a href="{% url 'LoanApp:loan_list_other' %}">Loan List Other</a></li>
+                    <a href="{% url 'LoanApp:gua_list' %}">Guarantor List </a></li>
+               
+                    <a href="{% url 'LoanApp:loan_update' %}">Daily Loan Update</a></li>
+                    <a href="{% url 'LoanApp:loan_update_list' %}">Loan Update List</a></li>
+
+                    <a href="{#}">Export to Excel</a></li>
+                    <a href="{#}">Generate PDF List</a></li>
+                    <a href="{% url 'LoanApp:back_to_home' %}">Exit</a><li>
+                </div>
+            </div>
+
+            <!-- ========= FINANCE & REPORTS ========= -->
+            <a href="#financeSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" class="nav-link">
+                <i class="fas fa-chart-line"></i> Finance & Reports
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </a>
+            <div class="collapse" id="financeSubmenu">
+                <div class="submenu">
+                     <a href="{% url 'djan_led:djan_led_home' %}" class="nav-link">📈 Entity General Ledger Home</a>
+                    <a href="{% url 'Supervisor:super_finance_home' %}" class="nav-link">📈 Super Finance Home</a>
+                    <a href="{% url 'OpenBals:opening_balance_home' %}" class="nav-link">📈 Opening Balance Home</a>
+                    <a href="{% url 'FixedAssets:fixed_assets_home' %}" class="nav-link">📈 Fixed Assets Menu</a>
+                    <a href="{% url 'FinanceApp:journal_home' %}" class="nav-link">📈 Journal Menu</a>
+                    <a href="{% url 'FinanceApp:finance_home' %}" class="nav-link">📈 Dashboard</a>
+                    <a href="{% url 'FinanceApp:trial_balance' %}" class="nav-link">⚖️ Trial Balance</a>
+                    <a href="{% url 'FinanceApp:balance_sheet' %}" class="nav-link">📄 Balance Sheet</a>
+                    <a href="{#}" class="nav-link">💰 Profit & Loss</a>
+                    <a href="{#}" class="nav-link">📒 General Ledger</a> 
+                </div>
+            </div>
+
+            <!-- ========= INVESTMENT MANAGEMENT ========= -->
+            <a href="#investSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" class="nav-link">
+                <i class="fas fa-chart-pie"></i> Investment Management
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </a>
+            <div class="collapse" id="investSubmenu">
+                <div class="submenu">
+                    <a href="{% url 'InvestApp:invest_home' %}" class="nav-link">🏦 Portfolio</a>
+                    <a href="{% url 'InvestApp:investment_list' %}" class="nav-link">📋 All Investments</a>
+                    <a href="{% url 'InvestApp:bank_list' %}" class="nav-link">🏧 Banks</a>
+                </div>
+            </div>
+
+            <!-- ========= SYSTEM SETUP ========= -->
+            <a href="#setupSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" class="nav-link">
+                <i class="fas fa-cogs"></i> System Setup
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </a>
+            <div class="collapse" id="setupSubmenu">
+                <div class="submenu">
+                    <a href="{% url 'SysSetup:company_setup' %}" class="nav-link">🏢 Company Settings</a>
+                    <a href="{#}" class="nav-link">⚙️ Preferences</a>
+                </div>
+            </div>
+
+            <!-- ========= USER MANAGEMENT ========= -->
+            <a href="#userSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" class="nav-link">
+                <i class="fas fa-user-cog"></i> User Management
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </a>
+            <div class="collapse" id="userSubmenu">
+                <div class="submenu">
+                    <a href="{% url 'userauth:user_list' %}" class="nav-link">👥 User List</a>
+                    <a href="{% url 'userauth:user_create' %}" class="nav-link">➕ Add User</a>
+                    <a href="{% url 'userauth:user_profile' %}" class="nav-link">👤 My Profile</a>
+                </div>
+            </div>
+
+            <!-- ========= SUPERVISOR MENU ========= -->
+            <a href="#supervisorSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" class="nav-link">
+                <i class="fas fa-tasks"></i> Supervisor
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </a>
+            <div class="collapse" id="supervisorSubmenu">
+                <div class="submenu">
+                    <a href="{% url 'Supervisor:super_home' %}" class="nav-link">📆 Supervisor Dashboard</a>
+                    <a href="{% url 'Supervisor:member_list_delete' %}" class="nav-link">🗑️ Delete Member</a>
+                    <a href="{% url 'Supervisor:member_list_restore' %}" class="nav-link">🔄 Restore Member</a>
+                    <a href="{% url 'Supervisor:delete_history_list' %}" class="nav-link">📜 Delete History</a>
+                    <a href="{% url 'Supervisor:batch_process' %}" class="nav-link">📦 Batch Processing</a>
+                    <a href="{% url 'BackupRestore:backup_panel' %}" class="nav-link">💾 Backup & Restore</a>
+                    <a href="{% url 'reset:confirm' %}" class="nav-link">🔧 Factory Reset</a>
+                </div>
+            </div>
+
+            <!-- ========= CHART OF ACCOUNTS ========= -->
+            <a href="#coaSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" class="nav-link">
+                <i class="fas fa-chart-simple"></i> Chart of Accounts
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </a>
+            <div class="collapse" id="coaSubmenu">
+                <div class="submenu">
+                    <a href="{% url 'coa:coa_home' %}" class="nav-link">📊 Account List</a>
+                    <a href="{% url 'coa:coa_create' %}" class="nav-link">➕ New Account</a>
+                    <a href="{#}" class="nav-link">🏷️ Account Types</a>
+                </div>
+            </div>
+
+            <!-- ========= OTHER MODULES ========= -->
+            <a href="#otherSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" class="nav-link">
+                <i class="fas fa-ellipsis-h"></i> Other
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </a>
+            <div class="collapse" id="otherSubmenu">
+                <div class="submenu">
+                    <a href="{% url 'userauth:change_password' %}" class="nav-link">🔑 Change Password</a>
+                    <a href="{% url 'CustomReports:custom_report_builder' %}" class="nav-link">📊 Custom Reports</a>
+                    <a href="{% url 'help_module:dashboard' %}" class="nav-link">❓ Online Help</a>
+                </div>
+            </div>
+
+        </nav>
+
+        <div class="sidebar-footer">
+            <form action="{% url 'core:logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-light w-75">🚪 Logout</button>
+            </form>
+            <p class="mt-2">&copy; { % now "Y" %} St. Andrews CU<br>Powered by Hi-Waves</p>
+        </div> 
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content" id="mainContent">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+        }
+        // Close sidebar on link click (mobile)
+        const navLinks = document.querySelectorAll('.sidebar .nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) sidebar.classList.remove('open');
+            });
+        });
+        // Preserve active state (optional)
+        const currentPath = window.location.pathname;
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) link.classList.add('active');
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

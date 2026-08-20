@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Tracking System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #e6f7ff; /* Light blue background */
+            color: #0000ff; /* Blue text */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 120, 255, 0.3);
+        }
+        h1, h2 {
+            color: #0000ff;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+        .card {
+            border: 2px solid #0000ff;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background-color: #f0f8ff;
+        }
+        .card-header {
+            background-color: #0000ff;
+            color: white;
+            font-weight: bold;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #0000ff;
+        }
+        .btn-primary {
+            background-color: #0000ff;
+            border-color: #0000ff;
+        }
+        .btn-primary:hover {
+            background-color: #0000cc;
+            border-color: #0000cc;
+        }
+        .toggle-section {
+            display: none;
+        }
+        .summary-box {
+            background-color: #0000ff;
+            color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .investment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .investment-table th {
+            background-color: #0000ff;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        .investment-table td {
+            padding: 10px;
+            border-bottom: 1px solid #0000ff;
+        }
+        .investment-table tr:hover {
+            background-color: #e6f7ff;
+        }
+        .totals-row {
+            font-weight: bold;
+            background-color: #cce5ff;
+        }
+        .filter-section {
+            background-color: #e6f7ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #0000ff;
+        }
+        .positive-interest {
+            color: #006400;
+            font-weight: bold;
+        }
+        .nav-tabs .nav-link {
+            color: #0000ff;
+        }
+        .nav-tabs .nav-link.active {
+            color: #0000ff;
+            font-weight: bold;
+            background-color: #e6f7ff;
+            border-bottom: 3px solid #0000ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-chart-line me-2"></i>Investment Tracking System</h1>
+        
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#investments">Investments</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#banks">Banks</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Investments Tab -->
+            <div class="tab-pane fade show active" id="investments">
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Interest Earned:</label>
+                            <select class="form-select" id="interestFilter">
+                                <option value="all">All Investments</option>
+                                <option value="positive">Interest Earned > 0</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Search:</label>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Search investments...">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Date Range:</label>
+                            <input type="text" class="form-control" placeholder="dd/mm/yyyy - dd/mm/yyyy">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investment Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-plus-circle me-2"></i>Add New Investment
+                    </div>
+                    <div class="card-body">
+                        <form id="investmentForm">
+                            <input type="hidden" id="investmentId" value="">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Certificate No</label>
+                                    <input type="text" class="form-control" id="certificateNo" placeholder="Enter certificate number" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="investmentDate" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Investment Amount</label>
+                                    <input type="number" step="0.01" class="form-control" id="investmentAmount" placeholder="Enter amount" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Account No</label>
+                                    <input type="text" class="form-control" id="accountNo" placeholder="Enter account number" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Bank/Company</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="bankToggle" id="bankToggle" checked>
+                                        <label class="form-check-label" for="bankToggle">Select Bank</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="bankToggle" id="otherCompanyToggle">
+                                        <label class="form-check-label" for="otherCompanyToggle">Other Company</label>
+                                    </div>
+                                    
+                                    <select class="form-select mt-2" id="bankSelect">
+                                        <option value="" selected>Select a bank</option>
+                                        <!-- Options will be populated from database -->
+                                    </select>
+                                    
+                                    <div class="toggle-section" id="otherCompanySection">
+                                        <input type="text" class="form-control mt-2" id="otherCompany" placeholder="Enter company name">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Bank Branch</label>
+                                    <input type="text" class="form-control" id="bankBranch" placeholder="Enter branch name">
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Term (days)</label>
+                                            <input type="number" class="form-control" id="termDays" placeholder="Enter term">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Maturity Date</label>
+                                            <input type="date" class="form-control" id="maturityDate">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Investment Type</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="investTypeToggle" id="investTypeToggle" checked>
+                                        <label class="form-check-label" for="investTypeToggle">Select Type</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="investTypeToggle" id="otherInvestTypeToggle">
+                                        <label class="form-check-label" for="otherInvestTypeToggle">Other Type</label>
+                                    </div>
+                                    
+                                    <select class="form-select mt-2" id="investTypeSelect">
+                                        <option value="" selected>Select investment type</option>
+                                        <option>Fixed Deposit</option>
+                                        <option>T-Bill</option>
+                                        <option>Call Deposit</option>
+                                        <option>Bonds</option>
+                                        <option>Savings</option>
+                                        <option>Sweep Calls</option>
+                                    </select>
+                                    
+                                    <div class="toggle-section" id="otherInvestTypeSection">
+                                        <input type="text" class="form-control mt-2" id="otherInvestType" placeholder="Enter investment type">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Rate per Annum (%)</label>
+                                    <input type="number" step="0.01" class="form-control" id="rate" placeholder="Enter rate" required>
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Rollover</label>
+                                            <select class="form-select" id="rollover">
+                                                <option value="Yes">Yes</option>
+                                                <option value="No" selected>No</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Processed Date</label>
+                                            <input type="date" class="form-control" id="processedDate">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Investment Period</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="investPeriodToggle" id="investPeriodToggle" checked>
+                                        <label class="form-check-label" for="investPeriodToggle">Select Period</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="investPeriodToggle" id="otherInvestPeriodToggle">
+                                        <label class="form-check-label" for="otherInvestPeriodToggle">Other Period</label>
+                                    </div>
+                                    
+                                    <select class="form-select mt-2" id="investPeriodSelect">
+                                        <option value="" selected>Select period</option>
+                                        <option>30 day</option>
+                                        <option>91 day</option>
+                                        <option>180 day</option>
+                                        <option>1 year</option>
+                                        <option>2 year</option>
+                                        <option>3 year</option>
+                                        <option>4 year</option>
+                                        <option>5 year</option>
+                                    </select>
+                                    
+                                    <div class="toggle-section" id="otherInvestPeriodSection">
+                                        <input type="text" class="form-control mt-2" id="otherInvestPeriod" placeholder="Enter investment period">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Interest Expected</label>
+                                    <input type="text" class="form-control" id="interestExpected" placeholder="Calculated automatically" readonly>
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Interest Earned</label>
+                                            <input type="number" step="0.01" class="form-control" id="interestEarned" placeholder="Enter interest earned" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save Investment</button>
+                                <button type="button" id="cancelEdit" class="btn btn-secondary mt-2" style="display:none;"><i class="fas fa-times me-2"></i>Cancel Edit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Investments List -->
+                <h2><i class="fas fa-list me-2"></i>Investment Portfolio</h2>
+                
+                <table class="investment-table" id="investmentTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Cert No</th>
+                            <th>Bank/Company</th>
+                            <th>Branch</th>
+                            <th>Investment Amount</th>
+                            <th>Rate (%)</th>
+                            <th>Period</th>
+                            <th>Interest Expected</th>
+                            <th>Interest Earned</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="investmentTableBody">
+                        <!-- Data will be populated from database -->
+                    </tbody>
+                </table>
+
+                <!-- Summary Section -->
+                <div class="summary-box" id="summaryBox">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4><i class="fas fa-chart-pie me-2"></i>Portfolio Summary</h4>
+                            <p>Total Investments: <strong id="totalInvestments">0</strong></p>
+                            <p>Active Investments: <strong id="activeInvestments">0</strong></p>
+                            <p>Matured Investments: <strong id="maturedInvestments">0</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h4><i class="fas fa-coins me-2"></i>Financial Summary</h4>
+                            <p>Total Invested: <strong id="totalInvested">$0.00</strong></p>
+                            <p>Total Interest Expected: <strong id="totalInterestExpected">$0.00</strong></p>
+                            <p>Total Interest Earned: <strong id="totalInterestEarned">$0.00</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banks Tab -->
+            <div class="tab-pane fade" id="banks">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-university me-2"></i>Bank Management
+                    </div>
+                    <div class="card-body">
+                        <form id="bankForm">
+                            <input type="hidden" id="bankId" value="">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Bank Name</label>
+                                    <input type="text" class="form-control" id="bankName" placeholder="Enter bank name" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Bank Branch</label>
+                                    <input type="text" class="form-control" id="bankBranchName" placeholder="Enter branch name" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Sort Code</label>
+                                    <input type="text" class="form-control" id="sortCode" placeholder="Enter sort code">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">BIC Code</label>
+                                    <input type="text" class="form-control" id="bicCode" placeholder="Enter BIC code">
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">Add Bank</button>
+                                    <button type="button" id="cancelBankEdit" class="btn btn-secondary" style="display:none;">Cancel Edit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <h2><i class="fas fa-list me-2"></i>Bank List</h2>
+                
+                <table class="investment-table" id="bankTable">
+                    <thead>
+                        <tr>
+                            <th>Bank Name</th>
+                            <th>Branch</th>
+                            <th>Sort Code</th>
+                            <th>BIC Code</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bankTableBody">
+                        <!-- Data will be populated from database -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Database simulation using localStorage
+        const DB_KEYS = {
+            INVESTMENTS: 'investment_tracker_investments',
+            BANKS: 'investment_tracker_banks'
+        };
+
+        // Initialize databases if they don't exist
+        function initDatabase() {
+            if (!localStorage.getItem(DB_KEYS.INVESTMENTS)) {
+                localStorage.setItem(DB_KEYS.INVESTMENTS, JSON.stringify([]));
+            }
+            
+            if (!localStorage.getItem(DB_KEYS.BANKS)) {
+                // Add some sample banks
+                const sampleBanks = [
+                    { id: generateId(), name: 'ABC Bank', branch: 'Main Street', sortCode: '12-34-56', bicCode: 'ABCDGB2L' },
+                    { id: generateId(), name: 'XYZ Financial', branch: 'West End', sortCode: '98-76-54', bicCode: 'XYZGGB2L' },
+                    { id: generateId(), name: 'Global Investors', branch: 'Downtown', sortCode: '55-66-77', bicCode: 'GLBLGB2L' }
+                ];
+                localStorage.setItem(DB_KEYS.BANKS, JSON.stringify(sampleBanks));
+            }
+        }
+
+        // Generate a unique ID
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // Get all investments
+        function getInvestments() {
+            return JSON.parse(localStorage.getItem(DB_KEYS.INVESTMENTS) || '[]');
+        }
+
+        // Save an investment
+        function saveInvestment(investment) {
+            const investments = getInvestments();
+            
+            if (investment.id) {
+                // Update existing investment
+                const index = investments.findIndex(i => i.id === investment.id);
+                if (index !== -1) {
+                    investments[index] = investment;
+                }
+            } else {
+                // Add new investment
+                investment.id = generateId();
+                investments.push(investment);
+            }
+            
+            localStorage.setItem(DB_KEYS.INVESTMENTS, JSON.stringify(investments));
+            return investment;
+        }
+
+        // Delete an investment
+        function deleteInvestment(id) {
+            const investments = getInvestments();
+            const filtered = investments.filter(i => i.id !== id);
+            localStorage.setItem(DB_KEYS.INVESTMENTS, JSON.stringify(filtered));
+        }
+
+        // Get all banks
+        function getBanks() {
+            return JSON.parse(localStorage.getItem(DB_KEYS.BANKS) || '[]');
+        }
+
+        // Save a bank
+        function saveBank(bank) {
+            const banks = getBanks();
+            
+            if (bank.id) {
+                // Update existing bank
+                const index = banks.findIndex(b => b.id === bank.id);
+                if (index !== -1) {
+                    banks[index] = bank;
+                }
+            } else {
+                // Add new bank
+                bank.id = generateId();
+                banks.push(bank);
+            }
+            
+            localStorage.setItem(DB_KEYS.BANKS, JSON.stringify(banks));
+            return bank;
+        }
+
+        // Delete a bank
+        function deleteBank(id) {
+            const banks = getBanks();
+            const filtered = banks.filter(b => b.id !== id);
+            localStorage.setItem(DB_KEYS.BANKS, JSON.stringify(filtered));
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            }).format(amount);
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-GB');
+        }
+
+        // Calculate interest expected
+        function calculateInterestExpected(amount, rate, termDays) {
+            if (!amount || !rate || !termDays) return 0;
+            return (parseFloat(amount) * parseFloat(rate) * parseInt(termDays)) / (100 * 365);
+        }
+
+        // Populate investments table
+        function populateInvestmentsTable() {
+            const investments = getInvestments();
+            const tableBody = document.getElementById('investmentTableBody');
+            tableBody.innerHTML = '';
+            
+            let totalAmount = 0;
+            let totalInterestExpected = 0;
+            let totalInterestEarned = 0;
+            
+            investments.forEach(investment => {
+                const row = document.createElement('tr');
+                
+                // Format the values
+                const amount = parseFloat(investment.amount) || 0;
+                const interestExpected = parseFloat(investment.interestExpected) || 0;
+                const interestEarned = parseFloat(investment.interestEarned) || 0;
+                
+                // Add to totals
+                totalAmount += amount;
+                totalInterestExpected += interestExpected;
+                totalInterestEarned += interestEarned;
+                
+                row.innerHTML = `
+                    <td>${formatDate(investment.date)}</td>
+                    <td>${investment.certificateNo}</td>
+                    <td>${investment.bankCompany}</td>
+                    <td>${investment.branch}</td>
+                    <td>${formatCurrency(amount)}</td>
+                    <td>${investment.rate}</td>
+                    <td>${investment.period}</td>
+                    <td>${formatCurrency(interestExpected)}</td>
+                    <td class="${interestEarned > 0 ? 'positive-interest' : ''}">${formatCurrency(interestEarned)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary edit-investment" data-id="${investment.id}"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger delete-investment" data-id="${investment.id}"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Add totals row
+            const totalsRow = document.createElement('tr');
+            totalsRow.className = 'totals-row';
+            totalsRow.innerHTML = `
+                <td colspan="4">TOTAL</td>
+                <td>${formatCurrency(totalAmount)}</td>
+                <td></td>
+                <td></td>
+                <td>${formatCurrency(totalInterestExpected)}</td>
+                <td class="${totalInterestEarned > 0 ? 'positive-interest' : ''}">${formatCurrency(totalInterestEarned)}</td>
+                <td></td>
+            `;
+            tableBody.appendChild(totalsRow);
+            
+            // Update summary
+            document.getElementById('totalInvestments').textContent = investments.length;
+            document.getElementById('activeInvestments').textContent = investments.filter(i => parseFloat(i.interestEarned) === 0).length;
+            document.getElementById('maturedInvestments').textContent = investments.filter(i => parseFloat(i.interestEarned) > 0).length;
+            document.getElementById('totalInvested').textContent = formatCurrency(totalAmount);
+            document.getElementById('totalInterestExpected').textContent = formatCurrency(totalInterestExpected);
+            document.getElementById('totalInterestEarned').textContent = formatCurrency(totalInterestEarned);
+        }
+
+        // Populate banks table
+        function populateBanksTable() {
+            const banks = getBanks();
+            const tableBody = document.getElementById('bankTableBody');
+            tableBody.innerHTML = '';
+            
+            banks.forEach(bank => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${bank.name}</td>
+                    <td>${bank.branch}</td>
+                    <td>${bank.sortCode}</td>
+                    <td>${bank.bicCode}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary edit-bank" data-id="${bank.id}"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger delete-bank" data-id="${bank.id}"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Populate bank dropdown in investment form
+            const bankSelect = document.getElementById('bankSelect');
+            bankSelect.innerHTML = '<option value="" selected>Select a bank</option>';
+            
+            banks.forEach(bank => {
+                const option = document.createElement('option');
+                option.value = bank.name;
+                option.textContent = bank.name;
+                bankSelect.appendChild(option);
+            });
+        }
+
+        // Fill investment form for editing
+        function fillInvestmentForm(investment) {
+            document.getElementById('investmentId').value = investment.id;
+            document.getElementById('certificateNo').value = investment.certificateNo || '';
+            document.getElementById('investmentDate').value = investment.date || '';
+            document.getElementById('investmentAmount').value = investment.amount || '';
+            document.getElementById('accountNo').value = investment.accountNo || '';
+            document.getElementById('bankBranch').value = investment.branch || '';
+            document.getElementById('termDays').value = investment.termDays || '';
+            document.getElementById('maturityDate').value = investment.maturityDate || '';
+            document.getElementById('rate').value = investment.rate || '';
+            document.getElementById('rollover').value = investment.rollover || 'No';
+            document.getElementById('processedDate').value = investment.processedDate || '';
+            document.getElementById('interestEarned').value = investment.interestEarned || '0';
+            
+            // Set bank/company
+            const isBank = getBanks().some(bank => bank.name === investment.bankCompany);
+            if (isBank) {
+                document.getElementById('bankToggle').checked = true;
+                document.getElementById('bankSelect').value = investment.bankCompany || '';
+                document.getElementById('otherCompanySection').style.display = 'none';
+                document.getElementById('bankSelect').style.display = 'block';
+            } else {
+                document.getElementById('otherCompanyToggle').checked = true;
+                document.getElementById('otherCompany').value = investment.bankCompany || '';
+                document.getElementById('otherCompanySection').style.display = 'block';
+                document.getElementById('bankSelect').style.display = 'none';
+            }
+            
+            // Set investment type
+            const standardTypes = ['Fixed Deposit', 'T-Bill', 'Call Deposit', 'Bonds', 'Savings', 'Sweep Calls'];
+            const isStandardType = standardTypes.includes(investment.type);
+            if (isStandardType) {
+                document.getElementById('investTypeToggle').checked = true;
+                document.getElementById('investTypeSelect').value = investment.type || '';
+                document.getElementById('otherInvestTypeSection').style.display = 'none';
+                document.getElementById('investTypeSelect').style.display = 'block';
+            } else {
+                document.getElementById('otherInvestTypeToggle').checked = true;
+                document.getElementById('otherInvestType').value = investment.type || '';
+                document.getElementById('otherInvestTypeSection').style.display = 'block';
+                document.getElementById('investTypeSelect').style.display = 'none';
+            }
+            
+            // Set investment period
+            const standardPeriods = ['30 day', '91 day', '180 day', '1 year', '2 year', '3 year', '4 year', '5 year'];
+            const isStandardPeriod = standardPeriods.includes(investment.period);
+            if (isStandardPeriod) {
+                document.getElementById('investPeriodToggle').checked = true;
+                document.getElementById('investPeriodSelect').value = investment.period || '';
+                document.getElementById('otherInvestPeriodSection').style.display = 'none';
+                document.getElementById('investPeriodSelect').style.display = 'block';
+            } else {
+                document.getElementById('otherInvestPeriodToggle').checked = true;
+                document.getElementById('otherInvestPeriod').value = investment.period || '';
+                document.getElementById('otherInvestPeriodSection').style.display = 'block';
+                document.getElementById('investPeriodSelect').style.display = 'none';
+            }
+            
+            // Calculate and set interest expected
+            const interestExpected = calculateInterestExpected(
+                investment.amount, 
+                investment.rate, 
+                investment.termDays
+            );
+            document.getElementById('interestExpected').value = formatCurrency(interestExpected);
+            
+            // Show cancel button
+            document.getElementById('cancelEdit').style.display = 'block';
+        }
+
+        // Fill bank form for editing
+        function fillBankForm(bank) {
+            document.getElementById('bankId').value = bank.id;
+            document.getElementById('bankName').value = bank.name || '';
+            document.getElementById('bankBranchName').value = bank.branch || '';
+            document.getElementById('sortCode').value = bank.sortCode || '';
+            document.getElementById('bicCode').value = bank.bicCode || '';
+            
+            // Show cancel button
+            document.getElementById('cancelBankEdit').style.display = 'block';
+        }
+
+        // Clear investment form
+        function clearInvestmentForm() {
+            document.getElementById('investmentForm').reset();
+            document.getElementById('investmentId').value = '';
+            document.getElementById('bankToggle').checked = true;
+            document.getElementById('bankSelect').style.display = 'block';
+            document.getElementById('otherCompanySection').style.display = 'none';
+            document.getElementById('investTypeToggle').checked = true;
+            document.getElementById('investTypeSelect').style.display = 'block';
+            document.getElementById('otherInvestTypeSection').style.display = 'none';
+            document.getElementById('investPeriodToggle').checked = true;
+            document.getElementById('investPeriodSelect').style.display = 'block';
+            document.getElementById('otherInvestPeriodSection').style.display = 'none';
+            document.getElementById('cancelEdit').style.display = 'none';
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('investmentDate').value = today;
+        }
+
+        // Clear bank form
+        function clearBankForm() {
+            document.getElementById('bankForm').reset();
+            document.getElementById('bankId').value = '';
+            document.getElementById('cancelBankEdit').style.display = 'none';
+        }
+
+        // Initialize the page
+        window.onload = function() {
+            // Initialize database
+            initDatabase();
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('investmentDate').value = today;
+            
+            // Populate tables
+            populateInvestmentsTable();
+            populateBanksTable();
+            
+            // Toggle functionality
+            document.getElementById('otherCompanyToggle').addEventListener('change', function() {
+                if(this.checked) {
+                    document.getElementById('bankSelect').style.display = 'none';
+                    document.getElementById('otherCompanySection').style.display = 'block';
+                }
+            });
+
+            document.getElementById('bankToggle').addEventListener('change', function() {
+                if(this.checked) {
+                    document.getElementById('bankSelect').style.display = 'block';
+                    document.getElementById('otherCompanySection').style.display = 'none';
+                }
+            });
+
+            document.getElementById('otherInvestTypeToggle').addEventListener('change', function() {
+                if(this.checked) {
+                    document.getElementById('investTypeSelect').style.display = 'none';
+                    document.getElementById('otherInvestTypeSection').style.display = 'block';
+                }
+            });
+
+            document.getElementById('investTypeToggle').addEventListener('change', function() {
+                if(this.checked) {
+                    document.getElementById('investTypeSelect').style.display = 'block';
+                    document.getElementById('otherInvestTypeSection').style.display = 'none';
+                }
+            });
+
+            document.getElementById('otherInvestPeriodToggle').addEventListener('change', function() {
+                if(this.checked) {
+                    document.getElementById('investPeriodSelect').style.display = 'none';
+                    document.getElementById('otherInvestPeriodSection').style.display = 'block';
+                }
+            });
+
+            document.getElementById('investPeriodToggle').addEventListener('change', function() {
+                if(this.checked) {
+                    document.getElementById('investPeriodSelect').style.display = 'block';
+                    document.getElementById('otherInvestPeriodSection').style.display = 'none';
+                }
+            });
+
+            // Calculate interest expected when amount, rate or term changes
+            document.getElementById('investmentAmount').addEventListener('input', calculateAndDisplayInterest);
+            document.getElementById('rate').addEventListener('input', calculateAndDisplayInterest);
+            document.getElementById('termDays').addEventListener('input', calculateAndDisplayInterest);
+            
+            function calculateAndDisplayInterest() {
+                const amount = parseFloat(document.getElementById('investmentAmount').value) || 0;
+                const rate = parseFloat(document.getElementById('rate').value) || 0;
+                const termDays = parseInt(document.getElementById('termDays').value) || 0;
+                
+                const interestExpected = calculateInterestExpected(amount, rate, termDays);
+                document.getElementById('interestExpected').value = formatCurrency(interestExpected);
+            }
+
+            // Filter functionality
+            document.getElementById('interestFilter').addEventListener('change', function() {
+                // This would filter the table in a real implementation
+                populateInvestmentsTable();
+            });
+
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', function() {
+                // This would filter the table based on search input in a real implementation
+                populateInvestmentsTable();
+            });
+
+            // Investment form submission
+            document.getElementById('investmentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form values
+                const id = document.getElementById('investmentId').value;
+                const certificateNo = document.getElementById('certificateNo').value;
+                const date = document.getElementById('investmentDate').value;
+                const amount = document.getElementById('investmentAmount').value;
+                const accountNo = document.getElementById('accountNo').value;
+                
+                // Get bank/company
+                let bankCompany;
+                if (document.getElementById('bankToggle').checked) {
+                    bankCompany = document.getElementById('bankSelect').value;
+                } else {
+                    bankCompany = document.getElementById('otherCompany').value;
+                }
+                
+                const branch = document.getElementById('bankBranch').value;
+                const termDays = document.getElementById('termDays').value;
+                const maturityDate = document.getElementById('maturityDate').value;
+                
+                // Get investment type
+                let type;
+                if (document.getElementById('investTypeToggle').checked) {
+                    type = document.getElementById('investTypeSelect').value;
+                } else {
+                    type = document.getElementById('otherInvestType').value;
+                }
+                
+                const rate = document.getElementById('rate').value;
+                const rollover = document.getElementById('rollover').value;
+                const processedDate = document.getElementById('processedDate').value;
+                
+                // Get investment period
+                let period;
+                if (document.getElementById('investPeriodToggle').checked) {
+                    period = document.getElementById('investPeriodSelect').value;
+                } else {
+                    period = document.getElementById('otherInvestPeriod').value;
+                }
+                
+                const interestExpected = calculateInterestExpected(amount, rate, termDays);
+                const interestEarned = parseFloat(document.getElementById('interestEarned').value) || 0;
+                
+                // Create investment object
+                const investment = {
+                    id,
+                    certificateNo,
+                    date,
+                    amount,
+                    accountNo,
+                    bankCompany,
+                    branch,
+                    termDays,
+                    maturityDate,
+                    type,
+                    rate,
+                    rollover,
+                    processedDate,
+                    period,
+                    interestExpected,
+                    interestEarned
+                };
+                
+                // Save investment
+                saveInvestment(investment);
+                
+                // Show success message
+                alert('Investment saved successfully!');
+                
+                // Clear form and refresh table
+                clearInvestmentForm();
+                populateInvestmentsTable();
+            });
+
+            // Bank form submission
+            document.getElementById('bankForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form values
+                const id = document.getElementById('bankId').value;
+                const name = document.getElementById('bankName').value;
+                const branch = document.getElementById('bankBranchName').value;
+                const sortCode = document.getElementById('sortCode').value;
+                const bicCode = document.getElementById('bicCode').value;
+                
+                // Create bank object
+                const bank = {
+                    id,
+                    name,
+                    branch,
+                    sort

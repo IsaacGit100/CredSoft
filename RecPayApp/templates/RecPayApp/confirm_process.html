@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Confirm Process{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-warning">
+            <h3>Confirm Process Transaction</h3>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <strong>Transaction Details:</strong><br>
+                Voucher: {{ transaction.rec_vou_no }}<br>
+                Date: {{ transaction.date|date:"d/m/Y" }}<br>
+                Type: {{ transaction.trans_type }}<br>
+                Amount: ₵{{ transaction.amount|floatformat:2|intcomma }}<br>
+                Member: {{ transaction.member.full_name|default:transaction.non_member_name|default:"-" }}
+            </div>
+            
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                Are you sure you want to process this transaction?
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Yes, Process
+                    </button>
+                    <a href="{% url 'RecPayApp:transaction_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

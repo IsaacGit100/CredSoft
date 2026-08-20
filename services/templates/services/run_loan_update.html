@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Loan Daily Update{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Manual Loan Daily Update</h4>
+        </div>
+        <div class="card-body">
+            <p>This will:</p>
+            <ul>
+                <li>Accrue interest for missed payments</li>
+                <li>Update loan statuses (Completed, Expired)</li>
+                <li>Push next repayment dates</li>
+                <li>Log interest additions in audit table</li>
+            </ul>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning">Run Update Now</button>
+                <a href="{% url 'Supervisor:super_home' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+            {% if result %}
+            <hr>
+            <h5>Results</h5>
+            <p>Loans processed: {{ result.processed }}</p>
+            <p>Interest added to: {{ result.interest_added_count }}</p>
+            <p>Completed: {{ result.completed_count }}</p>
+            <p>Expired: {{ result.expired_count }}</p>
+            
+            {% if result.errors %}
+                <div class="alert alert-danger">
+                    <strong>Errors:</strong><br>
+                    {% for err in result.errors %}
+                        {{ err }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

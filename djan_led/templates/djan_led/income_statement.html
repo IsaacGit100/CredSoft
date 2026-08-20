@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>📈 Income Statement</h1>
+    <p><strong>Entity:</strong> {{ entity.name }}</p>
+    <div class="card">
+        <div class="card-body">
+            <h4>Revenue</h4>
+            <p class="lead">{{ revenue_total|floatformat:2 }}</p>
+            <hr>
+            <h4>Expenses</h4>
+            <p class="lead">{{ expense_total|floatformat:2 }}</p>
+            <hr>
+            <h4>Net Income</h4>
+            <p class="lead {% if net_income >= 0 %}text-success{% else %}text-danger{% endif %}">
+                {{ net_income|floatformat:2 }}
+            </p>
+        </div>
+    </div>
+    <a href="{% url 'djan_led:entity_dashboard' entity.slug %}" class="btn btn-secondary mt-3">Back</a>
+</div>
+{% endblock %}

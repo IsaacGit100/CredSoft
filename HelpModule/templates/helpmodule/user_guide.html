@@ -1,0 +1,56 @@
+<!-- help_module/templates/help_module/user_guide.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ guide.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'help_module:dashboard' %}">Help Center</a></li>
+            <li class="breadcrumb-item active">{{ guide.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                {% if guide.cover_image %}
+                <img src="{{ guide.cover_image.url }}" class="card-img-top" alt="{{ guide.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-danger">User Guide</span>
+                        <span class="badge bg-secondary">Version {{ guide.version }}</span>
+                    </div>
+                    
+                    <h1 class="card-title">{{ guide.title }}</h1>
+                    <p class="lead text-muted">{{ guide.description }}</p>
+                    
+                    <hr>
+                    
+                    <div class="mt-4">
+                        {{ guide.content|linebreaks }}
+                    </div>
+                    
+                    <hr class="mt-5">
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div>
+                            <small class="text-muted">
+                                Published: {{ guide.published_date|date:"F d, Y" }}
+                            </small>
+                        </div>
+                        {% if guide.pdf_file %}
+                        <a href="{{ guide.pdf_file.url }}" class="btn btn-danger" download>
+                            <i class="fas fa-download"></i> Download PDF
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

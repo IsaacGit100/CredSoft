@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Savings Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; }
+        .card { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3>Savings Interest Dashboard</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>System Settings:</strong><br>
+                    Interest Rate: {{ settings.savings_interest_rate|default:"0" }}%<br>
+                    Minimum Days Required: {{ settings.min_savings_balance_days|default:"0" }} days<br>
+                    Last Processed: {{ settings.last_savings_min_proc_date|date:"d/m/Y"|default:"Never" }}
+                </div>
+                
+                <div class="alert alert-success">
+                    <strong>Statistics:</strong><br>
+                    Total Members: {{ total_members|default:"0" }}<br>
+                    Members with Savings: {{ members_with_savings|default:"0" }}<br>
+                    Total Savings Balance: ₵{{ total_savings_balance|floatformat:2 }}<br>
+                    Total Interest Accrued: ₵{{ total_interest_accrued|floatformat:2 }}
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Process savings interest?')">
+                        Process Savings Interest
+                    </button>
+                    <a href="/" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

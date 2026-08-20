@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<html>
+{% load humanize %}
+<head>
+<title>Search Master</title>
+<style>
+body { background-color: #E6F0FA; font-family: Arial; }
+button { background-color: #007BFF; color: white; border: none; padding: 6px 10px; border-radius: 4px; }
+input { padding: 5px; margin: 5px; }
+</style>
+</head>
+<body>
+<h2>Search Master Record</h2>
+<form method="get">
+  <input type="text" name="q" placeholder="Enter Master ID or Name">
+  <button type="submit">Search</button>
+  <a href="{% url 'StateApp:state_home' %}"><button>Close</button></a>
+</form>
+
+{% if master %}
+  <div style="margin-top:20px; padding:10px; background:white; border-radius:8px;">
+    <b>{{ master.name }}</b> | {{ master.address }} | Opening Balance: {{ master.open_balance }}
+    <a href="{% url 'StateApp:add_statement' master.id %}"><button>Add Statement</button></a>
+    
+  </div>
+{% endif %}
+</body>
+</html>

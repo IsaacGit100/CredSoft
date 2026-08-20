@@ -1,0 +1,138 @@
+<!-- finance/templates/finance/balance_sheet.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Balance Sheet{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Balance Sheet</h4>
+                        <div>
+                             <a href="{% url 'FinanceApp:finance_home' %}" class="btn btn-primary">
+                                 <i class="fas fa-chart-bar"></i> Close
+                            </a> 
+                            <a href="{% url 'FinanceApp:balance_sheet' %}" class="menu-btn">Balance Sheet</a>
+                            <button onclick="window.print()" class="btn btn-light btn-sm">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                    <p class="mb-0 mt-2">As at {{ as_at_date|date:"F d, Y" }}</p>
+                </div>
+                <div class="card-body">
+                    <!-- Filter Form -->
+                    <form method="get" class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label class="form-label">As at Date</label>
+                            <input type="date" name="as_at_date" class="form-control" value="{{ as_at_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">Run Report</button>
+                        </div>
+                    </form>
+                    
+                    <div class="row">
+                        <!-- Assets Column -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">ASSETS</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        {% for item in assets_data %}
+                                        <tr>
+                                            <td>{{ item.account.accountno }} - {{ item.account.name }}</td>
+                                            <td class="text-end">₵{{ item.amount|floatformat:2 }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="2" class="text-center">No assets</td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr class="table-active">
+                                            <th>TOTAL ASSETS</th>
+                                            <th class="text-end">₵{{ total_assets|floatformat:2 }}</th>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Liabilities & Equity Column -->
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-warning">
+                                    <h5 class="mb-0">LIABILITIES</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        {% for item in liabilities_data %}
+                                        <tr>
+                                            <td>{{ item.account.accountno }} - {{ item.account.name }}</td>
+                                            <td class="text-end">₵{{ item.amount|floatformat:2 }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="2" class="text-center">No liabilities</td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr class="table-active">
+                                            <th>TOTAL LIABILITIES</th>
+                                            <th class="text-end">₵{{ total_liabilities|floatformat:2 }}</th>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">EQUITY</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        {% for item in equity_data %}
+                                        <tr>
+                                            <td>{{ item.account.accountno }} - {{ item.account.name }}</td>
+                                            <td class="text-end">₵{{ item.amount|floatformat:2 }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="2" class="text-center">No equity</td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr class="table-active">
+                                            <th>TOTAL EQUITY</th>
+                                            <th class="text-end">₵{{ total_equity|floatformat:2 }}</th>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Balance Check -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert {% if is_balanced %}alert-success{% else %}alert-danger{% endif %} text-center">
+                                <strong>
+                                    {% if is_balanced %}
+                                    ✓ BALANCE SHEET BALANCED: Assets = Liabilities + Equity
+                                    {% else %}
+                                    ✗ BALANCE SHEET OUT OF BALANCE BY ₵{{ difference|floatformat:2 }}
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

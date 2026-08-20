@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trial Balance Report</title>
+    <style>
+        /* ---------- PDF PAGE SETTINGS ---------- */
+        @page {
+            size: A4 portrait;
+            margin: 15mm 12mm;
+        }
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.2;
+            color: #1e1e1e;
+        }
+        .report-header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .report-header h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+        }
+        .report-header .sub {
+            font-size: 10pt;
+            color: #444;
+            margin-top: 2px;
+        }
+        .report-date {
+            text-align: right;
+            font-size: 9pt;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        /* ---------- TABLE (NO BORDERS) ---------- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        th, td {
+            padding: 4px 6px;
+            border: none !important;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            font-weight: 600;
+            background-color: #f2f2f2;
+            border-bottom: 1px solid #ccc;
+        }
+        .text-end {
+            text-align: right;
+        }
+        .text-center {
+            text-align: center;
+        }
+
+        /* ---------- INDENTATION & HEADINGS ---------- */
+        .heading {
+            font-weight: 700;
+            /* no indent */
+        }
+        .indent {
+            padding-left: 24px;   /* indentation for detail items */
+        }
+        /* Optional: subtle background for headings */
+        .heading-row {
+            background-color: #f9f9f9;
+        }
+
+        /* ---------- TOTALS ROW ---------- */
+        .totals-row {
+            font-weight: 600;
+            border-top: 1px solid #333;
+            padding-top: 6px;
+        }
+        .balanced {
+            color: #1e7e34;
+            font-weight: 600;
+        }
+        .unbalanced {
+            color: #b02a37;
+            font-weight: 600;
+        }
+
+        /* ---------- FOOTER ---------- */
+        .footer {
+            margin-top: 20px;
+            font-size: 8pt;
+            color: #888;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            padding-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== HEADER ===== -->
+    <div class="report-header">
+        <h1>Trial Balance</h1>
+        <div class="sub">As at {{ as_at_date|date:"d/m/Y" }}</div>
+    </div>
+
+    <!-- ===== TABLE ===== -->
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 15%;">Account Code</th>
+                <th style="width: 50%;">Account Name</th>
+                <th class="text-end" style="width: 17%;">Debit (₵)</th>
+                <th class="text-end" style="width: 17%;">Credit (₵)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in trial_balance %}
+            {% with accountno=item.account.accountno %}
+            {% if accountno|slice:"-3:" == "000" %}
+                <!-- HEADING (ends with 0000) -->
+                <tr class="heading-row">
+                    <td class="heading">{{ accountno }}</td>
+                    <td class="heading">{{ item.account.name }}</td>
+                    <td class="text-end heading">
+                        {% if item.debit > 0 %}{{ item.debit|floatformat:2 }}{% else %}-{% endif %}
+                    </td>
+                    <td class="text-end heading">
+                        {% if item.credit > 0 %}{{ item.credit|floatformat:2 }}{% else %}-{% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <!-- DATA ITEM (indented) -->
+                <tr>
+                    <td class="indent">{{ accountno }}</td>
+                    <td class="indent">{{ item.account.name }}</td>
+                    <td class="text-end indent">
+                        {% if item.debit > 0 %}{{ item.debit|floatformat:2 }}{% else %}-{% endif %}
+                    </td>
+                    <td class="text-end indent">
+                        {% if item.credit > 0 %}{{ item.credit|floatformat:2 }}{% else %}-{% endif %}
+                    </td>
+                </tr>
+            {% endif %}
+            {% endwith %}
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">No data found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="totals-row">
+                <th colspan="2" class="text-end">TOTAL</th>
+                <th class="text-end">{{ total_debit|floatformat:2 }}</th>
+                <th class="text-end">{{ total_credit|floatformat:2 }}</th>
+            </tr>
+            <tr>
+                <td colspan="4" class="text-center" style="padding-top: 10px;">
+                    {% if is_balanced %}
+                        <span class="balanced">✓ TRIAL BALANCE IS BALANCED</span>
+                    {% else %}
+                        <span class="unbalanced">✗ TRIAL BALANCE OUT OF BALANCE BY ₵{{ difference|floatformat:2 }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- ===== FOOTER ===== -->
+    <div class="footer">
+        Generated on {{ generated_date|date:"d/m/Y H:i" }} &bull; St. Andrews Credit Union
+    </div>
+</body>
+</html>

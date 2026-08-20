@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1> Entity Management</h1>
+    <p class="text-muted">Manage all entities in the system.</p>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Slug</th>
+                    <th>Admin</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entity in entities %}
+                <tr>
+                    <td>{{ entity.name }}</td>
+                    <td><code>{{ entity.slug }}</code></td>
+                    <td>{{ entity.admin.username|default:"—" }}</td>
+                    <td>{{ entity.created|date:"Y-m-d" }}</td>
+                    <td>
+                        <a href="{% url 'Tech:edit_entity' entity.slug %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a href="#" class="btn btn-sm btn-outline-info">Dashboard</a>
+                    </td>
+                    
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No entities found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Service Records</h1>
+    <form method="get" class="mb-3">
+        <input type="text" name="q" placeholder="Search by date or service name" value="{{ request.GET.q }}">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Service Name</th>
+                <th>Offertory</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for service in services %}
+            <tr>
+                <td>{{ service.date|date:"Y-m-d" }}</td>
+                <td>{{ service.name_of_service }}</td>
+                <td>{{ service.general_offertory|floatformat:2 }}</td>
+                <td>{{ service.grand_total|floatformat:2 }}</td>
+                <td>
+                    <a href="{% url 'ChurchApp:service_detail' entity.slug service.pk %}">View</a>
+                    <a href="{% url 'ChurchApp:service_edit' entity.slug service.pk %}">Edit</a>
+                    {% if not service.posted_to_ledger %}
+                    <a href="{% url 'ChurchApp:service_post_to_ledger' entity.slug service.pk %}" class="btn btn-sm btn-warning">Post to GL</a>
+                    {% else %}
+                    <span class="badge bg-success">Posted</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">No services found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

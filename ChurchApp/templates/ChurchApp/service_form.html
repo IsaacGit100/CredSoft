@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Sunday Service Activity</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <!-- Clergy (Add+) -->
+        <div class="mb-3">
+            <label>Clergy</label>
+            <div id="clergy-list">
+                <!-- Existing clergy will be loaded here -->
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="add-clergy">+ Add Clergy</button>
+        </div>
+
+        <!-- Ushers (Add+) -->
+        <div class="mb-3">
+            <label>Ushers</label>
+            <div id="usher-list"></div>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="add-usher">+ Add Usher</button>
+        </div>
+
+        <!-- Guild Offerings (Add+) -->
+        <div class="mb-3">
+            <label>Guild Offerings</label>
+            <div id="guild-offerings"></div>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="add-guild">+ Add Guild</button>
+        </div>
+
+        <!-- Other fields: DayBorn, Special, Easter, Christmas, Harvest, Other Collections -->
+        <!-- All JSON fields will be built with Add+ buttons and stored in hidden inputs -->
+
+        <button type="submit" class="btn btn-success">Save Service</button>
+    </form>
+</div>
+
+<script>
+    // JavaScript for dynamic Add+ features – will populate hidden JSON fields
+    // This is a simplified example; you can use a library or plain JS.
+</script>
+{% endblock %}

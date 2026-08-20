@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            Confirm Delete
+        </div>
+        <div class="card-body">
+            <p>Are you sure you want to delete the officiant <strong>{{ officiant.name }}</strong>?</p>
+            <p class="text-muted">This action cannot be undone.</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                <a href="{% url 'ChurchApp:officiant_list' entity.slug %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

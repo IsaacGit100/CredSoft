@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Select Tables to Restore{% endblock %}
+{% block content %}
+
+
+
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Select Tables to Copy from Backup</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Backup file:</strong> {{ filename }}</p>
+            <p>Below are all tables found in the backup. Choose which ones you want to copy to your live database.</p>
+            <form method="post" action="{% url 'BackupRestore:safe_restore_copy_start' %}" id="copyForm">
+                {% csrf_token %}
+                 <!-- Hidden fields to pass required parameters -->
+                    <input type="hidden" name="temp_db" value="{{ temp_db }}">
+                    <input type="hidden" name="job_id" value="{{ job_id }}">
+                    <input type="hidden" name="filename" value="{{ filename }}">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Copy?</th>
+                                <th>Table Name</th>
+                                <th>Status in Live DB</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for table in tables %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="selected_tables" value="{{ table.name }}"
+                                           {% if table.will_replace %}checked{% endif %}>
+                                </td>
+                                <td><code>{{ table.name }}</code></td>
+                                <td>
+                                    {% if table.exists %}
+                                        <span class="badge bg-warning">Already exists</span>
+                                    {% else %}
+                                        <span class="badge bg-success">New table</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if table.exists %}
+                                        <label>
+                                            <input type="checkbox" name="replace_table" value="{{ table.name }}">
+                                            Replace existing table (all current data will be lost)
+                                        </label>
+                                    {% else %}
+                                        <em>Will be added as new table</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3">
+                    <label>
+                        <input type="checkbox" id="selectAllTables"> Select all tables
+                    </label>
+                    &nbsp;&nbsp;
+                    <label>
+                        <input type="checkbox" id="replaceAllExisting"> Replace all existing tables (if any)
+                    </label>
+                </div>
+                <div class="mt-3">
+                    <label>
+                        <input type="checkbox" name="drop_temp_db" checked> Delete temporary database after copying (recommended)
+                    </label>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success">Copy Selected Tables to Live Database</button>
+                    <a href="{% url 'BackupRestore:backup_panel' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    // Select all tables
+    document.getElementById('selectAllTables').addEventListener('change', function(e) {
+        document.querySelectorAll('input[name="selected_tables"]').forEach(cb => cb.checked = e.target.checked);
+    });
+    // Replace all existing tables
+    document.getElementById('replaceAllExisting').addEventListener('change', function(e) {
+        document.querySelectorAll('input[name="replace_table"]').forEach(cb => cb.checked = e.target.checked);
+    });
+    // Warn before copy (tables will be overwritten)
+    document.getElementById('copyForm').addEventListener('submit', function(e) {
+        const anyReplace = document.querySelectorAll('input[name="replace_table"]:checked').length;
+        if (anyReplace > 0) {
+            if (!confirm('You are about to replace existing tables. All current data in those tables will be lost. Continue?')) {
+                e.preventDefault();
+            }
+        }
+    });
+</script>
+{% endblock %}

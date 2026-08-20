@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Transaction Audit Report{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4>Transaction Audit Report</h4>
+            <div>
+                <a href="{% url 'RecPayApp:trans_audit_report_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success">Excel</a>
+                <a href="{% url 'RecPayApp:trans_home' %} class="btn btn-success">Exit</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Filters -->
+            <form method="get" class="row g-3 mb-4">
+                <div class="col-md-2"><input type="date" name="start_date" class="form-control" placeholder="Start Date" value="{{ start_date|default:'' }}"></div>
+                <div class="col-md-2"><input type="date" name="end_date" class="form-control" placeholder="End Date" value="{{ end_date|default:'' }}"></div>
+                <div class="col-md-2"><input type="text" name="batch" class="form-control" placeholder="Batch Number" value="{{ batch|default:'' }}"></div>
+                <div class="col-md-2"><input type="text" name="voucher" class="form-control" placeholder="Voucher No" value="{{ voucher|default:'' }}"></div>
+                <div class="col-md-4"><button type="submit" class="btn btn-primary">Apply Filters</button></div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Trans ID</th><th>Voucher</th><th>Date</th><th>Type</th><th>Amount</th>
+                            <th>Ledger Code</th><th>Ledger Name</th><th>Status</th><th>Batch</th>
+                            <th>Journal No</th><th>Journal Date</th><th>Journal Desc</th>
+                            <th>Account Code</th><th>Account Name</th><th>Debit</th><th>Credit</th><th>Line Desc</th>
+                            <th>GL Opening Bal</th><th>GL Current Bal</th>
+                            <th>StateTrans Created</th><th>StateUpdate Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in audit_data %}
+                        <tr>
+                            <td>{{ d.trans_id }}</td>
+                            <td>{{ d.rec_vou_no }}</td>
+                            <td>{{ d.trans_date|date:"d/m/Y" }}</td>
+                            <td>{{ d.trans_type }}</td>
+                            <td class="text-end">{{ d.trans_amount|floatformat:2|intcomma }}</td>
+                            <td>{{ d.trans_ledger_code }}</td>
+                            <td>{{ d.trans_ledger_name }}</td>
+                            <td>{{ d.trans_status }}</td>
+                            <td>{{ d.trans_batch }}</td>
+                            <td>{{ d.journal_entry_no }}</td>
+                            <td>{{ d.journal_date|date:"d/m/Y" }}</td>
+                            <td>{{ d.journal_description }}</td>
+                            <td>{{ d.line_account_code }}</td>
+                            <td>{{ d.line_account_name }}</td>
+                            <td class="text-end">{{ d.line_debit|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ d.line_credit|floatformat:2|intcomma }}</td>
+                            <td>{{ d.line_description }}</td>
+                            <td class="text-end">{{ d.gl_opening_balance|floatformat:2|intcomma|default:"-" }}</td>
+                            <td class="text-end">{{ d.gl_current_balance|floatformat:2|intcomma|default:"-" }}</td>
+                            <td>{{ d.state_trans_created|date:"d/m/Y H:i"|default:"-" }}</td>
+                            <td>{{ d.state_update_created|date:"d/m/Y H:i"|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="21">No transactions found.{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
