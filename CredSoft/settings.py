@@ -132,7 +132,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'credsoft_db',   # <-- Same database for both
-        'USER': 'credsoft_user',
+        'USER': 'postgres',
         'PASSWORD': 'BigOne1',
         'HOST': 'localhost',
         'PORT': '5432',

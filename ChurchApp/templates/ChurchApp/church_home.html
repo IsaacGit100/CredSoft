@@ -212,6 +212,16 @@
                 </div>
             </a>
 
+             <!-- Member Settings -->
+            <a href="{% url 'ChurchApp:church_data_entry_home' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-sliders-h"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Data Entry Form</h3>
+                    <p>Data Entry Form for Clergy, Ushers, Officiants, Guilds </p>
+                </div>
+            </a>
             <!-- Member Settings -->
             <a href="{% url 'djan_led:autofill_chart_of_accounts' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">

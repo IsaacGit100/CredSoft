@@ -1,19 +1,186 @@
 {% extends "base.html" %}
-{% load crispy_forms_tags %}
 
 {% block content %}
 <div class="container">
     <div class="card">
         <div class="card-header">
-            <h3>{{ title }}</h3>
+            <h3>{{ title|default:"Add Clergy" }}</h3>
         </div>
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
-                {{ form|crispy }}
+                
+                <!-- Non-field errors (if any) -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-md-6">
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">
+                                {{ form.title.label }}
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.title.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- First Name -->
+                        <div class="mb-3">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                {{ form.first_name.label }}
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.first_name.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Other Names -->
+                        <div class="mb-3">
+                            <label for="{{ form.other_names.id_for_label }}" class="form-label">
+                                {{ form.other_names.label }}
+                            </label>
+                            {{ form.other_names }}
+                            {% if form.other_names.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.other_names.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="mb-3">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                {{ form.last_name.label }}
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.last_name.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="{{ form.email_address.id_for_label }}" class="form-label">
+                                {{ form.email_address.label }}
+                            </label>
+                            {{ form.email_address }}
+                            {% if form.email_address.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.email_address.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Telephone -->
+                        <div class="mb-3">
+                            <label for="{{ form.telephone.id_for_label }}" class="form-label">
+                                {{ form.telephone.label }}
+                            </label>
+                            {{ form.telephone }}
+                            {% if form.telephone.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.telephone.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-md-6">
+                        <!-- Postal Address -->
+                        <div class="mb-3">
+                            <label for="{{ form.postal_address.id_for_label }}" class="form-label">
+                                {{ form.postal_address.label }}
+                            </label>
+                            {{ form.postal_address }}
+                            {% if form.postal_address.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.postal_address.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Residential Address -->
+                        <div class="mb-3">
+                            <label for="{{ form.res_address.id_for_label }}" class="form-label">
+                                {{ form.res_address.label }}
+                            </label>
+                            {{ form.res_address }}
+                            {% if form.res_address.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.res_address.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Member (Linked Church Member) -->
+                        <div class="mb-3">
+                            <label for="{{ form.member.id_for_label }}" class="form-label">
+                                {{ form.member.label }}
+                            </label>
+                            {{ form.member }}
+                            {% if form.member.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.member.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Optional: Link this clergy to a church member.
+                            </small>
+                        </div>
+
+                        <!-- Date Arrived -->
+                        <div class="mb-3">
+                            <label for="{{ form.date_arrived.id_for_label }}" class="form-label">
+                                {{ form.date_arrived.label }}
+                            </label>
+                            {{ form.date_arrived }}
+                            {% if form.date_arrived.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.date_arrived.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Date Departed -->
+                        <div class="mb-3">
+                            <label for="{{ form.date_depart.id_for_label }}" class="form-label">
+                                {{ form.date_depart.label }}
+                            </label>
+                            {{ form.date_depart }}
+                            {% if form.date_depart.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.date_depart.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
                 <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                    <a href="{% url 'ChurchApp:clergy_list_manage' entity.slug %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Clergy
+                    </button>
+                    <a href="{% url 'ChurchApp:clergy_list_manage' entity.slug %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
                 </div>
             </form>
         </div>

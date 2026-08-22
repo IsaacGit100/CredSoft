@@ -2,26 +2,33 @@
     <a href="{% url 'djan_led:entity_dashboard' entity.slug %}" class="list-group-item list-group-item-action active">
         <i class="fas fa-home"></i> Dashboard
     </a>
-    <a href="{% url 'ChurchApp:member_list_manage' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-book"></i> Manage Members
 
-     <a href="{% url 'ChurchApp:clergy_list_manage' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-book"></i> Manage The Clergy
+    <a href="{% url 'ChurchApp:church_data_entry_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Church Member Management
     </a>
 
-    <a href="{% url 'ChurchApp:usher_list_manage' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-book"></i> Manage Ushers
+    <a href="{% url 'ChurchApp:role_create' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Create Roles for Church Members
     </a>
 
-    <a href="{% urls 'ChurchApp:officiant_list_manage' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-book"></i> Officiant Manage
+    <a href="{% url 'ChurchApp:service_list_manage' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Enter Details of a Service 
     </a>
+
+
+     <a href="{% url 'ChurchApp:church_data_entry_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Enter Data For Clergy, Ushers, Officiants & Guild
+    </a>
+
+   
+
+    
 
     <a href="{#}" class="list-group-item list-group-item-action">
-        <i class="fas fa-book"></i> Chart of Accounts
+        <i class="fas fa-book"></i> Create Roles/Guilds For Mmembers
     </a>
     <a href="{#}" class="list-group-item list-group-item-action">
-        <i class="fas fa-plus-circle"></i> Enter Transactions
+        <i class="fas fa-plus-circle"></i> Chart Of Accounts
     </a>
 
     <a href="{#}" class="list-group-item list-group-item-action">

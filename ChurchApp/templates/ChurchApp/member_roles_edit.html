@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ title }}</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>Member:</strong> {{ member.full_name }}</p>
+            <p><strong>Email:</strong> {{ member.email }}</p>
+            <p class="text-muted">Check the boxes to assign roles. Uncheck to remove.</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="row">
+                    {% for field in form %}
+                        <div class="col-md-4">
+                            <div class="form-check mb-2">
+                                {{ field }}
+                                <label class="form-check-label" for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                </label>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">No roles available. Please create roles first.</p>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Roles
+                    </button>
+                    <a href="{% url 'ChurchApp:role_management' entity.slug %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -20,7 +20,7 @@
                     <p><strong>Linked Member:</strong> {{ clergy.member.full_name|default:"—" }}</p>
                 </div>
             </div>
-            <a href="{% url 'ChurchApp:clergy_update' entity.slug clergy.pk %}" class="btn btn-primary">Edit</a>
+            <a href="{% url 'ChurchApp:clergy_edit' entity.slug clergy.pk %}" class="btn btn-primary">Edit</a>
             <a href="{% url 'ChurchApp:clergy_list_manage' entity.slug %}" class="btn btn-secondary">Back to List</a>
         </div>
     </div>

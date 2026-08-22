@@ -3,6 +3,9 @@
 {% block content %}
 <div class="container">
     <h1>👤 User Management</h1>
+    <a href="{% url 'Tech:tech_dashboard' %}" style="background: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; margin-left: 5px;">
+        <i class="fas fa-times"></i> Exit
+    </a>
     <p class="text-muted">View all users, their roles, and reset passwords.</p>
 
     <div class="table-responsive">

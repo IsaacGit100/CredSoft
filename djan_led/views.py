@@ -1898,14 +1898,14 @@ def add_coa_to_entity(request):
 @staff_member_required
 def add_coa_to_entity(request):
     if request.method != 'POST':
-        return redirect('djan_led:coa_management')
+        return redirect('Tech:tech_dashboard')
 
     entity_slug = request.POST.get('entity_slug')
     account_type = request.POST.get('account_type')
 
     if not entity_slug or not account_type:
         messages.error(request, "Missing entity or account type.")
-        return redirect('djan_led:coa_management')
+        return redirect('Tech:tech_dashboard')
 
     entity = get_object_or_404(EntityModel, slug=entity_slug)
 
@@ -1928,7 +1928,7 @@ def add_coa_to_entity(request):
         root_expenses = AccountModel.objects.get(coa_model=coa, name='Expense Accounts Root Node')
     except AccountModel.DoesNotExist:
         messages.error(request, f"Root nodes missing for {entity.name}.")
-        return redirect('djan_led:coa_management')
+        return redirect('Tech:tech_dashboard')
 
     root_nodes = (root_assets, root_liabilities, root_capital, root_income, root_expenses)
 
@@ -1942,7 +1942,7 @@ def add_coa_to_entity(request):
         request,
         f"Added {created_count} {account_type} accounts to {entity.name}."
     )
-    return redirect('djan_led:coa_management')
+    return redirect('Tech:tech_dashboard')
 
 @staff_member_required
 def set_default_coa(request, slug):

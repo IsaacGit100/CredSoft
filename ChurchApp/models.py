@@ -5,7 +5,7 @@ from django.db import models
 
 # Create your models here.
 # ChurchApp/models.py
-
+from django.contrib.auth.models import User
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import choices
@@ -17,6 +17,34 @@ from django_ledger.models import (
 )
 
 # ---------- Parent/Guardian ----------
+class Role(models.Model):
+    """
+    Predefined roles that members can hold.
+    """
+    ROLE_TYPES = [
+        ('choir', 'Church Choir'),
+        ('server', 'Server'),
+        ('officiant', 'Officiant'),
+        ('usher', 'Usher'),
+        ('verger', 'Verger'),
+        ('clergy', 'Clergy'),
+        ('elder', 'Elder'),
+        ('deacon', 'Deacon'),
+        ('other', 'Other'),
+    ]
+    
+    entity = models.ForeignKey(EntityModel, on_delete=models.CASCADE, related_name='roles')
+    name = models.CharField(max_length=50, choices=ROLE_TYPES, unique=True)
+    display_name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.display_name
+    
+    class Meta:
+        ordering = ['name']
+
 
 
 class Member(models.Model):
@@ -62,15 +90,15 @@ class Member(models.Model):
     entity = models.ForeignKey(EntityModel, on_delete=models.CASCADE, related_name="members")
     # Personal details
     title = models.CharField(max_length=10, choices=TITLE_CHOICES, null=True, blank=True)
-    first_name = models.CharField(max_length=100)
-    other_names = models.CharField(max_length=100, blank=True, default="")
-    last_name = models.CharField(max_length=100, blank=True, default="")
-    full_name = models.CharField(max_length=200, blank=True, default="")
-    email = models.EmailField(blank=True, default="")
-    telephone1 = models.CharField(max_length=20, blank=True, default="")
-    telephone2 = models.CharField(max_length=20, blank=True, default="")
-    postal_address = models.CharField(max_length=150, blank=True, default="")
-    res_address = models.CharField(max_length=150, blank=True, default="")
+    first_name = models.CharField(max_length=100, null=True, blank=True, default="")
+    other_names = models.CharField(max_length=100, null=True, blank=True, default="")
+    last_name = models.CharField(max_length=100, null=True, blank=True, default="")
+    full_name = models.CharField(max_length=200, null=True, blank=True, default="")
+    email = models.EmailField(blank=True, null=True, default="")
+    telephone1 = models.CharField(max_length=20, null=True, blank=True, default="")
+    telephone2 = models.CharField(max_length=20, null=True, blank=True, default="")
+    postal_address = models.CharField(max_length=150, null=True, blank=True, default="")
+    res_address = models.CharField(max_length=150, null=True, blank=True, default="")
     near_landmark = models.CharField(max_length=100, null=True, blank=True, default="")
     education_level = models.CharField(max_length=50, null=True, blank=True, choices=EDUCATION_CHOICES, default="")
     profession = models.CharField(max_length=100, blank=True, default="")
@@ -82,34 +110,34 @@ class Member(models.Model):
     date_enrolled = models.DateField(default=None, null=True, blank=True)
     date_expired = models.DateField(default=None, null=True, blank=True)
 
-    guild_first = models.CharField(max_length=120, blank=True, default="")   # select from guilds model
-    guild_second = models.CharField(max_length=120, blank=True, default="")  # select from guilds model
-    guild_third = models.CharField(max_length=120,  blank=True, default="")  # select from guilds model
+    guild_first = models.CharField(max_length=120, null=True, blank=True, default="")   # select from guilds model
+    guild_second = models.CharField(max_length=120, null=True, blank=True, default="")  # select from guilds model
+    guild_third = models.CharField(max_length=120, null=True, blank=True, default="")  # select from guilds model
 
     no_of_children = models.IntegerField(default=0, null=True, blank=True)
-    names_of_children = models.JSONField()
+    names_of_children = models.JSONField(default=list, blank=True)  # List of children's names
     # Office information
-    office_name = models.CharField(max_length=150, blank=True, default="")
-    office_address = models.CharField(max_length=100, blank=True, default="")
-    office_res_address = models.CharField(max_length=120, blank=True, default="")
-    office_phone = models.CharField(max_length=150, blank=True, default="")
-    office_email = models.EmailField(blank=True, default="")
-    nature_of_business = models.CharField(max_length=150, blank=True, default="")
+    office_name = models.CharField(max_length=150, null=True, blank=True, default="")
+    office_address = models.CharField(max_length=100, null=True, blank=True, default="")
+    office_res_address = models.CharField(max_length=120, null=True, blank=True, default="")
+    office_phone = models.CharField(max_length=150, null=True, blank=True, default="")
+    office_email = models.EmailField(blank=True, null=True, default="")
+    nature_of_business = models.CharField(max_length=150, null=True, blank=True, default="")
 
     # Spouse information (corrected duplicate fields)
     spouse_title = models.CharField(max_length=20, choices=TITLE_CHOICES, blank=True, null=True)
-    spouse_name = models.CharField(max_length=100, blank=True, default="")
-    spouse_postal_address = models.CharField(max_length=100, blank=True, default="")
-    spouse_email_address = models.EmailField(blank=True, default="")
-    spouse_telephone = models.CharField(max_length=20, blank=True, default="") 
-    spouse_company_name = models.CharField(max_length=150, blank=True, default="")
-    spouse_res_address = models.CharField(max_length=150, blank=True, default="")
+    spouse_name = models.CharField(max_length=100, blank=True, null=True, default="")
+    spouse_postal_address = models.CharField(max_length=100, null=True, blank=True, default="")
+    spouse_email_address = models.EmailField(blank=True, null=True, default="")
+    spouse_telephone = models.CharField(max_length=20, null=True, blank=True, default="") 
+    spouse_company_name = models.CharField(max_length=150, null=True, blank=True, default="")
+    spouse_res_address = models.CharField(max_length=150, null=True, blank=True, default="")
     spouse_religion = models.CharField(
-        max_length=150, choices=RELIGION_CHOICES, blank=True, default=""
+        max_length=150, choices=RELIGION_CHOICES, null=True, blank=True, default=""
     )
-    spouse_occupation = models.CharField(max_length=100, blank=True, default="")
+    spouse_occupation = models.CharField(max_length=100, null=True, blank=True, default="")
     spouse_education_level = models.CharField(
-        max_length=120, choices=EDUCATION_CHOICES, blank=True, default=""
+        max_length=120, choices=EDUCATION_CHOICES, null=True,    blank=True, default=""
     )
     spouse_date_of_birth = models.DateField(default=None, null=True, blank=True)
     spouse_near_landmark = models.CharField(
@@ -123,12 +151,12 @@ class Member(models.Model):
     father_name = models.CharField(max_length=100, null=True, blank=True, default="")
     father_res_address = models.CharField(max_length=100, null=True, blank=True, default="")
     father_telephone = models.CharField(max_length=15, null=True, blank=True, default="")
-    father_deceased = models.BooleanField()
+    father_deceased = models.BooleanField(default=False)
 
     mother_name = models.CharField(max_length=100, null=True, blank=True, default="")
     mother_res_address = models.CharField(max_length=100, null=True, blank=True, default="")
     mother_telephone = models.CharField(max_length=15, null=True, blank=True, default="")
-    mother_deceased = models.BooleanField()
+    mother_deceased = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False, help_text="Soft delete flag")
 
     # Optional: link to shared entity
@@ -136,6 +164,21 @@ class Member(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    roles = models.ManyToManyField(Role, through='MemberRole', related_name='members', blank=True)
+    
+    # Helper methods
+    def has_role(self, role_name):
+        """Check if member has a specific role."""
+        return self.member_roles.filter(role__name=role_name, is_active=True).exists()
+    
+    def get_roles(self):
+        """Get all active roles as a list."""
+        return self.member_roles.filter(is_active=True).select_related('role')
+    
+    def get_role_names(self):
+        """Get active role names as a list of strings."""
+        return [mr.role.display_name for mr in self.get_roles()]
 
     def save(self, *args, **kwargs):
         name_parts = filter(None, [self.first_name, self.other_names, self.last_name])
@@ -151,7 +194,7 @@ class Clergy(models.Model):
         ("Bishop", "Bishop"),
     ]
     entity = models.ForeignKey(EntityModel, on_delete=models.CASCADE, related_name="clergy")
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="clergy_member")
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="clergy_member")
     title = models.CharField(max_length=20, blank=True, null=True, choices=TITLE_CHOICES, default='Fr.')
     first_name = models.CharField(max_length=100, blank=True, default="")
     other_names = models.CharField(max_length=50, blank=True, default="")
@@ -173,70 +216,12 @@ class Clergy(models.Model):
         super().save(*args, **kwargs)
 
 
-class Staff(models.Model):
-    entity = models.ForeignKey(EntityModel, on_delete=models.CASCADE, related_name="staff")
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="staff_member")
-    title = models.CharField(max_length=50, blank=True, null=True)
-    first_name = models.CharField(max_length=100, blank=True, default="")
-    other_names = models.CharField(max_length=50, blank=True, default="")
-    last_name = models.CharField(max_length=100, blank=True, default="")
-    full_name = models.CharField(max_length=200, blank=True)
-    email_address = models.EmailField(null=True, blank=True, default='')
-    telephone = models.CharField(max_length=20, null=True, blank=True, default='')
-    postal_address = models.CharField(max_length=150, blank=True, default="")
-    res_address = models.CharField(max_length=150, blank=True, default="")
-    date_arrived = models.DateField(null=True, blank=True, default=None)
-    date_depart = models.DateField(null=True, blank=True, default=None)
-    role = models.CharField(max_length=20, null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        name_parts = filter(None, [self.first_name, self.other_names, self.last_name])
-        self.full_name = " ".join(name_parts).strip()
-        super().save(*args, **kwargs)
 
 
-class Guilds(models.Model):
-    Name = models.CharField(max_length=20, null=True, blank=True, default='')
-    Description = models.CharField(max_length=50, null=True, blank=True, default='')
 
 
-from django.db import models
-from django_ledger.models import EntityModel
-from django.contrib.auth.models import User
 
 
-class Ushers(models.Model):
-    entity = models.ForeignKey(EntityModel, on_delete=models.CASCADE, related_name="ushers")
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="usher_member")
-    name = models.CharField(max_length=100)
-    address = models.TextField(blank=True)
-    telephone = models.CharField(max_length=20, blank=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Guild(models.Model):
-    entity = models.ForeignKey(
-        EntityModel, on_delete=models.CASCADE, related_name="guilds"
-    )
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Officiant(models.Model):
-    
-    entity = models.ForeignKey(EntityModel, on_delete=models.CASCADE, related_name="officiants")
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="Off_member"
-    )
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-
-    def __str__(self):
-        return self.name
 
 
 class Service(models.Model):
@@ -245,9 +230,7 @@ class Service(models.Model):
     )
     date = models.DateField()
     name_of_service = models.CharField(max_length=100)
-    officiant = models.ForeignKey(
-        Officiant, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    
 
     # JSON fields for lists
     clergy = models.JSONField(default=list, blank=True)  # List of clergy names/ids
@@ -391,3 +374,27 @@ class Event(models.Model):
 
     class Meta:
         ordering = ["date", "start_time"]
+
+
+# ChurchApp/models.py
+
+
+
+class MemberRole(models.Model):
+    """
+    Through table: tracks which roles a member holds.
+    """
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='member_roles')
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='role_members')
+    entity = models.ForeignKey(EntityModel, on_delete=models.CASCADE)
+    date_assigned = models.DateField(auto_now_add=True)
+    date_removed = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        unique_together = ['member', 'role']  # Prevent duplicate assignments
+        ordering = ['member__full_name', 'role__name']
+    
+    def __str__(self):
+        return f"{self.member.full_name} – {self.role.display_name}"

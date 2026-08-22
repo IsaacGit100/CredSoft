@@ -65,11 +65,23 @@ class EntityConfig(models.Model):
         ('QUARTERLY', 'QUARTERLY'),
         ('YEAR', 'YEARLY')
     )
+    ENTITY_TYPE_CHOICES = [
+        ('church', 'Church'),
+        ('school', 'School'),
+        ('credit_union', 'Credit Union'),
+        ('pos', 'POS'),
+        ('hospital', 'Hospital'),
+        ('hotel', 'Hotel'),
+        ('business', 'Business'),
+        ('ngo', 'NGO'),
+        ('other', 'Other'),
+    ]
 
-    entity = models.OneToOneField(
-        EntityModel, on_delete=models.CASCADE, related_name="config"
+    entity = models.OneToOneField(EntityModel, on_delete=models.CASCADE, related_name="config")
+    entity_type = models.CharField(max_length=20, choices=ENTITY_TYPE_CHOICES, default='church',
+        blank=True,
+        help_text="Select the type of entity"
     )
-
     # Loan settings
     loan_interest_rate = models.DecimalField(
         max_digits=5, decimal_places=2, default=0.0

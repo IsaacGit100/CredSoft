@@ -16,22 +16,17 @@ from django_ledger.models import (
 )
 from decimal import Decimal
 from django.utils import timezone
-from .models import Service, Clergy, Ushers, Guild, Officiant
+from .models import Service, Member, Event
 from .forms import ServiceForm
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Sum, Count
+from django_ledger.models import EntityModel
 
-
+# from .models import Member, Offering, Event, FinancialRecord
 @login_required
 def church_home(request, slug):
     pass
 
-
-from django.shortcuts import render, get_object_or_404
-from django.contrib.admin.views.decorators import staff_member_required
-from django.db.models import Sum, Count
-from django_ledger.models import EntityModel
-from .models import Event
-from .models import Member
-# from .models import Member, Offering, Event, FinancialRecord
 
 @login_required
 @staff_member_required
@@ -99,7 +94,7 @@ def member_create(request, slug):
             member.entity = entity
             member.save()
             messages.success(request, "Member created.")
-            return redirect("ChurchApp:member_list", slug=entity.slug)
+            return redirect("ChurchApp:member_list_manage", slug=entity.slug)
     else:
         form = MemberForm(entity=entity)
     return render(request, 'ChurchApp/member_create.html', {'form': form, "entity": entity})
@@ -119,23 +114,28 @@ def member_edit(request, slug, pk):
     return render(request, 'ChurchApp/member_edit.html', {'form': form, 'entity': entity})
 
 
+# ChurchApp/views.py
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.admin.views.decorators import staff_member_required
+from django_ledger.models import EntityModel
+from .models import Member
+
 @login_required
-def member_edit1(request, slug, pk):
+@staff_member_required
+def member_detail(request, slug, pk):
+    """
+    Display detailed information about a single member.
+    """
     entity = get_object_or_404(EntityModel, slug=slug)
     member = get_object_or_404(Member, pk=pk, entity=entity)
-    if request.method == "POST":
-        form = MemberForm(request.POST, instance=member, entity=entity)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f"Member {member.full_name} updated.")
-            return redirect("ChurchApp:member_list", slug=slug)
-    else:
-        form = MemberForm(instance=member, entity=entity)
-    return render(
-        request,
-        "ChurchApp/member_form.html",
-        {"form": form, "entity": entity, "member": member},
-    )
+
+    context = {
+        "entity": entity,
+        "member": member,
+        "title": f"Member Details: {member.full_name}",
+    }
+    return render(request, "ChurchApp/member_detail.html", context)
 
 
 @login_required
@@ -200,7 +200,7 @@ def service_create(request, slug):
 
 
 @login_required
-def service_list(request, slug):
+def service_list_manage(request, slug):
     entity = get_object_or_404(EntityModel, slug=slug)
     services = Service.objects.filter(entity=entity).order_by("-date")
     # Search
@@ -363,7 +363,7 @@ from .models import Clergy
 from .forms import ClergyForm
 
 # ====================================== Clergy CRUD ====================================
-
+@login_required
 @staff_member_required
 def clergy_list_manage(request, slug):
     entity = get_object_or_404(EntityModel, slug=slug)
@@ -386,7 +386,7 @@ def clergy_create(request, slug):
             clergy.entity = entity
             clergy.save()
             messages.success(request, f"Clergy {clergy.full_name} created.")
-            return redirect("ChurchApp:clergy_list", slug=entity.slug)
+            return redirect("ChurchApp:clergy_list_manage", slug=entity.slug)
     else:
         form = ClergyForm(entity=entity)
     context = {
@@ -394,11 +394,11 @@ def clergy_create(request, slug):
         "form": form,
         "title": "Add Clergy",
     }
-    return render(request, "ChurchApp/clergy_form.html", context)
+    return render(request, "ChurchApp/clergy_create.html", context)
 
 
 @staff_member_required
-def clergy_update(request, slug, pk):
+def clergy_edit(request, slug, pk):
     entity = get_object_or_404(EntityModel, slug=slug)
     clergy = get_object_or_404(Clergy, pk=pk, entity=entity)
     if request.method == "POST":
@@ -406,7 +406,7 @@ def clergy_update(request, slug, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f"Clergy {clergy.full_name} updated.")
-            return redirect("ChurchApp:clergy_list", slug=entity.slug)
+            return redirect("ChurchApp:clergy_list_manage", slug=entity.slug)
     else:
         form = ClergyForm(instance=clergy, entity=entity)
     context = {
@@ -415,7 +415,7 @@ def clergy_update(request, slug, pk):
         "clergy": clergy,
         "title": f"Edit Clergy: {clergy.full_name}",
     }
-    return render(request, "ChurchApp/clergy_form.html", context)
+    return render(request, "ChurchApp/clergy_create.html", context)
 
 
 @staff_member_required
@@ -425,7 +425,7 @@ def clergy_delete(request, slug, pk):
     if request.method == "POST":
         clergy.delete()
         messages.success(request, f"Clergy {clergy.full_name} deleted.")
-        return redirect("ChurchApp:clergy_list", slug=entity.slug)
+        return redirect("ChurchApp:clergy_list_manage", slug=entity.slug)
     context = {
         "entity": entity,
         "clergy": clergy,
@@ -444,79 +444,8 @@ def clergy_detail(request, slug, pk):
     return render(request, "ChurchApp/clergy_detail.html", context)
 
 
-@login_required
-def clergy_edit(request, slug, pk):
-    pass
 
 @login_required
-def clergy_view(request, slug, pk):
-    pass
-
-
-## ==================================Ushers =========================
-# ChurchApp/views.py
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
-from django_ledger.models import EntityModel
-from .models import Ushers
-from .forms import UsherForm
-
-
-@staff_member_required
-def usher_list_manage(request, slug):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    ushers = Ushers.objects.filter(entity=entity)
-    context = {
-        "entity": entity,
-        "ushers": ushers,
-        "total_ushers": ushers.count(),
-    }
-    return render(request, "ChurchApp/usher_list_manage.html", context)
-
-
-@staff_member_required
-def usher_create(request, slug):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    if request.method == "POST":
-        form = UsherForm(request.POST, entity=entity)
-        if form.is_valid():
-            usher = form.save(commit=False)
-            usher.entity = entity
-            usher.save()
-            messages.success(request, f"Usher {usher.name} created successfully.")
-            return redirect("ChurchApp:usher_list_manage", slug=entity.slug)
-    else:
-        form = UsherForm(entity=entity)
-    context = {
-        "entity": entity,
-        "form": form,
-        "title": "Add Usher",
-    }
-    return render(request, "ChurchApp/usher_form.html", context)
-
-
-@staff_member_required
-def usher_update(request, slug, pk):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    usher = get_object_or_404(Ushers, pk=pk, entity=entity)
-    if request.method == "POST":
-        form = UsherForm(request.POST, instance=usher, entity=entity)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f"Usher {usher.name} updated successfully.")
-            return redirect("ChurchApp:usher_list_manage", slug=entity.slug)
-    else:
-        form = UsherForm(instance=usher, entity=entity)
-    context = {
-        "entity": entity,
-        "form": form,
-        "usher": usher,
-        "title": f"Edit Usher: {usher.name}",
-    }
-    return render(request, "ChurchApp/usher_form.html", context)
-
-
 @staff_member_required
 def usher_delete(request, slug, pk):
     entity = get_object_or_404(EntityModel, slug=slug)
@@ -543,188 +472,6 @@ def usher_detail(request, slug, pk):
     return render(request, "ChurchApp/usher_detail.html", context)
 
 
-## =============================== Guilds =========================
-# ChurchApp/views.py
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
-from django_ledger.models import EntityModel
-from .models import Guild
-from .forms import GuildForm
-
-
-@staff_member_required
-def guild_list_manage(request, slug):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    guilds = Guild.objects.filter(entity=entity)
-    context = {
-        "entity": entity,
-        "guilds": guilds,
-        "total_guilds": guilds.count(),
-    }
-    return render(request, "ChurchApp/guild_list_manage.html", context)
-
-
-@staff_member_required
-def guild_create(request, slug):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    if request.method == "POST":
-        form = GuildForm(request.POST)
-        if form.is_valid():
-            guild = form.save(commit=False)
-            guild.entity = entity
-            guild.save()
-            messages.success(request, f"Guild '{guild.name}' created successfully.")
-            return redirect("ChurchApp:guild_lis_manage", slug=entity.slug)
-    else:
-        form = GuildForm()
-    context = {
-        "entity": entity,
-        "form": form,
-        "title": "Add Guild",
-    }
-    return render(request, "ChurchApp/guild_form.html", context)
-
-
-@staff_member_required
-def guild_update(request, slug, pk):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    guild = get_object_or_404(Guild, pk=pk, entity=entity)
-    if request.method == "POST":
-        form = GuildForm(request.POST, instance=guild)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f"Guild '{guild.name}' updated successfully.")
-            return redirect("ChurchApp:guild_list_manage", slug=entity.slug)
-    else:
-        form = GuildForm(instance=guild)
-    context = {
-        "entity": entity,
-        "form": form,
-        "guild": guild,
-        "title": f"Edit Guild: {guild.name}",
-    }
-    return render(request, "ChurchApp/guild_form.html", context)
-
-
-@staff_member_required
-def guild_delete(request, slug, pk):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    guild = get_object_or_404(Guild, pk=pk, entity=entity)
-    if request.method == "POST":
-        guild.delete()
-        messages.success(request, f"Guild '{guild.name}' deleted successfully.")
-        return redirect("ChurchApp:guild_list_manage", slug=entity.slug)
-    context = {
-        "entity": entity,
-        "guild": guild,
-    }
-    return render(request, "ChurchApp/guild_confirm_delete.html", context)
-
-
-@staff_member_required
-def guild_detail(request, slug, pk):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    guild = get_object_or_404(Guild, pk=pk, entity=entity)
-    context = {
-        "entity": entity,
-        "guild": guild,
-    }
-    return render(request, "ChurchApp/guild_detail.html", context)
-
-
-## ===============================Officiant ======================
-# ChurchApp/views.py
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
-from django_ledger.models import EntityModel
-from .models import Officiant
-from .forms import OfficiantForm
-
-
-@staff_member_required
-def officiant_list_manage(request, slug):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    officiants = Officiant.objects.filter(entity=entity)
-    context = {
-        "entity": entity,
-        "officiants": officiants,
-        "total_officiants": officiants.count(),
-    }
-    return render(request, "ChurchApp/officiant_list_manage.html", context)
-
-
-@staff_member_required
-def officiant_create(request, slug):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    if request.method == "POST":
-        form = OfficiantForm(request.POST, entity=entity)
-        if form.is_valid():
-            officiant = form.save(commit=False)
-            officiant.entity = entity
-            officiant.save()
-            messages.success(
-                request, f"Officiant '{officiant.name}' created successfully."
-            )
-            return redirect("ChurchApp:officiant_list", slug=entity.slug)
-    else:
-        form = OfficiantForm(entity=entity)
-    context = {
-        "entity": entity,
-        "form": form,
-        "title": "Add Officiant",
-    }
-    return render(request, "ChurchApp/officiant_form.html", context)
-
-
-@staff_member_required
-def officiant_update(request, slug, pk):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    officiant = get_object_or_404(Officiant, pk=pk, entity=entity)
-    if request.method == "POST":
-        form = OfficiantForm(request.POST, instance=officiant, entity=entity)
-        if form.is_valid():
-            form.save()
-            messages.success(
-                request, f"Officiant '{officiant.name}' updated successfully."
-            )
-            return redirect("ChurchApp:officiant_list", slug=entity.slug)
-    else:
-        form = OfficiantForm(instance=officiant, entity=entity)
-    context = {
-        "entity": entity,
-        "form": form,
-        "officiant": officiant,
-        "title": f"Edit Officiant: {officiant.name}",
-    }
-    return render(request, "ChurchApp/officiant_form.html", context)
-
-
-@staff_member_required
-def officiant_delete(request, slug, pk):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    officiant = get_object_or_404(Officiant, pk=pk, entity=entity)
-    if request.method == "POST":
-        officiant.delete()
-        messages.success(request, f"Officiant '{officiant.name}' deleted successfully.")
-        return redirect("ChurchApp:officiant_list", slug=entity.slug)
-    context = {
-        "entity": entity,
-        "officiant": officiant,
-    }
-    return render(request, "ChurchApp/officiant_confirm_delete.html", context)
-
-
-@staff_member_required
-def officiant_detail(request, slug, pk):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    officiant = get_object_or_404(Officiant, pk=pk, entity=entity)
-    context = {
-        "entity": entity,
-        "officiant": officiant,
-    }
-    return render(request, "ChurchApp/officiant_detail.html", context)
 
 
 ## ===============================Sunday Service ==============================
@@ -739,38 +486,72 @@ from .forms import ServiceForm
 from services.journal_engine import JournalEngine  # adjust import path
 
 
+# ChurchApp/views.py
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.utils import timezone
+from django_ledger.models import EntityModel
+from RecPayApp.models import Trans  # Import Trans model
+from .models import Service
+from .forms import ServiceForm
+import json
+
+# ChurchApp/views.py
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.utils import timezone
+from django_ledger.models import EntityModel
+from RecPayApp.models import Trans  # Import Trans model
+from .models import Service
+from .forms import ServiceForm
+import json
+
+
 @staff_member_required
 def service_create(request, slug):
     entity = get_object_or_404(EntityModel, slug=slug)
+
     if request.method == "POST":
-        form = ServiceForm(request.POST, entity=entity)
+        form = ServiceForm(request.POST)
         if form.is_valid():
+            # Save the Service
             service = form.save(commit=False)
             service.entity = entity
             service.created_by = request.user
             service.created_at = timezone.now()
             service.updated_at = timezone.now()
-            # Grand total is computed in model's save()
             service.save()
 
-            # Post to ledger if user checked the box
-            if form.cleaned_data.get("post_to_ledger", False):
-                try:
-                    journal_entry = create_service_journal(service, entity)
-                    service.journal_entry_id = str(journal_entry.uuid)
-                    service.posted_to_ledger = True
-                    service.save(update_fields=["journal_entry_id", "posted_to_ledger"])
-                    messages.success(request, "Service saved and posted to ledger.")
-                except Exception as e:
-                    messages.warning(
-                        request, f"Service saved, but journal entry failed: {e}"
-                    )
-            else:
-                messages.info(request, "Service saved without ledger posting.")
+            # Create a Trans record for approval
+            # This will be posted to journal after approval
+            trans = Trans.objects.create(
+                entity=entity,
+                trans_type="Receipts",  # Service offerings are receipts
+                date=service.date,
+                amount=service.grand_total,
+                pay_mode="Cash",  # You can make this dynamic
+                ledger_code="4010",  # Offering income account
+                ledger_name="Service Offerings",
+                details=f"Service: {service.name_of_service} on {service.date}",
+                status="PENDING",  # Needs approval
+                created_by=request.user,
+                created_by_name=request.user.username,
+                created_by_username=request.user.username,
+                # Link back to service
+                service=service,
+            )
 
+            messages.success(
+                request,
+                f"Service saved. Trans record created for approval (Ref: {trans.rec_vou_no})",
+            )
             return redirect("ChurchApp:service_list", slug=entity.slug)
     else:
-        form = ServiceForm(entity=entity, initial={"date": timezone.now().date()})
+        form = ServiceForm(initial={"date": timezone.now().date()})
 
     context = {
         "entity": entity,
@@ -859,7 +640,7 @@ def create_service_journal(service, entity):
 
 # List, detail, delete views (keep as before)
 @staff_member_required
-def service_list(request, slug):
+def service_list_manage(request, slug):
     entity = get_object_or_404(EntityModel, slug=slug)
     services = Service.objects.filter(entity=entity).order_by("-date")
     context = {
@@ -894,3 +675,272 @@ def service_delete(request, slug, pk):
         "service": service,
     }
     return render(request, "ChurchApp/service_confirm_delete.html", context)
+
+
+# ChurchApp/views.py
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.http import JsonResponse
+from django_ledger.models import EntityModel
+from .models import Clergy, Member
+from .forms import ClergyForm
+
+
+@staff_member_required
+def clergy_list_modal(request, slug):
+    """
+    Display clergy list and handle AJAX form submission.
+    """
+    entity = get_object_or_404(EntityModel, slug=slug)
+    clergy_list = Clergy.objects.filter(entity=entity).order_by("last_name")
+
+    # Handle AJAX POST request (when modal form is submitted)
+    if (
+        request.method == "POST"
+        and request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    ):
+        form = ClergyForm(request.POST, entity=entity)
+        if form.is_valid():
+            clergy = form.save(commit=False)
+            clergy.entity = entity
+            clergy.save()
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": f"Clergy {clergy.full_name} added successfully!",
+                    "clergy": {
+                        "id": clergy.id,
+                        "title": clergy.title,
+                        "full_name": clergy.full_name,
+                        "email_address": clergy.email_address,
+                        "telephone": clergy.telephone,
+                        "member_name": clergy.member.full_name if clergy.member else "",
+                    },
+                }
+            )
+        else:
+            return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+    # GET request - render the page
+    context = {
+        "entity": entity,
+        "clergy_list": clergy_list,
+        "total_clergy": clergy_list.count(),
+    }
+    return render(request, "ChurchApp/clergy_list.html", context)
+
+
+# ChurchApp/views.py
+
+
+@staff_member_required
+def clergy_delete_modal(request, slug, pk):
+    entity = get_object_or_404(EntityModel, slug=slug)
+    clergy = get_object_or_404(Clergy, pk=pk, entity=entity)
+
+    if request.method == "POST":
+        clergy.delete()
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Clergy {clergy.full_name} deleted successfully.",
+            }
+        )
+
+    return JsonResponse({"success": False, "message": "Invalid request."}, status=400)
+
+# ChurchApp/views.py
+
+
+@staff_member_required
+def clergy_edit_modal(request, slug, pk):
+    entity = get_object_or_404(EntityModel, slug=slug)
+    clergy = get_object_or_404(Clergy, pk=pk, entity=entity)
+
+    if (
+        request.method == "POST"
+        and request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    ):
+        form = ClergyForm(request.POST, instance=clergy, entity=entity)
+        if form.is_valid():
+            clergy = form.save()
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": f"Clergy {clergy.full_name} updated successfully!",
+                    "clergy": {
+                        "id": clergy.id,
+                        "title": clergy.title,
+                        "full_name": clergy.full_name,
+                        "email_address": clergy.email_address,
+                        "telephone": clergy.telephone,
+                    },
+                }
+            )
+        else:
+            return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+    # GET request – return form data as JSON
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "id": clergy.id,
+                "title": clergy.title,
+                "first_name": clergy.first_name,
+                "other_names": clergy.other_names,
+                "last_name": clergy.last_name,
+                "email_address": clergy.email_address,
+                "telephone": clergy.telephone,
+                "postal_address": clergy.postal_address,
+                "res_address": clergy.res_address,
+                "date_arrived": clergy.date_arrived,
+                "date_depart": clergy.date_depart,
+                "member": clergy.member.id if clergy.member else "",
+            }
+        )
+
+    # Fallback: render edit page
+    context = {
+        "entity": entity,
+        "form": ClergyForm(instance=clergy, entity=entity),
+        "clergy": clergy,
+        "title": f"Edit Clergy: {clergy.full_name}",
+    }
+    return render(request, "ChurchApp/clergy_form.html", context)
+
+def church_data_entry_home(request, slug):
+    return render(request, 'ChurchApp/church_data_entry_home.html')
+
+
+# ChurchApp/views.py
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.utils import timezone
+from django_ledger.models import EntityModel
+from .models import Member, Role, MemberRole
+from .forms import RoleAssignmentForm
+
+
+@staff_member_required
+def role_management(request, slug):
+    """
+    List all members with their roles.
+    """
+    entity = get_object_or_404(EntityModel, slug=slug)
+    members = Member.objects.filter(entity=entity, is_deleted=False).order_by(
+        "full_name"
+    )
+
+    context = {
+        "entity": entity,
+        "members": members,
+        "total_members": members.count(),
+    }
+    return render(request, "ChurchApp/role_management.html", context)
+
+
+@staff_member_required
+def member_roles_edit(request, slug, pk):
+    """
+    Edit roles for a specific member.
+    """
+    entity = get_object_or_404(EntityModel, slug=slug)
+    member = get_object_or_404(Member, pk=pk, entity=entity)
+
+    if request.method == "POST":
+        form = RoleAssignmentForm(request.POST, entity=entity, member=member)
+        if form.is_valid():
+            form.save(member)
+            messages.success(request, f"Roles updated for {member.full_name}")
+            return redirect("ChurchApp:role_management", slug=entity.slug)
+    else:
+        form = RoleAssignmentForm(entity=entity, member=member)
+
+    context = {
+        "entity": entity,
+        "member": member,
+        "form": form,
+        "title": f"Manage Roles: {member.full_name}",
+    }
+    return render(request, "ChurchApp/member_roles_edit.html", context)
+
+
+@staff_member_required
+def role_create(request, slug):
+    """
+    Create a new role.
+    """
+    entity = get_object_or_404(EntityModel, slug=slug)
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        display_name = request.POST.get("display_name")
+        description = request.POST.get("description", "")
+
+        if name and display_name:
+            role, created = Role.objects.get_or_create(
+                entity=entity,
+                name=name,
+                defaults={
+                    "display_name": display_name,
+                    "description": description,
+                    "is_active": True,
+                },
+            )
+            if created:
+                messages.success(request, f"Role '{display_name}' created.")
+            else:
+                messages.warning(request, f"Role '{display_name}' already exists.")
+        else:
+            messages.error(request, "Please provide both name and display name.")
+
+        return redirect("ChurchApp:role_management", slug=entity.slug)
+
+    context = {
+        "entity": entity,
+        "title": "Create Role",
+    }
+    return render(request, "ChurchApp/role_create.html", context)
+
+
+# ChurchApp/views.py
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.admin.views.decorators import staff_member_required
+from django_ledger.models import EntityModel
+from .models import Member
+
+
+@staff_member_required
+def member_roles_detail(request, slug, pk):
+    """
+    Display detailed roles information for a specific member.
+    """
+    entity = get_object_or_404(EntityModel, slug=slug)
+    member = get_object_or_404(Member, pk=pk, entity=entity)
+
+    # Get all roles for this member (active and inactive)
+    member_roles = (
+        member.member_roles.all()
+        .select_related("role")
+        .order_by("-is_active", "-date_assigned")
+    )
+
+    # Separate active and inactive roles
+    active_roles = member_roles.filter(is_active=True)
+    inactive_roles = member_roles.filter(is_active=False)
+
+    context = {
+        "entity": entity,
+        "member": member,
+        "member_roles": member_roles,
+        "active_roles": active_roles,
+        "inactive_roles": inactive_roles,
+        "total_roles": member_roles.count(),
+        "title": f"Roles: {member.full_name}",
+    }
+    return render(request, "ChurchApp/member_roles_detail.html", context)

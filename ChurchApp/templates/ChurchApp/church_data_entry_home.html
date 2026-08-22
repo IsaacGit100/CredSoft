@@ -186,8 +186,26 @@
         <!-- Menu Grid - 2 columns with annotations -->
         <div class="menu-grid">
 
-            <!-- Transaction Posting service System -->
-            <a href="{#}" class="menu-btn">
+            <a href="{% url 'ChurchApp:member_list_manage' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Date Entry of New Church Members</h3>
+                    <p>Enter Data for New members</p>
+                </div>
+            </a>
+            <a href="{% url 'ChurchApp:role_create' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Member Roles</h3>
+                    <p>Assign Roles to Members, eg Ushers, Officiants, Servers, Clergy etc</p>
+                </div>
+            </a>
+
+            <a href="{% url 'ChurchApp:clergy_list_manage' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
                     <i class="fas fa-users"></i>
                 </div>
@@ -196,14 +214,14 @@
                     <p>This Updates Savings, Withdrawals, Loans, Financial Reports</p>
                 </div>
             </a>
-
-            <a href="{#}" class="menu-btn">
+           
+            <a href="{% url 'ChurchApp:role_create' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
-                    <h3>Usher Form Manage</h3>
-                    <p>Displays the accounts which had transactions</p>
+                    <h3>Member Roles</h3>
+                    <p>Assign Roles to Members, eg Ushers, Officiants, Servers, Clergy etc</p>
                 </div>
             </a>
 
@@ -223,7 +241,7 @@
 
 
             <!-- System Dashboard -->
-            <a href="{% url 'run_daily_loan_interest' entity.slug %}" class="menu-btn">
+            <a href="{#}" class="menu-btn">
                 <div class="menu-icon">
                     <i class="fas fa-users"></i>
                 </div>
@@ -391,7 +409,7 @@
 
         <!-- Footer with Main Menu Button -->
         <div class="footer">
-            <a href="{% url 'CreditUnion:union_dashboard' entity.slug %}" class="btn-main-menu">
+            <a href="{#}" class="btn-main-menu">
                 <i class="fas fa-home me-2"></i> Back to Main Menu
             </a>
         </div>
