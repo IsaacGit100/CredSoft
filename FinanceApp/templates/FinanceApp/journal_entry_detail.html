@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Journal Entry {{ journal.entry_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Journal Entry: {{ journal.entry_number }}</h4>
+                <div>
+                    {% if journal.status == 'DRAFT' %}
+                    <span class="badge bg-warning">Draft</span>
+                    <a href="{% url 'FinanceApp:journal_entry_post' journal.pk %}" class="btn btn-sm btn-success">Post</a>
+                    <a href="{% url 'FinanceApp:journal_entry_edit' journal.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="{% url 'FinanceApp:journal_entry_delete' journal.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</a>
+                    {% elif journal.status == 'POSTED' %}
+                    <span class="badge bg-success">Posted</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Void</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Entry Number:</strong> {{ journal.entry_number }}</p>
+                    <p><strong>Entry Date:</strong> {{ journal.entry_date }}</p>
+                    <p><strong>Description:</strong> {{ journal.description }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Status:</strong> {{ journal.get_status_display }}</p>
+                    <p><strong>Created By:</strong> {{ journal.created_by|default:"-" }}</p>
+                    <p><strong>Posted By:</strong> {{ journal.posted_by|default:"-" }}</p>
+                    <p><strong>Posted At:</strong> {{ journal.posted_at|default:"-" }}</p>
+                </div>
+            </div>
+            
+            <h5>Journal Lines</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Account</th>
+                            <th>Member</th>
+                            <th class="text-end">Debit (₵)</th>
+                            <th class="text-end">Credit (₵)</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>{{ line.account.accountno }} - {{ line.account.name }}</td>
+                            <td>{{ line.member.name|default:"-" }}</td>
+                            <td class="text-end">{% if line.debit > 0 %}₵{{ line.debit|floatformat:2 }}{% else %}-{% endif %}</td>
+                            <td class="text-end">{% if line.credit > 0 %}₵{{ line.credit|floatformat:2 }}{% else %}-{% endif %}</td>
+                            <td>{{ line.line_description }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No journal lines</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-active">
+                        <tr>
+                            <th colspan="2">TOTAL</th>
+                            <th class="text-end">₵{{ total_debit|floatformat:2 }}</th>
+                            <th class="text-end">₵{{ total_credit|floatformat:2 }}</th>
+                            <th></th>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-center">
+                                {% if is_balanced %}
+                                <span class="text-success">✓ Journal is balanced</span>
+                                {% else %}
+                                <span class="text-danger">✗ Journal is out of balance by ₵{{ difference|floatformat:2 }}</span>
+                                {% endif %}
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            
+            <div class="mt-3">
+                <a href="{% url 'FinanceApp:journal_entry_manage' %}" class="btn btn-secondary">Back to List</a>
+                {% if journal.status == 'DRAFT' %}
+                <a href="{% url 'FinanceApp:journal_entry_edit' journal.pk %}" class="btn btn-warning">Edit Journal</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

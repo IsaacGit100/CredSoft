@@ -1,0 +1,54 @@
+<!-- templates/dashboard.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Welcome, {{ user.username }}</h1>
+    <p>Entity: {{ default_entity.name }}</p>
+
+    <div class="row">
+        {% if show_church %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"> Church Membership</div>
+                <div class="card-body">
+                    <a href="{% url 'church_dashboard' %}" class="btn btn-primary">Go to Church</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if show_school %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"> School</div>
+                <div class="card-body">
+                    <a href="{% url 'school_dashboard' %}" class="btn btn-primary">Go to School</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if show_credit_union %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"> Credit Union</div>
+                <div class="card-body">
+                    <a href="{% url 'credit_union_dashboard' %}" class="btn btn-primary">Go to Credit Union</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Finance Module – always visible -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"> Finance</div>
+                <div class="card-body">
+                    <a href="{#}" class="btn btn-success">Go to Finance</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

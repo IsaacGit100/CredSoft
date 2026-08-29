@@ -1,0 +1,196 @@
+<!-- RecPayApp/templates/RecPayApp/trans_jour_bal_view.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Transaction Audit - {{ transaction.rec_vou_no }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-receipt me-2"></i>Transaction Audit Details
+                </h4>
+                <div>
+                    <a href="{% url 'RecPayApp:trans_pdf' transaction.id %}" class="btn btn-danger btn-sm" target="_blank">
+                        <i class="fas fa-file-pdf me-1"></i> PDF
+                    </a>
+                    <a href="{% url 'RecPayApp:trans_excel' transaction.id %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-file-excel me-1"></i> Excel
+                    </a>
+                    <a href="{% url 'RecPayApp:trans_jour_bal_list' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <!-- ==================== TRANSACTION DETAILS ==================== -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Transaction (Trans)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <table class="table table-sm table-bordered">
+                                <tr><th>ID</th><td>{{ transaction.id }}</td></tr>
+                                <tr><th>Voucher No</th><td>{{ transaction.rec_vou_no }}</td></tr>
+                                <tr><th>Transaction No</th><td>{{ transaction.trans_no }}</td></tr>
+                                <tr><th>Date</th><td>{{ transaction.date|date:"d/m/Y" }}</td></tr>
+                                <tr><th>Type</th><td>{{ transaction.trans_type }}</td></tr>
+                                <tr><th>Amount</th><td class="fw-bold">₵{{ transaction.amount|floatformat:2|intcomma }}</td></tr>
+                                <tr><th>Status</th><td>{{ transaction.status }}</td></tr>
+                                <tr><th>Pay Mode</th><td>{{ transaction.pay_mode }}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-4">
+                            <table class="table table-sm table-bordered">
+                                <tr><th>Ledger Code</th><td>{{ transaction.ledger_code }}</td></tr>
+                                <tr><th>Ledger Name</th><td>{{ transaction.ledger_name }}</td></tr>
+                                <tr><th>Details</th><td>{{ transaction.details|default:"-" }}</td></tr>
+                                <tr><th>Purpose</th><td>{{ transaction.purpose|default:"-" }}</td></tr>
+                                <tr><th>Batch Number</th><td>{{ transaction.batch_number|default:"-" }}</td></tr>
+                                <tr><th>Posted At</th><td>{{ transaction.posted_at|date:"d/m/Y H:i"|default:"-" }}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-4">
+                            <table class="table table-sm table-bordered">
+                                <tr><th>Member ID</th><td>{{ transaction.member_id|default:"-" }}</td></tr>
+                                <tr><th>Member Name</th><td>{{ transaction.member_name|default:"-" }}</td></tr>
+                                <tr><th>Non-Member</th><td>{{ transaction.non_member_name|default:"-" }}</td></tr>
+                                <tr><th>Loan ID</th><td>{{ transaction.loan_id|default:"-" }}</td></tr>
+                                <tr><th>Loan Name</th><td>{{ transaction.loan_name|default:"-" }}</td></tr>
+                                <tr><th>Cheque No</th><td>{{ transaction.cheque_no|default:"-" }}</td></tr>
+                                <tr><th>Momo No</th><td>{{ transaction.momo_no|default:"-" }}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== JOURNAL ENTRY ==================== -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-book me-2"></i>Journal Entry</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr><th>ID</th><th>Entry Number</th><th>Entry Date</th><th>Description</th><th>Status</th><th>Source Trans</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{ jour_ent.id }}</td>
+                                        <td>{{ jour_ent.entry_number }}</td>
+                                        <td>{{ jour_ent.entry_date|date:"d/m/Y" }}</td>
+                                        <td>{{ jour_ent.description|default:"-" }}</td>
+                                        <td>{{ jour_ent.status }}</td>
+                                        <td>{{ jour_ent.source_trans_id|default:"-" }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== JOURNAL LINES ==================== -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-list-ul me-2"></i>Journal Lines</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Account ID</th>
+                                    <th>Account Code</th>
+                                    <th>Account Name</th>
+                                    <th>Journal ID</th>
+                                    <th>Member ID</th>
+                                    <th class="text-end">Debit (₵)</th>
+                                    <th class="text-end">Credit (₵)</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for line in jour_lines %}
+                                <tr>
+                                    <td>{{ line.id }}</td>
+                                    <td>{{ line.account_id }}</td>
+                                    <td>{{ line.account.accountno }}</td>
+                                    <td>{{ line.account.name }}</td>
+                                    <td>{{ line.journal_id }}</td>
+                                    <td>{{ line.member_id|default:"-" }}</td>
+                                    <td class="text-end">{{ line.debit|floatformat:2|intcomma }}</td>
+                                    <td class="text-end">{{ line.credit|floatformat:2|intcomma }}</td>
+                                    <td>{{ line.line_description|default:"-" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="9" class="text-center">No journal lines found.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== CHART OF ACCOUNTS (from Trans.ledger_code) ==================== -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Chart of Accounts (Main Account from Trans.ledger_code)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-bordered">
+                                <tr><th>Account ID</th><td>{{ coa.id }}</td></tr>
+                                <tr><th>Account Number</th><td>{{ coa.accountno }}</td></tr>
+                                <tr><th>Account Name</th><td>{{ coa.name }}</td></tr>
+                                <tr><th>Account Type</th><td>{{ coa.account_type }}</td></tr>
+                                <tr><th>Normal Balance</th><td>{{ coa.behavior }}</td></tr>
+                                <tr><th>Is Active</th><td>{{ coa.is_active|yesno:"Yes,No" }}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== GENERAL LEDGER (for that same account) ==================== -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-database me-2"></i>General Ledger (Current Balance)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-bordered">
+                                <tr><th>GL ID</th><td>{{ led.id }}</td></tr>
+                                <tr><th>Opening Balance</th><td class="text-end">₵{{ led.opening_balance|floatformat:2|intcomma }}</td></tr>
+                                <tr><th>Opening Balance Date</th><td>{{ led.open_bal_date|date:"d/m/Y"|default:"-" }}</td></tr>
+                                <tr><th>Current Balance</th><td class="text-end fw-bold">₵{{ led.current_balance|floatformat:2|intcomma }}</td></tr>
+                                <tr><th>Period Balance</th><td class="text-end">₵{{ led.period_balance|floatformat:2|intcomma }}</td></tr>
+                                <tr><th>Year to Date</th><td class="text-end">₵{{ led.year_to_date|floatformat:2|intcomma }}</td></tr>
+                                <tr><th>Last Updated</th><td>{{ led.last_updated|date:"d/m/Y H:i" }}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'RecPayApp:trans_jour_bal_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "pos/sidebar.html" %}
+    <div class="flex-grow-1 p-4" style="margin-left: 250px;">
+        <h2>{% if customer %}Edit{% else %}Add{% endif %} Customer</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="{% url 'pos:customer_list' entity.slug %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

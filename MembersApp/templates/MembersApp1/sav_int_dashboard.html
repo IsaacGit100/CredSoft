@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Savings Interest Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-piggy-bank"></i> Savings Interest Processing</h4>
+                </div>
+                <div class="card-body">
+                    <!-- System Settings Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    Current Settings
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th>Interest Rate:</th>
+                                            <td>{{ settings.savings_interest_rate }}%</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Min Days Required:</th>
+                                            <td>{{ settings.min_savings_balance_days }} days</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Last Processed:</th>
+                                            <td>{{ settings.last_savings_min_proc_date|date:"d/m/Y"|default:"Never" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Next Quarter End:</th>
+                                            <td>
+                                                {% with today=now|date:"Y-m-d" %}
+                                                    {% if today <= settings.first_quarter_end|date:"Y-m-d" %}
+                                                        {{ settings.first_quarter_end|date:"d/m/Y" }} (Q1)
+                                                    {% elif today <= settings.second_quarter_end|date:"Y-m-d" %}
+                                                        {{ settings.second_quarter_end|date:"d/m/Y" }} (Q2)
+                                                    {% elif today <= settings.third_quarter_end|date:"Y-m-d" %}
+                                                        {{ settings.third_quarter_end|date:"d/m/Y" }} (Q3)
+                                                    {% else %}
+                                                        {{ settings.fourth_quarter_end|date:"d/m/Y" }} (Q4)
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    Statistics
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th>Total Members:</th>
+                                            <td>{{ total_members }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Members with Savings:</th>
+                                            <td>{{ members_with_savings }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Total Savings Balance:</th>
+                                            <td>₵{{ total_savings_balance|floatformat:2|intcomma }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Total Interest Accrued:</th>
+                                            <td>₵{{ total_interest_accrued|floatformat:2|intcomma }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Processing Form -->
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        <strong>Warning:</strong> This will calculate interest for all members based on minimum balances.
+                        This action may take a few minutes and cannot be undone.
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-calculator"></i> Process Savings Interest Now
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

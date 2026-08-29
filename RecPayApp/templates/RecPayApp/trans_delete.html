@@ -1,0 +1,131 @@
+<!-- RecPayApp/templates/RecPayApp/trans_delete.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Delete Transaction - {{ transaction.trans_no }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-warning me-2"></i>
+                        <strong>Warning!</strong> This action cannot be undone.
+                    </div>
+                    
+                    <p>Are you sure you want to delete the following transaction?</p>
+                    
+                    <!-- Transaction Details -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Transaction Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-sm">
+                                <tr>
+                                    <th width="40%">Transaction Number:</th>
+                                    <td><strong>{{ transaction.trans_no }}</strong></td
+                                </tr>
+                                <tr>
+                                    <th>Receipt/Voucher No:</th>
+                                    <td>{{ transaction.rec_vou_no }}</td
+                                </tr>
+                                <tr>
+                                    <th>Date:</th>
+                                    <td>{{ transaction.date|date:"d/m/Y" }}</td
+                                </tr>
+                                <tr>
+                                    <th>Type:</th>
+                                    <td>
+                                        {% if transaction.trans_type == 'Receipts' %}
+                                            <span class="badge bg-success">Receipts</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Payments</span>
+                                        {% endif %}
+                                    </td
+                                </tr>
+                                <tr>
+                                    <th>Amount:</th>
+                                    <td><strong class="text-primary">₵{{ transaction.amount|floatformat:2 }}</strong></td
+                                </tr>
+                                <tr>
+                                    <th>Payment Mode:</th>
+                                    <td>{{ transaction.pay_mode }}</td
+                                </tr>
+                                <tr>
+                                    <th>Member/Name:</th>
+                                    <td>
+                                        {% if transaction.member %}
+                                            {{ transaction.member.full_name }}
+                                        {% elif transaction.non_member_name %}
+                                            {{ transaction.non_member_name }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td
+                                </tr>
+                                <tr>
+                                    <th>Ledger Account:</th>
+                                    <td>{{ transaction.ledger_code }} - {{ transaction.ledger_name }}</td
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        {% if transaction.status == 'POSTED' %}
+                                            <span class="badge bg-success">Posted</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Draft</span>
+                                        {% endif %}
+                                    </td
+                                </tr>
+                                <tr>
+                                    <th>Created:</th>
+                                    <td>{{ transaction.created_at|date:"d/m/Y H:i:s" }}</td
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Warning for Posted Transactions -->
+                    {% if transaction.status == 'POSTED' %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>This transaction has already been posted!</strong><br>
+                        Deleting a posted transaction will affect your financial records. 
+                        Consider creating a reversing entry instead.
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Confirmation Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Type <strong class="text-danger">DELETE</strong> to confirm:</label>
+                            <input type="text" name="confirm" class="form-control" 
+                                   placeholder="Type DELETE here" required>
+                            <div class="form-text">This confirms you want to permanently delete this transaction.</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'RecPayApp:trans_view' entity.slug transaction.id %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Delete Transaction
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

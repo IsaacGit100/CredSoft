@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ clergy.full_name }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Title:</strong> {{ clergy.title|default:"—" }}</p>
+                    <p><strong>Email:</strong> {{ clergy.email_address }}</p>
+                    <p><strong>Phone:</strong> {{ clergy.telephone }}</p>
+                    <p><strong>Residential Address:</strong> {{ clergy.res_address|default:"—" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Date Arrived:</strong> {{ clergy.date_arrived|date:"Y-m-d"|default:"—" }}</p>
+                    <p><strong>Date Departed:</strong> {{ clergy.date_depart|date:"Y-m-d"|default:"—" }}</p>
+                    <p><strong>Linked Member:</strong> {{ clergy.member.full_name|default:"—" }}</p>
+                </div>
+            </div>
+            <a href="{% url 'ChurchApp:clergy_edit' entity.slug clergy.pk %}" class="btn btn-primary">Edit</a>
+            <a href="{% url 'ChurchApp:clergy_list_manage' entity.slug %}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

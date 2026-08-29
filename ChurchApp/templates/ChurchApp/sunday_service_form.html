@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ title|default:"Add Service" }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" id="service-form">
+                {% csrf_token %}
+
+                <!-- Basic Info -->
+                <fieldset class="border p-3 mb-3">
+                    <legend class="w-auto">Service Details</legend>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            {{ form.date.label_tag }}
+                            {{ form.date }}
+                            {{ form.date.errors }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.name_of_service.label_tag }}
+                            {{ form.name_of_service }}
+                            {{ form.name_of_service.errors }}
+                        </div>
+                        <div class="col-md-5 mb-3">
+                            {{ form.officiant.label_tag }}
+                            {{ form.officiant }}
+                            {{ form.officiant.errors }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            {{ form.attendance.label_tag }}
+                            {{ form.attendance }}
+                            {{ form.attendance.errors }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.communicants.label_tag }}
+                            {{ form.communicants }}
+                            {{ form.communicants.errors }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.general_offertory.label_tag }}
+                            <div class="input-group">
+                                <span class="input-group-text">₵</span>
+                                {{ form.general_offertory }}
+                            </div>
+                            {{ form.general_offertory.errors }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.dues.label_tag }}
+                            <div class="input-group">
+                                <span class="input-group-text">₵</span>
+                                {{ form.dues }}
+                            </div>
+                            {{ form.dues.errors }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Clergy -->
+                <fieldset class="border p-3 mb-3">
+                    <legend class="w-auto">Clergy <button type="button" class="btn btn-sm btn-outline-primary" id="add-clergy">+ Add</button></legend>
+                    <div id="clergy-container">
+                        <!-- Existing clergy will be rendered here by JS -->
+                    </div>
+                    {{ form.clergy }}
+                </fieldset>
+
+                <!-- Ushers -->
+                <fieldset class="border p-3 mb-3">
+                    <legend class="w-auto">Ushers <button type="button" class="btn btn-sm btn-outline-primary" id="add-usher">+ Add</button></legend>
+                    <div id="usher-container"></div>
+                    {{ form.ushers }}
+                </fieldset>
+
+                <!-- Guild Offerings -->
+                <fieldset class="border p-3 mb-3">
+                    <legend class="w-auto">Guild Offerings <button type="button" class="btn btn-sm btn-outline-primary" id="add-guild-offering">+ Add</button></legend>
+                    <div id="guild-offerings-container"></div>
+                    {{ form.guild_offerings }}
+                </fieldset>
+
+                <!-- Day-Born Offerings -->
+                <fieldset class="border p-3 mb-3">
+                    <legend class="w-auto">Day-Born Offerings <button type="button" class="btn btn-sm btn-outline-primary" id="add-dayborn">+ Add</button></legend>
+                    <div id="dayborn-container"></div>
+                    {{ form.day_born_offerings }}
+                </fieldset>
+
+                <!-- Special Thank Offering -->
+                <fieldset class="border p-3 mb-3">
+                    <legend class="w-auto">Special Thank Offering <button type="button" class="btn btn-sm btn-outline-primary" id="add-special">+ Add</button></legend>
+                    <div id="special-container"></div>
+                    {{ form.special_thank_offering }}
+                </fieldset>
+
+                <!-- Easter Offering -->
+                <fieldset class="border p-3 mb-3">
+                    <legend class="w-auto">Easter Offering <button type="button" class="btn btn-sm btn-outline-primary" id="add-easter">+ Add</button></legend>
+                    <div id="easter-container"></div>
+                    {{ form.easter_offering }}
+                </fieldset>
+
+                <!-- Christmas Offering -->
+                <fieldset class="border p-3 mb-3">
+                    <legend class="w-auto">Christmas Offering <button type="button" class="btn btn-sm btn-outline-primary" id="add-christmas">+ Add</button></legend>
+                    <div id="christmas-container"></div>
+                    {{ form.christmas_offering }}
+                </fieldset>
+
+                <!-- Harvest Offering -->
+                <fieldset class="border p-3 mb-3">
+                    <legend class="w-auto">Harvest Offering <button type="button" class="btn btn-sm btn-outline-primary" id="add-harvest">+ Add</button></legend>
+                    <div id="harvest-container"></div>
+                    {{ form.harvest_offering }}
+                </fieldset>
+
+                <!-- Other Collections -->
+                <fieldset class="border p-3 mb-3">
+                    <legend class="w-auto">Other Collections <button type="button" class="btn btn-sm btn-outline-primary" id="add-other">+ Add</button></legend>
+                    <div id="other-container"></div>
+                    {{ form.other_collections }}
+                </fieldset>
+
+                <!-- Tithes -->
+                <fieldset class="border p-3 mb-3">
+                    <legend class="w-auto">Tithes</legend>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text">₵</span>
+                                {{ form.tithes }}
+                            </div>
+                            {{ form.tithes.errors }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Post to Ledger -->
+                <div class="mb-3 form-check">
+                    {{ form.post_to_ledger }}
+                    {{ form.post_to_ledger.label_tag }}
+                    <small class="form-text text-muted">{{ form.post_to_ledger.help_text }}</small>
+                </div>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success">Save Service</button>
+                    <a href="{% url 'ChurchApp:service_list' entity.slug %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden fields for JSON initial data (populated from instance) -->
+<script>
+    // Initial data from the backend (if editing)
+    const initialData = {
+        clergy: {{ form.instance.clergy|default:"[]"|safe }},
+        ushers: {{ form.instance.ushers|default:"[]"|safe }},
+        guild_offerings: {{ form.instance.guild_offerings|default:"[]"|safe }},
+        day_born_offerings: {{ form.instance.day_born_offerings|default:"{}"|safe }},
+        special_thank_offering: {{ form.instance.special_thank_offering|default:"[]"|safe }},
+        easter_offering: {{ form.instance.easter_offering|default:"[]"|safe }},
+        christmas_offering: {{ form.instance.christmas_offering|default:"[]"|safe }},
+        harvest_offering: {{ form.instance.harvest_offering|default:"[]"|safe }},
+        other_collections: {{ form.instance.other_collections|default:"[]"|safe }},
+    };
+</script>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Helper: update hidden input with JSON string
+        function updateJSONField(containerId, inputId, array) {
+            const container = document.getElementById(containerId);
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.value = JSON.stringify(array);
+            }
+        }
+
+        // ----- Clergy (array of strings) -----
+        const clergyData = initialData.clergy || [];
+        const clergyContainer = document.getElementById('clergy-container');
+        let clergyList = [...clergyData];
+
+        function renderClergy() {
+            clergyContainer.innerHTML = '';
+            clergyList.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'input-group mb-2';
+                div.innerHTML = `
+                    <input type="text" class="form-control" value="${item}" data-index="${index}" placeholder="Clergy name">
+                    <button class="btn btn-outline-danger remove-clergy" type="button" data-index="${index}">×</button>
+                `;
+                clergyContainer.appendChild(div);
+            });
+            updateJSONField('clergy-container', 'id_clergy', clergyList);
+        }
+
+        document.getElementById('add-clergy').addEventListener('click', function() {
+            clergyList.push('');
+            renderClergy();
+            // Focus the new input
+            const inputs = clergyContainer.querySelectorAll('input[type="text"]');
+            if (inputs.length) {
+                inputs[inputs.length - 1].focus();
+            }
+        });
+
+        clergyContainer.addEventListener('input', function(e) {
+            if (e.target.matches('input[type="text"]')) {
+                const idx = parseInt(e.target.dataset.index);
+                clergyList[idx] = e.target.value;
+                updateJSONField('clergy-container', 'id_clergy', clergyList);
+            }
+        });
+
+        clergyContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-clergy')) {
+                const idx = parseInt(e.target.dataset.index);
+                clergyList.splice(idx, 1);
+                renderClergy();
+            }
+        });
+
+        // Initial render
+        renderClergy();
+
+        // Similarly for Ushers (same logic as clergy)
+        // (We'll abstract to a function for brevity, but we'll do it for all types)
+
+        // ----- Generic array adder for items with description + amount -----
+        function initArrayField(fieldName, containerId, inputId, initialData, fields) {
+            const container = document.getElementById(containerId);
+            const input = document.getElementById(inputId);
+            let items = initialData ? JSON.parse(JSON.stringify(initialData)) : [];
+
+            function render() {
+                container.innerHTML = '';
+                items.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'row mb-2';
+                    let innerHtml = `<div class="col-md-6"><input type="text" class="form-control" value="${item.description || ''}" placeholder="Description" data-index="${index}"></div>`;
+                    innerHtml += `<div class="col-md-4"><input type="number" step="0.01" class="form-control" value="${item.amount || 0}" placeholder="Amount" data-index="${index}"></div>`;
+                    innerHtml += `<div class="col-md-2"><button class="btn btn-outline-danger remove-${fieldName}" type="button" data-index="${index}">×</button></div>`;
+                    div.innerHTML = innerHtml;
+                    container.appendChild(div);
+                });
+                updateJSONField(containerId, inputId, items);
+            }
+
+            function addItem() {
+                items.push({ description: '', amount: 0 });
+                render();
+            }
+
+            container.addEventListener('input', function(e) {
+                if (e.target.matches('input[type="text"], input[type="number"]')) {
+                    const idx = parseInt(e.target.dataset.index);
+                    const key = e.target.placeholder.toLowerCase().includes('amount') ? 'amount' : 'description';
+                    if (key === 'amount') {
+                        items[idx].amount = parseFloat(e.target.value) || 0;
+                    } else {
+                        items[idx].description = e.target.value;
+                    }
+                    updateJSONField(containerId, inputId, items);
+                }
+            });
+
+            container.addEventListener('click', function(e) {
+                if (e.target.classList.contains(`remove-${fieldName}`)) {
+                    const idx = parseInt(e.target.dataset.index);
+                    items.splice(idx, 1);
+                    render();
+                }
+            });
+
+            // Add button
+            const btnId = `add-${fieldName}`;
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.addEventListener('click', addItem);
+            }
+
+            // Initial render
+            render();
+            return { addItem, items, render };
+        }
+
+        // ---- Guild Offerings (array of {guild_name, amount}) ----
+        initArrayField('guild-offering', 'guild-offerings-container', 'id_guild_offerings', initialData.guild_offerings || []);
+
+        // ---- Special Thank Offering ----
+        initArrayField('special', 'special-container', 'id_special_thank_offering', initialData.special_thank_offering || []);
+
+        // ---- Easter Offering ----
+        initArrayField('easter', 'easter-container', 'id_easter_offering', initialData.easter_offering || []);
+
+        // ---- Christmas Offering ----
+        initArrayField('christmas', 'christmas-container', 'id_christmas_offering', initialData.christmas_offering || []);
+
+        // ---- Harvest Offering ----
+        initArrayField('harvest', 'harvest-container', 'id_harvest_offering', initialData.harvest_offering || []);
+
+        // ---- Other Collections ----
+        initArrayField('other', 'other-container', 'id_other_collections', initialData.other_collections || []);
+
+        // ---- Day-Born Offerings (object with day names) ----
+        const daybornData = initialData.day_born_offerings || {};
+        const daybornContainer = document.getElementById('dayborn-container');
+        const daybornInput = document.getElementById('id_day_born_offerings');
+        let daybornObj = { ...daybornData };
+
+        function renderDayborn() {
+            daybornContainer.innerHTML = '';
+            Object.keys(daybornObj).forEach((day, index) => {
+                const div = document.createElement('div');
+                div.className = 'row mb-2';
+                div.innerHTML = `
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" value="${day}" placeholder="Day" data-index="${index}" data-key="day">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" step="0.01" class="form-control" value="${daybornObj[day]}" placeholder="Amount" data-index="${index}" data-key="amount">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-danger remove-dayborn" type="button" data-index="${index}">×</button>
+                    </div>
+                `;
+                daybornContainer.appendChild(div);
+            });
+            updateJSONField('dayborn-container', 'id_day_born_offerings', daybornObj);
+        }
+
+        document.getElementById('add-dayborn').addEventListener('click', function() {
+            daybornObj['New Day'] = 0;
+            renderDayborn();
+        });
+
+        daybornContainer.addEventListener('input', function(e) {
+            if (e.target.matches('input[type="text"], input[type="number"]')) {
+                const idx = parseInt(e.target.dataset.index);
+                const isAmount = e.target.dataset.key === 'amount';
+                const keys = Object.keys(daybornObj);
+                const key = keys[idx];
+                if (isAmount) {
+                    daybornObj[key] = parseFloat(e.target.value) || 0;
+                } else {
+                    // Changing day name: rename the key
+                    const oldKey = key;
+                    const newKey = e.target.value.trim();
+                    if (newKey && newKey !== oldKey) {
+                        daybornObj[newKey] = daybornObj[oldKey];
+                        delete daybornObj[oldKey];
+                        // Re-render because keys changed
+                        renderDayborn();
+                        return;
+                    }
+                }
+                updateJSONField('dayborn-container', 'id_day_born_offerings', daybornObj);
+            }
+        });
+
+        daybornContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-dayborn')) {
+                const idx = parseInt(e.target.dataset.index);
+                const keys = Object.keys(daybornObj);
+                delete daybornObj[keys[idx]];
+                renderDayborn();
+            }
+        });
+
+        renderDayborn();
+
+        // Ushers (same as clergy)
+        const usherData = initialData.ushers || [];
+        const usherContainer = document.getElementById('usher-container');
+        let usherList = [...usherData];
+
+        function renderUshers() {
+            usherContainer.innerHTML = '';
+            usherList.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'input-group mb-2';
+                div.innerHTML = `
+                    <input type="text" class="form-control" value="${item}" data-index="${index}" placeholder="Usher name">
+                    <button class="btn btn-outline-danger remove-usher" type="button" data-index="${index}">×</button>
+                `;
+                usherContainer.appendChild(div);
+            });
+            updateJSONField('usher-container', 'id_ushers', usherList);
+        }
+
+        document.getElementById('add-usher').addEventListener('click', function() {
+            usherList.push('');
+            renderUshers();
+        });
+
+        usherContainer.addEventListener('input', function(e) {
+            if (e.target.matches('input[type="text"]')) {
+                const idx = parseInt(e.target.dataset.index);
+                usherList[idx] = e.target.value;
+                updateJSONField('usher-container', 'id_ushers', usherList);
+            }
+        });
+
+        usherContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-usher')) {
+                const idx = parseInt(e.target.dataset.index);
+                usherList.splice(idx, 1);
+                renderUshers();
+            }
+        });
+
+        renderUshers();
+
+        // ---------- Grand Total Preview (optional) ----------
+        // You can add a live total calculation if you want, but the model's save() will compute it.
+    });
+</script>
+{% endblock %}
+
+<style>
+    fieldset { border: 1px solid #ddd; border-radius: 5px; padding: 15px; }
+    legend { width: auto; padding: 0 10px; font-weight: bold; }
+    .input-group-text { background-color: #f8f9fa; }
+</style>
+{% endblock %}

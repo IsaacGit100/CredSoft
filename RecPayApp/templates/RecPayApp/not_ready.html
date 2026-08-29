@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Module Not Ready</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #f0f0f0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .alert { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            text-align: center; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin-top: 15px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="alert">
+        <h3>⚠️ Module Not Ready</h3>
+        <p>This feature is currently under development.</p>
+        <button onclick="window.history.back()">OK - Return to Menu</button>
+        <p><small>Press Enter or click OK</small></p>
+    </div>
+
+    <script>
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') window.history.back();
+        });
+        document.querySelector('button').focus();
+    </script>
+</body>
+</html>

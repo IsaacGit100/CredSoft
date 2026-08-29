@@ -1,0 +1,656 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0 text-center">SUNDAY SERVICE ACTIVITY</h3>
+            <p class="text-center mb-0"><small>{{ entity.name }}</small></p>
+        </div>
+        <div class="card-body">
+            <form method="post" id="serviceForm">
+                {% csrf_token %}
+
+                <!-- ============================================
+                ROW 1: Date, Service Name, Attendance, Communicants
+                ============================================ -->
+                <div class="row mb-3">
+                    <div class="col-md-2">
+                        <label class="fw-bold">Date:</label>
+                        <input type="date" name="date" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="fw-bold">Service Name:</label>
+                        <input type="text" name="service_name" class="form-control" placeholder="Enter service name">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="fw-bold">Attendance:</label>
+                        <input type="number" name="attendance" class="form-control" value="0">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="fw-bold">Communicants:</label>
+                        <input type="number" name="communicants" class="form-control" value="0">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="fw-bold">&nbsp;</label>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-save"></i> Save Service
+                        </button>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ============================================
+                ROW 2: Clergy, Officiant, Ushers
+                ============================================ -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="fw-bold">Clergy:</label>
+                        <div class="input-group">
+                            <select id="clergy_select" class="form-select">
+                                <option value="">-- Select Clergy --</option>
+                                {% for clergy in clergy_list %}
+                                    <option value="{{ clergy.id }}">{{ clergy.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" class="btn btn-outline-primary" id="addClergyBtn">Add</button>
+                        </div>
+                        <div id="clergy_list" class="mt-1"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="fw-bold">Officiant:</label>
+                        <select name="officiant" class="form-select">
+                            <option value="">-- Select Officiant --</option>
+                            {% for officiant in officiants %}
+                                <option value="{{ officiant.id }}">{{ officiant.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="fw-bold">Ushers:</label>
+                        <div class="input-group">
+                            <select id="usher_select" class="form-select">
+                                <option value="">-- Select Usher --</option>
+                                {% for usher in ushers %}
+                                    <option value="{{ usher.id }}">{{ usher.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" class="btn btn-outline-success" id="addUsherBtn">Add</button>
+                        </div>
+                        <div id="usher_list" class="mt-1"></div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ============================================
+                ROW 3: FINANCE - General Offertory, Dues, Tithes
+                ============================================ -->
+                <h5 class="fw-bold text-primary">FINANCE</h5>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="fw-bold">General Offertory (₵):</label>
+                        <input type="number" name="general_offertory" id="general_offertory" class="form-control" step="0.01" value="0" oninput="updateSummary()">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="fw-bold">Dues (₵):</label>
+                        <input type="number" name="dues" id="dues" class="form-control" step="0.01" value="0" oninput="updateSummary()">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="fw-bold">Tithes (₵):</label>
+                        <input type="number" name="tithes" id="tithes" class="form-control" step="0.01" value="0" oninput="updateSummary()">
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ============================================
+                ROW 4: DayBorns & Guilds (Two Columns)
+                ============================================ -->
+                <div class="row">
+                    <!-- DayBorns Column -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">DayBorns</h6>
+                        
+                        <div class="row mb-1">
+                            <div class="col-md-8"><label class="form-label">Monday</label></div>
+                            <div class="col-md-4"><input type="number" name="day_born_monday" class="form-control day-born-input" step="0.01" value="0" oninput="updateSummary()"></div>
+                        </div>
+                        <div class="row mb-1">
+                            <div class="col-md-8"><label class="form-label">Tuesday</label></div>
+                            <div class="col-md-4"><input type="number" name="day_born_tuesday" class="form-control day-born-input" step="0.01" value="0" oninput="updateSummary()"></div>
+                        </div>
+                        <div class="row mb-1">
+                            <div class="col-md-8"><label class="form-label">Wednesday</label></div>
+                            <div class="col-md-4"><input type="number" name="day_born_wednesday" class="form-control day-born-input" step="0.01" value="0" oninput="updateSummary()"></div>
+                        </div>
+                        <div class="row mb-1">
+                            <div class="col-md-8"><label class="form-label">Thursday</label></div>
+                            <div class="col-md-4"><input type="number" name="day_born_thursday" class="form-control day-born-input" step="0.01" value="0" oninput="updateSummary()"></div>
+                        </div>
+                        <div class="row mb-1">
+                            <div class="col-md-8"><label class="form-label">Friday</label></div>
+                            <div class="col-md-4"><input type="number" name="day_born_friday" class="form-control day-born-input" step="0.01" value="0" oninput="updateSummary()"></div>
+                        </div>
+                        <div class="row mb-1">
+                            <div class="col-md-8"><label class="form-label">Saturday</label></div>
+                            <div class="col-md-4"><input type="number" name="day_born_saturday" class="form-control day-born-input" step="0.01" value="0" oninput="updateSummary()"></div>
+                        </div>
+                        <div class="row mb-1">
+                            <div class="col-md-8"><label class="form-label">Sunday</label></div>
+                            <div class="col-md-4"><input type="number" name="day_born_sunday" class="form-control day-born-input" step="0.01" value="0" oninput="updateSummary()"></div>
+                        </div>
+                        
+                        <div class="row mt-2">
+                            <div class="col-md-8 text-end fw-bold">Total:</div>
+                            <div class="col-md-4 fw-bold text-primary" id="dayBornTotal">₵0.00</div>
+                        </div>
+                    </div>
+
+                    <!-- Guilds Column -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">Guilds</h6>
+                        <div class="row mb-2">
+                            <div class="col-md-7">
+                                <select id="guild_select" class="form-select">
+                                    <option value="">-- Select Guild --</option>
+                                    {% for guild in guilds %}
+                                        <option value="{{ guild.id }}">{{ guild.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" id="guild_amount" class="form-control" placeholder="Amount" step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-primary w-100" id="addGuildBtn">Add</button>
+                            </div>
+                        </div>
+                        <div id="guild_list" class="mt-1"></div>
+                        <div class="row mt-2">
+                            <div class="col-md-9 text-end fw-bold">Total:</div>
+                            <div class="col-md-3 fw-bold text-primary" id="guildTotal">₵0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ============================================
+                ROW 5: SPECIAL THANK OFFERING & HARVEST THANK OFFERING
+                ============================================ -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">SPECIAL THANK OFFERING</h6>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">Special Thank Offering Amount</label>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" name="special_thank_amount" class="form-control special-offering" step="0.01" value="0" oninput="updateSummary()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">HARVEST THANK OFFERING</h6>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">Harvest Thank Offering Amount</label>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" name="harvest_thank_amount" class="form-control special-offering" step="0.01" value="0" oninput="updateSummary()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ============================================
+                ROW 6: CHRISTMAS THANK OFFERINGS & EASTER OFFERINGS
+                ============================================ -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">CHRISTMAS THANK OFFERINGS</h6>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <input type="text" id="christmas_name" class="form-control" placeholder="Name">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" id="christmas_amount" class="form-control" placeholder="Amount" step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-primary w-100" id="addChristmasBtn">Add</button>
+                            </div>
+                        </div>
+                        <div id="christmas_list" class="mt-1"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">EASTER OFFERINGS</h6>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <input type="text" id="easter_name" class="form-control" placeholder="Name">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" id="easter_amount" class="form-control" placeholder="Amount" step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-primary w-100" id="addEasterBtn">Add</button>
+                            </div>
+                        </div>
+                        <div id="easter_list" class="mt-1"></div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ============================================
+                ROW 7: OTHER THANK OFFERINGS
+                ============================================ -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <h6 class="fw-bold">OTHER THANK OFFERINGS</h6>
+                        <div class="row mb-2">
+                            <div class="col-md-4">
+                                <input type="text" id="other_name" class="form-control" placeholder="Name">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" id="other_amount" class="form-control" placeholder="Amount" step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-primary w-100" id="addOtherBtn">Add</button>
+                            </div>
+                        </div>
+                        <div id="other_list" class="mt-1"></div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ============================================
+                ROW 8: SUMMARY TABLE
+                ============================================ -->
+                <h5 class="fw-bold text-primary">SUMMARY</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="summaryTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Item</th>
+                                <th>General Ledger Code</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>General Offertory</td>
+                                <td><code>4010</code></td>
+                                <td class="text-end" id="sum_offertory">₵0.00</td>
+                            </tr>
+                            <tr>
+                                <td>Dues</td>
+                                <td><code>4011</code></td>
+                                <td class="text-end" id="sum_dues">₵0.00</td>
+                            </tr>
+                            <tr>
+                                <td>Tithes</td>
+                                <td><code>4012</code></td>
+                                <td class="text-end" id="sum_tithes">₵0.00</td>
+                            </tr>
+                            <tr>
+                                <td>DayBorns Collection</td>
+                                <td><code>4013</code></td>
+                                <td class="text-end" id="sum_dayborn">₵0.00</td>
+                            </tr>
+                            <tr>
+                                <td>Guilds Collection</td>
+                                <td><code>4014</code></td>
+                                <td class="text-end" id="sum_guild">₵0.00</td>
+                            </tr>
+                            <tr>
+                                <td>Special Thank Offering</td>
+                                <td><code>4015</code></td>
+                                <td class="text-end" id="sum_special">₵0.00</td>
+                            </tr>
+                            <tr>
+                                <td>Harvest Thank Offering</td>
+                                <td><code>4016</code></td>
+                                <td class="text-end" id="sum_harvest">₵0.00</td>
+                            </tr>
+                            <tr>
+                                <td>Christmas Thank Offering</td>
+                                <td><code>4017</code></td>
+                                <td class="text-end" id="sum_christmas">₵0.00</td>
+                            </tr>
+                            <tr>
+                                <td>Easter Thank Offering</td>
+                                <td><code>4018</code></td>
+                                <td class="text-end" id="sum_easter">₵0.00</td>
+                            </tr>
+                            <tr>
+                                <td>Other Thank Offering</td>
+                                <td><code>4019</code></td>
+                                <td class="text-end" id="sum_other">₵0.00</td>
+                            </tr>
+                            <tr class="table-success fw-bold">
+                                <td colspan="2" class="text-center">TOTAL COLLECTIONS FOR THE DAY</td>
+                                <td class="text-end" id="sum_grand_total">₵0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Hidden fields for selected IDs -->
+                <input type="hidden" name="clergy_ids" id="clergy_ids">
+                <input type="hidden" name="usher_ids" id="usher_ids">
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // ============================================
+    // CLERGY
+    // ============================================
+    const clergySelect = document.getElementById('clergy_select');
+    const clergyList = document.getElementById('clergy_list');
+    const clergyIdsInput = document.getElementById('clergy_ids');
+    let clergyIds = [];
+
+    document.getElementById('addClergyBtn').addEventListener('click', function() {
+        const id = clergySelect.value;
+        const name = clergySelect.options[clergySelect.selectedIndex]?.text;
+        if (id && !clergyIds.includes(id)) {
+            clergyIds.push(id);
+            renderClergyList();
+        }
+        clergySelect.value = '';
+    });
+
+    function renderClergyList() {
+        clergyList.innerHTML = '';
+        clergyIds.forEach(id => {
+            const name = clergySelect.querySelector(`option[value="${id}"]`)?.text || id;
+            const chip = document.createElement('span');
+            chip.className = 'badge bg-primary me-1 mb-1 p-2';
+            chip.innerHTML = `${name} <i class="fas fa-times" style="cursor:pointer;margin-left:5px;" data-id="${id}"></i>`;
+            chip.querySelector('i').addEventListener('click', function() {
+                clergyIds = clergyIds.filter(i => i !== id);
+                renderClergyList();
+            });
+            clergyList.appendChild(chip);
+        });
+        clergyIdsInput.value = clergyIds.join(',');
+    }
+
+    // ============================================
+    // USHERS
+    // ============================================
+    const usherSelect = document.getElementById('usher_select');
+    const usherList = document.getElementById('usher_list');
+    const usherIdsInput = document.getElementById('usher_ids');
+    let usherIds = [];
+
+    document.getElementById('addUsherBtn').addEventListener('click', function() {
+        const id = usherSelect.value;
+        const name = usherSelect.options[usherSelect.selectedIndex]?.text;
+        if (id && !usherIds.includes(id)) {
+            usherIds.push(id);
+            renderUsherList();
+        }
+        usherSelect.value = '';
+    });
+
+    function renderUsherList() {
+        usherList.innerHTML = '';
+        usherIds.forEach(id => {
+            const name = usherSelect.querySelector(`option[value="${id}"]`)?.text || id;
+            const chip = document.createElement('span');
+            chip.className = 'badge bg-success me-1 mb-1 p-2';
+            chip.innerHTML = `${name} <i class="fas fa-times" style="cursor:pointer;margin-left:5px;" data-id="${id}"></i>`;
+            chip.querySelector('i').addEventListener('click', function() {
+                usherIds = usherIds.filter(i => i !== id);
+                renderUsherList();
+            });
+            usherList.appendChild(chip);
+        });
+        usherIdsInput.value = usherIds.join(',');
+    }
+
+    // ============================================
+    // GUILDS
+    // ============================================
+    const guildSelect = document.getElementById('guild_select');
+    const guildAmount = document.getElementById('guild_amount');
+    const guildList = document.getElementById('guild_list');
+    const guildTotal = document.getElementById('guildTotal');
+    let guildOfferings = [];
+
+    document.getElementById('addGuildBtn').addEventListener('click', function() {
+        const id = guildSelect.value;
+        const name = guildSelect.options[guildSelect.selectedIndex]?.text;
+        const amount = parseFloat(guildAmount.value) || 0;
+        if (id && amount > 0) {
+            guildOfferings.push({ id, name, amount });
+            renderGuildList();
+            guildAmount.value = '';
+            guildSelect.value = '';
+            updateSummary();
+        }
+    });
+
+    function renderGuildList() {
+        guildList.innerHTML = '';
+        let total = 0;
+        guildOfferings.forEach((item, index) => {
+            total += item.amount;
+            const row = document.createElement('div');
+            row.className = 'row mb-1';
+            row.innerHTML = `
+                <div class="col-7">${item.name}</div>
+                <div class="col-3">₵${item.amount.toFixed(2)}</div>
+                <div class="col-2"><i class="fas fa-times text-danger" style="cursor:pointer;" data-index="${index}"></i></div>
+            `;
+            row.querySelector('i').addEventListener('click', function() {
+                guildOfferings.splice(index, 1);
+                renderGuildList();
+                updateSummary();
+            });
+            guildList.appendChild(row);
+        });
+        guildTotal.textContent = `₵${total.toFixed(2)}`;
+    }
+
+    // ============================================
+    // CHRISTMAS OFFERINGS
+    // ============================================
+    const christmasName = document.getElementById('christmas_name');
+    const christmasAmount = document.getElementById('christmas_amount');
+    const christmasList = document.getElementById('christmas_list');
+    let christmasOfferings = [];
+
+    document.getElementById('addChristmasBtn').addEventListener('click', function() {
+        const name = christmasName.value.trim();
+        const amount = parseFloat(christmasAmount.value) || 0;
+        if (name && amount > 0) {
+            christmasOfferings.push({ name, amount });
+            renderChristmasList();
+            christmasName.value = '';
+            christmasAmount.value = '';
+            updateSummary();
+        }
+    });
+
+    function renderChristmasList() {
+        christmasList.innerHTML = '';
+        let total = 0;
+        christmasOfferings.forEach((item, index) => {
+            total += item.amount;
+            const row = document.createElement('div');
+            row.className = 'row mb-1';
+            row.innerHTML = `
+                <div class="col-7">${item.name}</div>
+                <div class="col-3">₵${item.amount.toFixed(2)}</div>
+                <div class="col-2"><i class="fas fa-times text-danger" style="cursor:pointer;" data-index="${index}"></i></div>
+            `;
+            row.querySelector('i').addEventListener('click', function() {
+                christmasOfferings.splice(index, 1);
+                renderChristmasList();
+                updateSummary();
+            });
+            christmasList.appendChild(row);
+        });
+    }
+
+    // ============================================
+    // EASTER OFFERINGS
+    // ============================================
+    const easterName = document.getElementById('easter_name');
+    const easterAmount = document.getElementById('easter_amount');
+    const easterList = document.getElementById('easter_list');
+    let easterOfferings = [];
+
+    document.getElementById('addEasterBtn').addEventListener('click', function() {
+        const name = easterName.value.trim();
+        const amount = parseFloat(easterAmount.value) || 0;
+        if (name && amount > 0) {
+            easterOfferings.push({ name, amount });
+            renderEasterList();
+            easterName.value = '';
+            easterAmount.value = '';
+            updateSummary();
+        }
+    });
+
+    function renderEasterList() {
+        easterList.innerHTML = '';
+        let total = 0;
+        easterOfferings.forEach((item, index) => {
+            total += item.amount;
+            const row = document.createElement('div');
+            row.className = 'row mb-1';
+            row.innerHTML = `
+                <div class="col-7">${item.name}</div>
+                <div class="col-3">₵${item.amount.toFixed(2)}</div>
+                <div class="col-2"><i class="fas fa-times text-danger" style="cursor:pointer;" data-index="${index}"></i></div>
+            `;
+            row.querySelector('i').addEventListener('click', function() {
+                easterOfferings.splice(index, 1);
+                renderEasterList();
+                updateSummary();
+            });
+            easterList.appendChild(row);
+        });
+    }
+
+    // ============================================
+    // OTHER OFFERINGS
+    // ============================================
+    const otherName = document.getElementById('other_name');
+    const otherAmount = document.getElementById('other_amount');
+    const otherList = document.getElementById('other_list');
+    let otherOfferings = [];
+
+    document.getElementById('addOtherBtn').addEventListener('click', function() {
+        const name = otherName.value.trim();
+        const amount = parseFloat(otherAmount.value) || 0;
+        if (name && amount > 0) {
+            otherOfferings.push({ name, amount });
+            renderOtherList();
+            otherName.value = '';
+            otherAmount.value = '';
+            updateSummary();
+        }
+    });
+
+    function renderOtherList() {
+        otherList.innerHTML = '';
+        let total = 0;
+        otherOfferings.forEach((item, index) => {
+            total += item.amount;
+            const row = document.createElement('div');
+            row.className = 'row mb-1';
+            row.innerHTML = `
+                <div class="col-7">${item.name}</div>
+                <div class="col-3">₵${item.amount.toFixed(2)}</div>
+                <div class="col-2"><i class="fas fa-times text-danger" style="cursor:pointer;" data-index="${index}"></i></div>
+            `;
+            row.querySelector('i').addEventListener('click', function() {
+                otherOfferings.splice(index, 1);
+                renderOtherList();
+                updateSummary();
+            });
+            otherList.appendChild(row);
+        });
+    }
+
+    // ============================================
+    // SUMMARY UPDATES
+    // ============================================
+    function updateSummary() {
+        const offertory = parseFloat(document.getElementById('general_offertory').value) || 0;
+        const dues = parseFloat(document.getElementById('dues').value) || 0;
+        const tithes = parseFloat(document.getElementById('tithes').value) || 0;
+
+        // Day Born Total
+        let dayBornTotal = 0;
+        document.querySelectorAll('.day-born-input').forEach(input => {
+            dayBornTotal += parseFloat(input.value) || 0;
+        });
+        document.getElementById('dayBornTotal').textContent = `₵${dayBornTotal.toFixed(2)}`;
+
+        // Guild Total
+        let guildTotalVal = 0;
+        guildOfferings.forEach(item => guildTotalVal += item.amount);
+
+        // Special Offerings
+        const special = parseFloat(document.querySelector('input[name="special_thank_amount"]').value) || 0;
+        const harvest = parseFloat(document.querySelector('input[name="harvest_thank_amount"]').value) || 0;
+        let christmasTotal = 0;
+        christmasOfferings.forEach(item => christmasTotal += item.amount);
+        let easterTotal = 0;
+        easterOfferings.forEach(item => easterTotal += item.amount);
+        let otherTotal = 0;
+        otherOfferings.forEach(item => otherTotal += item.amount);
+
+        // Update summary table
+        document.getElementById('sum_offertory').textContent = `₵${offertory.toFixed(2)}`;
+        document.getElementById('sum_dues').textContent = `₵${dues.toFixed(2)}`;
+        document.getElementById('sum_tithes').textContent = `₵${tithes.toFixed(2)}`;
+        document.getElementById('sum_dayborn').textContent = `₵${dayBornTotal.toFixed(2)}`;
+        document.getElementById('sum_guild').textContent = `₵${guildTotalVal.toFixed(2)}`;
+        document.getElementById('sum_special').textContent = `₵${special.toFixed(2)}`;
+        document.getElementById('sum_harvest').textContent = `₵${harvest.toFixed(2)}`;
+        document.getElementById('sum_christmas').textContent = `₵${christmasTotal.toFixed(2)}`;
+        document.getElementById('sum_easter').textContent = `₵${easterTotal.toFixed(2)}`;
+        document.getElementById('sum_other').textContent = `₵${otherTotal.toFixed(2)}`;
+
+        const grandTotal = offertory + dues + tithes + dayBornTotal + guildTotalVal + special + harvest + christmasTotal + easterTotal + otherTotal;
+        document.getElementById('sum_grand_total').textContent = `₵${grandTotal.toFixed(2)}`;
+    }
+
+    // Initial update
+    updateSummary();
+});
+</script>
+
+<style>
+    .badge {
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+    .badge i {
+        cursor: pointer;
+    }
+    .table td, .table th {
+        vertical-align: middle;
+    }
+    #summaryTable .table-success {
+        background-color: #d1e7dd;
+    }
+</style>
+{% endblock %}

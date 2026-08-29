@@ -1,0 +1,49 @@
+<div class="bg-light border-end" style="min-height: 100vh; width: 250px; padding-top: 20px; position: fixed; top: 56px; left: 0; overflow-y: auto;">
+    <div class="px-3">
+        <h6 class="text-muted text-uppercase mb-3">POS</h6>
+        <div class="list-group">
+            <a href="{% url 'pos:sales_form' entity.slug %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'pos_dashboard' %}active{% endif %}">
+                <i class="fas fa-cash-register"></i> Sales
+            </a>
+            <a href="{% url 'pos:pending_sales' entity.slug %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-clock"></i> Pending Sales
+            </a>
+            <a href="{% url 'djan_led:manual_journal_entry_create' entity.slug %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-pen"></i> Manual Journal Entry
+            </a>
+            <a href="{% url 'djan_led:manual_journal_entry_list' entity.slug %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-list"></i> Review Journal Entries
+            </a>
+            <a href="{% url 'djan_led:manual_journal_entry' entity.slug %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-pen"></i> Manual Journal Entry
+            </a>
+            <a href="{% url 'djan_led:pending_journal_entries' entity.slug %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-clock"></i> Pending Journal Entries
+            </a>
+
+            <a href="{% url 'pos:product_list' entity.slug %}" class="list-group-item list-group-item-action {% if 'product' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="{% url 'pos:customer_list' entity.slug %}" class="list-group-item list-group-item-action {% if 'customer' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-users"></i> Customers
+            </a>
+            <a href="{% url 'djan_led:chart_of_accounts' entity.slug %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-book"></i> Chart of Accounts
+            </a>
+
+
+            <a href="{% url 'pos:debtor_list' entity.slug %}" class="list-group-item list-group-item-action {% if 'debtor' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-hand-holding-usd"></i> Debtors
+            </a>
+        </div>
+        <hr>
+        <div class="list-group">
+            <a href="{% url 'password_change' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-key"></i> Change Password
+            </a>
+            <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+</div>

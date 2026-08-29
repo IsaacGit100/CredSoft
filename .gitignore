@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Backups and generated data
+backups/
+*_backup_*/
+*.bak
+
+# Compiled/generated files
+dist_pyc/
+*.pyc
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# IDE/editor
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Old Git working copy and backups
+IsaacGitFiles/
+IsaacGitFiles_backup_20260828/
+IsaacGitFiles_before_cpanel_rebuild_20260828/

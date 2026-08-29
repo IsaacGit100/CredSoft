@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Repayment History for Loan #{{ loan.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Repayment History – Loan #{{ loan.id }} ({{ loan.master.full_name }})</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>Trans Amount</th>
+                            <th>Interest Paid</th>
+                            <th>Principal Paid</th>
+                            <th>Old Balance</th>
+                            <th>New Balance</th>
+                            <th>Guarantors Redeemed</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for repayment in repayments %}
+                        <tr>
+                            <td>{{ repayment.payment_date|date:"d/m/Y" }}</td>
+                            <td class="text-end">₵{{ repayment.trans_amount|floatformat:2|intcomma }}</td>
+                            <td class="text-end">₵{{ repayment.interest_paid|floatformat:2|intcomma }}</td>
+                            <td class="text-end">₵{{ repayment.repayment_paid|floatformat:2|intcomma }}</td>
+                            <td class="text-end">₵{{ repayment.old_loan_balance|floatformat:2|intcomma }}</td>
+                            <td class="text-end">₵{{ repayment.new_loan_balance|floatformat:2|intcomma }}</td>
+                            <td>
+                                {% if repayment.gua_redeemed_details %}
+                                    <button class="btn btn-sm btn-info" type="button" data-bs-toggle="collapse" data-bs-target="#guarantor-{{ repayment.id }}">
+                                        Show Details
+                                    </button>
+                                    <div class="collapse mt-2" id="guarantor-{{ repayment.id }}">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Guarantor</th>
+                                                    <th>Guaranteed Amount</th>
+                                                    <th>Redeemed in this Repayment</th>
+                                                    <th>Total Redeemed</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for guarantor in repayment.gua_redeemed_details %}
+                                                <tr>
+                                                    <td>{{ guarantor.master_name }}</td>
+                                                    <td class="text-end">₵{{ guarantor.guaranteed_amount|floatformat:2|intcomma }}</td>
+                                                    <td class="text-end">₵{{ guarantor.redeemed_in_this_transaction|floatformat:2|intcomma }}</td>
+                                                    <td class="text-end">₵{{ guarantor.redeemed_amount|floatformat:2|intcomma }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{{ repayment.notes|default:"—" }}</td>
+                        </tr>
+                        {% empty %}
+                            <tr><td colspan="8" class="text-center">No repayments found for this loan.{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{% url 'LoanApp:loan_detail' loan.id %}" class="btn btn-secondary">Back to Loan</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

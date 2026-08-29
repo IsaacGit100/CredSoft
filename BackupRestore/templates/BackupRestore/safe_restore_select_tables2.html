@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Select Tables to Restore{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Select Tables to Copy from Backup</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Backup file:</strong> {{ filename }}</p>
+            <p>Below are all tables found in the backup. Choose which ones to copy to your live database.</p>
+            <form id="copyForm">
+                {% csrf_token %}
+                <input type="hidden" name="temp_db" value="{{ temp_db }}">
+                <input type="hidden" name="job_id" value="{{ job_id }}">
+                <input type="hidden" name="filename" value="{{ filename }}">
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Copy?</th>
+                                <th>Table Name</th>
+                                <th>Status in Live DB</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for table in tables %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="selected_tables" value="{{ table.name }}"
+                                           {% if table.will_replace %}checked{% endif %}>
+                                </td>
+                                <td><code>{{ table.name }}</code></td>
+                                <td>
+                                    {% if table.exists %}
+                                        <span class="badge bg-warning">Already exists</span>
+                                    {% else %}
+                                        <span class="badge bg-success">New table</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if table.exists %}
+                                        <label>
+                                            <input type="checkbox" name="replace_table" value="{{ table.name }}">
+                                            Replace existing table (current data will be lost)
+                                        </label>
+                                    {% else %}
+                                        <em>Will be added as new table</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-3">
+                    <label><input type="checkbox" id="selectAllTables"> Select all tables</label>
+                    &nbsp;&nbsp;
+                    <label><input type="checkbox" id="replaceAllExisting"> Replace all existing tables</label>
+                </div>
+                <div class="mt-3">
+                    <label><input type="checkbox" name="drop_temp_db" checked> Delete temporary database after copying (recommended)</label>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success" id="copySubmitBtn">Copy Selected Tables to Live Database</button>
+                    <a href="{% url 'BackupRestore:backup_panel' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Modal for Copying -->
+<div class="modal fade" id="copyProgressModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Copying Tables</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="copyMessage">Starting copy...</div>
+                <div class="progress mt-2">
+                    <div id="copyProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+                </div>
+                <div id="copyDetail" class="mt-2 text-muted small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Select all tables
+    document.getElementById('selectAllTables').addEventListener('change', function(e) {
+        document.querySelectorAll('input[name="selected_tables"]').forEach(cb => cb.checked = e.target.checked);
+    });
+    // Replace all existing tables
+    document.getElementById('replaceAllExisting').addEventListener('change', function(e) {
+        document.querySelectorAll('input[name="replace_table"]').forEach(cb => cb.checked = e.target.checked);
+    });
+
+    // Copy form submission
+    document.getElementById('copyForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const anyReplace = document.querySelectorAll('input[name="replace_table"]:checked').length;
+        if (anyReplace > 0) {
+            if (!confirm('You are about to replace existing tables. All current data in those tables will be lost. Continue?')) {
+                return;
+            }
+        }
+        
+        const formData = new FormData(this);
+        const submitBtn = document.getElementById('copySubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Starting...';
+        
+        fetch('{% url "BackupRestore:safe_restore_copy_start" %}', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.copy_job_id) {
+                showCopyProgressModal();
+                pollCopyStatus(data.copy_job_id);
+            } else {
+                alert('Failed to start copy: ' + (data.error || 'Unknown error'));
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Copy Selected Tables to Live Database';
+            }
+        })
+        .catch(err => {
+            alert('Error: ' + err);
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Copy Selected Tables to Live Database';
+        });
+    });
+
+    function showCopyProgressModal() {
+        const modal = new bootstrap.Modal(document.getElementById('copyProgressModal'));
+        modal.show();
+    }
+
+
+
+    function pollCopyStatus(copyJobId) {
+        const interval = setInterval(() => {
+            fetch(`/backuprestore/copy-status/${copyJobId}/`)
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Copy status:", data);  // <-- see what the server returns
+                    const progressBar = document.getElementById('copyProgressBar');
+                    const statusMsg = document.getElementById('copyStatusMessage');
+                    // Accept both 'COMPLETED' and 'SUCCESS'
+                    if (data.status === 'COMPLETED' || data.status === 'SUCCESS') {
+                        clearInterval(interval);
+                        progressBar.style.width = '100%';
+                        progressBar.innerText = '100%';
+                        statusMsg.innerHTML = `
+                            <div class="alert alert-success mt-2">
+                                <strong>✅ Copy completed successfully!</strong><br>
+                                Tables copied: ${data.success_tables ? data.success_tables.length : (data.success_tables || []).length}<br>
+                                ${data.failed_tables && data.failed_tables.length ? `Failed: ${data.failed_tables.length}<br>` : ''}
+                                <button type="button" class="btn btn-primary mt-2" onclick="window.location.href='{% url 'BackupRestore:backup_panel' %}'">
+                                    Back to Backup Panel
+                                </button>
+                                <button type="button" class="btn btn-secondary mt-2" onclick="location.reload()">
+                                    Copy More Tables (refresh)
+                                </button>
+                            </div>
+                        `;
+                        document.getElementById('copyBtn').disabled = false;
+                        document.getElementById('copyBtn').innerText = 'Copy Selected Tables to Live Database';
+                    } else if (data.status === 'FAILED') {
+                        clearInterval(interval);
+                        statusMsg.innerHTML = `<div class="alert alert-danger mt-2">❌ Copy failed: ${data.error}</div>`;
+                        document.getElementById('copyBtn').disabled = false;
+                        document.getElementById('copyBtn').innerText = 'Copy Selected Tables to Live Database';
+                    } else {
+                        // Still running
+                        progressBar.style.width = (data.percent || 0) + '%';
+                        progressBar.innerText = (data.percent || 0) + '%';
+                        statusMsg.innerText = `Copying table: ${data.current_table || '...'} (${data.percent || 0}%)`;
+                    }
+                })
+                .catch(err => {
+                    console.error('Polling error', err);
+                });
+        }, 2000);
+    }
+
+    
+</script>
+
+<!-- Make sure Bootstrap JS is loaded (base.html should have it) -->
+{% endblock %}

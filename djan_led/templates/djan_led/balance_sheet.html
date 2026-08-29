@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>📊 Balance Sheet</h1>
+    <p><strong>Entity:</strong> {{ entity.name }}</p>
+    <hr>
+
+    <h3>Assets</h3>
+    <table class="table table-striped">
+        <thead><tr><th>Code</th><th>Name</th><th>Balance</th></tr></thead>
+        <tbody>
+            {% for item in asset_data %}
+            <tr><td>{{ item.code }}</td><td>{{ item.name }}</td><td>{{ item.balance|floatformat:2 }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3">No assets.</td></tr>
+            {% endfor %}
+            <tr><th colspan="2">Total Assets</th><th>{{ total_assets|floatformat:2 }}</th></tr>
+        </tbody>
+    </table>
+
+    <h3>Liabilities</h3>
+    <table class="table table-striped">
+        <thead><tr><th>Code</th><th>Name</th><th>Balance</th></tr></thead>
+        <tbody>
+            {% for item in liability_data %}
+            <tr><td>{{ item.code }}</td><td>{{ item.name }}</td><td>{{ item.balance|floatformat:2 }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3">No liabilities.</td></tr>
+            {% endfor %}
+            <tr><th colspan="2">Total Liabilities</th><th>{{ total_liabilities|floatformat:2 }}</th></tr>
+        </tbody>
+    </table>
+
+    <h3>Equity</h3>
+    <table class="table table-striped">
+        <thead><tr><th>Code</th><th>Name</th><th>Balance</th></tr></thead>
+        <tbody>
+            {% for item in equity_data %}
+            <tr><td>{{ item.code }}</td><td>{{ item.name }}</td><td>{{ item.balance|floatformat:2 }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3">No equity.</td></tr>
+            {% endfor %}
+            <tr><th colspan="2">Total Equity</th><th>{{ total_equity|floatformat:2 }}</th></tr>
+        </tbody>
+    </table>
+
+    <hr>
+    <p><strong>Total Liabilities + Equity:</strong> {{ total_liabilities|add:total_equity|floatformat:2 }}</p>
+
+    <a href="{% url 'djan_led:entity_dashboard' entity.slug %}" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}

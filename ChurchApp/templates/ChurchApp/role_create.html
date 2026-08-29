@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3>Create New Role</h3>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="name" class="form-label">Role Name (slug)</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                    <small class="form-text text-muted">e.g., choir, server, officiant, usher, verger, clergy</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="display_name" class="form-label">Display Name</label>
+                    <input type="text" class="form-control" id="display_name" name="display_name" required>
+                    <small class="form-text text-muted">e.g., Church Choir, Server, Officiant</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                </div>
+                
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Create Role</button>
+                    <a href="{% url 'ChurchApp:role_management' entity.slug %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

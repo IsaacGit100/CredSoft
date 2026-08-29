@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Database Backup & Restore{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Backup & Restore</h2>
+    <div class="row">
+        <!-- Full Backup -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4>Full Database Backup</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'BackupRestore:backup_all' %}">
+                        {% csrf_token %}
+                        <p>Download a complete SQL dump of your entire database.</p>
+                        <button type="submit" class="btn btn-danger">Backup All</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4>Single Table Backup</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'BackupRestore:backup_table' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Select Table</label>
+                            <select name="table_name" class="form-select" required>
+                                <option value="">-- Choose table --</option>
+                                {% for table in tables %}
+                                <option value="{{ table }}">{{ table }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success">Backup Selected Table</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Restore from Existing Backup -->
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h4>Restore from Backup File</h4>
+            </div>
+            <div class="card-body">
+                {% if backups %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Backup File</th>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Date/Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for backup in backups %}
+                            <tr>
+                                <td><code>{{ backup.filename }}</code></td>
+                                <td>{{ backup.type }}</td>
+                                <td>{{ backup.size|filesizeformat }}</td>
+                                <td>{{ backup.modified|date:"Y-m-d H:i:s" }}</td>
+                                <td>
+                                    <form method="post" action="{% url 'BackupRestore:restore_from_file' %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="backup_file" value="{{ backup.filename }}">
+                                        <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Restore this backup? It will overwrite the database.')">
+                                            Restore
+                                        </button>
+                                    </form>
+                                    <a href="{% url 'BackupRestore:download_backup' backup.filename %}" class="btn btn-sm btn-secondary">Download</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No backup files found. Create a backup first.</p>
+                {% endif %}
+            </div>
+        </div>
+
+       
+{% endblock %}

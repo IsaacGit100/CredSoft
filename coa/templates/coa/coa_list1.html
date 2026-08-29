@@ -1,0 +1,172 @@
+<!-- templates/chart_of_accounts/chart_list.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chart of Accounts</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 15px;
+        }
+        .header h1 {
+            color: #007BFF;
+            margin: 0;
+        }
+        .btn-primary {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+            text-decoration: none;
+            border-radius: 3px;
+            margin: 2px;
+        }
+        .btn-edit { background-color: #ffc107; color: #000; }
+        .btn-delete { background-color: #dc3545; color: white; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background-color: #343a40;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .level-indent {
+            display: inline-block;
+            width: 20px;
+            height: 1px;
+        }
+        .account-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .type-ASSET { background-color: #cce5ff; color: #004085; }
+        .type-LIABILITY { background-color: #d4edda; color: #155724; }
+        .type-EQUITY { background-color: #fff3cd; color: #856404; }
+        .type-INCOME { background-color: #d1ecf1; color: #0c5460; }
+        .type-EXPENSE { background-color: #f8d7da; color: #721c24; }
+        .behavior-badge {
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chart of Accounts</h1>
+            <a href="{% url 'coa:coa_create' %}" class="btn-primary">+ New Account</a>
+            <a href="{% url 'coa:coa_home' %}" class="btn-primary">+ Close</a>
+          
+            <a href="{% url 'coa:coa_reset' %}" class="btn btn-danger"  
+
+                onclick="return confirm('Are you sure you want to reset?')">
+                <i class="fas fa-trash"></i> Reset All
+            </a>
+        </div>
+
+        <!-- Summary -->
+        <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+            <div><strong>Total Accounts:</strong> {{ total_accounts }}</div>
+            <div><strong>Assets:</strong> {{ asset_count }}</div>
+            <div><strong>Liabilities:</strong> {{ liability_count }}</div>
+            <div><strong>Income:</strong> {{ income_count }}</div>
+            <div><strong>Expenses:</strong> {{ expense_count }}</div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Account No</th>
+                    <th>Account Name</th>
+                    <th>Type</th>
+                    <th>Behavior</th>
+                    <th>Level</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in root_accounts %}
+                <tr>
+                    <td><strong>{{ account.accountno }}</strong></td>
+                    <td>
+                        {% for i in "x"|ljust:account.level %}
+                            <span class="level-indent"></span>
+                        {% endfor %}
+                        {{ account.name }}
+                        {% if not account.is_active %}
+                            <span style="color: #999; font-style: italic;">(inactive)</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="account-type type-{{ account.account_type }}">
+                            {{ account.get_account_type_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if account.behavior != 'NORMAL' %}
+                            <span class="behavior-badge">{{ account.get_behavior_display }}</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ account.level }}</td>
+                    <td>
+                        <a href="{% url 'coa:coa_edit' account.id %}" class="btn-sm btn-edit">Edit</a>
+                        <a href="{% url 'coa:coa_delete' account.id %}" class="btn-sm btn-delete" 
+                           onclick="return confirm('Delete {{ account.name }}?')">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: #666;">
+                        No accounts found. <a href="{% url 'coa:coa_create' %}">Create your first account</a>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

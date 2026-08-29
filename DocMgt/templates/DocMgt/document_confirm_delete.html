@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h3>Confirm Delete</h3>
+        </div>
+        <div class="card-body">
+            <p>Are you sure you want to delete the document <strong>{{ document.document_name }}</strong>?</p>
+            <p class="text-muted">This action will mark it as inactive (soft delete) and it will no longer appear in the list.</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                <a href="{% url 'Docs:document_list' entity.slug %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

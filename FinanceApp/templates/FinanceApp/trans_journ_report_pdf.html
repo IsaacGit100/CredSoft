@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Transaction Journal Report</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    .text-end { text-align: right; }
+</style>
+</head>
+<body>
+    <h1>Transaction Journal Report</h1>
+    <p>Period: {{ start_date|default:"All" }} to {{ end_date|default:"All" }} | Batch: {{ batch|default:"All" }}</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Voucher</th><th>Date</th><th>Amount</th><th>Ledger</th><th>Journal Entry</th><th>Account Code</th><th>Account Name</th><th>Debit</th><th>Credit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in report_lines %}
+            <tr>
+                <td>{{ line.trans_voucher }}</td>
+                <td>{{ line.trans_date|date:"d/m/Y" }}</td>
+                <td class="text-end">{{ line.trans_amount|floatformat:2 }}</td>
+                <td>{{ line.trans_ledger }}</td>
+                <td>{{ line.journal_entry }}</td>
+                <td>{{ line.account_code }}</td>
+                <td>{{ line.account_name }}</td>
+                <td class="text-end">{{ line.debit|floatformat:2 }}</td>
+                <td class="text-end">{{ line.credit|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="7">TOTALS</th>
+                <th class="text-end">{{ total_debit|floatformat:2 }}</th>
+                <th class="text-end">{{ total_credit|floatformat:2 }}</th>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>

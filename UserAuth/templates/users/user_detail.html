@@ -1,0 +1,79 @@
+<!-- templates/users/user_detail.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h4>User Details: {{ user.username }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <tr>
+                                <th style="width: 200px;">Username:</th>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            <tr>
+                                <th>Full Name:</th>
+                                <td>{{ user.get_full_name|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td>{{ user.email|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Role:</th>
+                                <td>{{ user.profile.get_role_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>Phone:</th>
+                                <td>{{ user.profile.phone|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Employee ID:</th>
+                                <td>{{ user.profile.employee_id|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    {% if user.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Superuser:</th>
+                                <td>{% if user.is_superuser %}Yes{% else %}No{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <th>Last Login:</th>
+                                <td>{{ user.last_login|date:"d/m/Y H:i:s"|default:"Never" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date Joined:</th>
+                                <td>{{ user.date_joined|date:"d/m/Y H:i:s" }}</td>
+                            </tr>
+                        </table>
+                        
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="{% url 'userauth:user_list' %}" class="btn btn-secondary">Back to List</a>
+                            <div>
+                                <a href="{% url 'userauth:user_edit' user.id %}" class="btn btn-warning">Edit</a>
+                                <a href="{% url 'userauth:user_reset_password' user.id %}" class="btn btn-info">Reset Password</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

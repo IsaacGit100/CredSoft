@@ -1,0 +1,12 @@
+# djan_led/templatetags/filters.py
+from django import template
+
+register = template.Library()
+
+@register.filter
+def mul(value, arg):
+    """Multiplies value by arg."""
+    try:
+        return float(value) * float(arg)
+    except (TypeError, ValueError):
+        return 0

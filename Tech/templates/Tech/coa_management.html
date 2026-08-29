@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>📊 Chart of Accounts Management</h1>
+    <p class="text-muted">Manage COA for each entity. Click an action to view, edit, or export.</p>
+
+    <div class="table-responsive">
+        <a href="{% url 'Tech:tech_dashboard' %}" style="background: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; margin-left: 5px;">
+            <i class="fas fa-times"></i> Exit
+        </a>
+
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Entity Name</th>
+                    <th>Slug</th>
+                    <th>COA Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entity in entities %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ entity.name }}</td>
+                    <td>{{ entity.slug }}</td>
+                    <td>
+                        {% if entity.default_coa %}
+                            <span class="badge bg-success"> Exists</span>
+                        {% else %}
+                            <span class="badge bg-secondary"> None</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <!-- View -->
+                        <a href="{% url 'djan_led:chart_of_accounts' entity.slug %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+
+                        <!-- Manage (Edit) -->
+                        <a href="{% url 'djan_led:coa_list_manage' entity.slug %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-edit"></i> Manage
+                        </a>
+
+                        <!-- PDF -->
+                        <a href="{% url 'djan_led:chart_of_accounts_pdf' entity.slug %}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+
+                        <!-- Excel -->
+                        <a href="{% url 'djan_led:chart_of_accounts_excel' entity.slug %}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+
+                        <!-- Autofill Form (inline) -->
+                        <form method="post" action="{% url 'djan_led:add_coa_to_entity' %}" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="entity_slug" value="{{ entity.slug }}">
+                            <select name="account_type" class="form-select form-select-sm d-inline-block w-auto">
+                                <option value="general">General</option>
+                                <option value="church"> Church</option>
+                                <option value="school"> School</option>
+                                <option value="credit_union"> Credit Union</option>
+                                <option value="pos"> POS</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-warning">
+                                <i class="fas fa-magic"></i> Autofill
+                            </button>
+                        </form>
+
+                        <!-- Set as Default (if a COA exists but not default) -->
+                        {% if not entity.default_coa and entity.chartofaccountmodel_set.exists %}
+                            <a href="{% url 'djan_led:set_default_coa' entity.slug %}" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-check-circle"></i> Set Default
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No entities found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

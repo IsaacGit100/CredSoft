@@ -1,0 +1,478 @@
+<!-- templates/reports/report_modal.html -->
+<style>
+    /* Modal Animation */
+    .modal.fade .modal-dialog {
+        transform: translateY(-50px);
+        transition: transform 0.3s ease-out;
+    }
+    .modal.show .modal-dialog {
+        transform: translateY(0);
+    }
+    
+    /* Report Table Styling */
+    .report-table {
+        margin-bottom: 0;
+    }
+    .report-table thead th {
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        color: white;
+        font-weight: 600;
+        border: none;
+        padding: 12px;
+    }
+    .report-table tbody tr {
+        transition: all 0.2s;
+    }
+    .report-table tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: translateX(3px);
+    }
+    .report-table td {
+        vertical-align: middle;
+        padding: 10px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .category-row td {
+        background-color: #e9ecef;
+        font-weight: bold;
+        color: #495057;
+        border-top: 2px solid #dee2e6;
+    }
+    .btn-pdf {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+    .btn-pdf:hover {
+        background-color: #bb2d3b;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(220,53,69,0.3);
+    }
+    .btn-excel {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+    .btn-excel:hover {
+        background-color: #1e7e34;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(40,167,69,0.3);
+    }
+    .btn-print {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+    .btn-print:hover {
+        background-color: #5a6268;
+        transform: translateY(-1px);
+    }
+    .report-icon {
+        width: 32px;
+        text-align: center;
+        font-size: 18px;
+    }
+    .badge-new {
+        background-color: #ffc107;
+        color: #856404;
+        font-size: 10px;
+        padding: 2px 6px;
+        margin-left: 8px;
+        border-radius: 10px;
+    }
+    .modal-header {
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        border-bottom: none;
+    }
+    .modal-footer {
+        border-top: 1px solid #e9ecef;
+    }
+</style>
+
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-white" id="reportModalLabel">
+                    <i class="fas fa-chart-line me-2"></i>Custom Reports
+                    <span class="badge bg-light text-dark ms-2">Member Reports</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div class="table-responsive">
+                    <table class="table report-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">#</th>
+                                <th style="width: 45%;">Report Name</th>
+                                <th style="width: 20%;">PDF</th>
+                                <th style="width: 20%;">Excel</th>
+                                <th style="width: 10%;">Print</th>
+                            </thead>
+                            <tbody>
+                                <!-- MEMBER REPORTS SECTION -->
+                                <tr class="category-row">
+                                    <td colspan="5">
+                                        <i class="fas fa-users me-2"></i> MEMBER REPORTS
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-file-alt text-primary"></i></td>
+                                    <td>
+                                        <strong>Member Records</strong>
+                                        <span class="badge-new">Complete List</span>
+                                        <br><small class="text-muted">All active members with personal and contact information</small>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-users text-info"></i></td>
+                                    <td>
+                                        <strong>Next of Kin Report</strong>
+                                        <br><small class="text-muted">Members with next of kin contact details</small>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-chart-line text-success"></i></td>
+                                    <td>
+                                        <strong>Members Financial Summary</strong>
+                                        <br><small class="text-muted">Deposits, shares, loans, and guarantees summary</small>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-trash-alt text-danger"></i></td>
+                                    <td>
+                                        <strong>Deleted Members Report</strong>
+                                        <br><small class="text-muted">Soft-deleted members for audit purposes</small>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-map-marker-alt text-warning"></i></td>
+                                    <td>
+                                        <strong>Members by Location</strong>
+                                        <br><small class="text-muted">Members grouped by city and region</small>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-birthday-cake text-primary"></i></td>
+                                    <td>
+                                        <strong>Birthday List</strong>
+                                        <span class="badge-new">This Month</span>
+                                        <br><small class="text-muted">Members celebrating birthdays this month</small>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{#}" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- LOAN REPORTS SECTION -->
+                                <tr class="category-row">
+                                    <td colspan="5">
+                                        <i class="fas fa-hand-holding-usd me-2"></i> LOAN REPORTS
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-chart-line text-success"></i></td>
+                                    <td>
+                                        <strong>Active Loans Report</strong>
+                                        <br><small class="text-muted">All currently active loans with details</small>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-calendar-alt text-warning"></i></td>
+                                    <td>
+                                        <strong>Loan Repayment Schedule</strong>
+                                        <br><small class="text-muted">Upcoming repayment schedule for all loans</small>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-exclamation-triangle text-danger"></i></td>
+                                    <td>
+                                        <strong>Defaulted Loans Report</strong>
+                                        <br><small class="text-muted">Loans in default status with aging analysis</small>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- TRANSACTION REPORTS SECTION -->
+                                <tr class="category-row">
+                                    <td colspan="5">
+                                        <i class="fas fa-exchange-alt me-2"></i> TRANSACTION REPORTS
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-calendar-day text-info"></i></td>
+                                    <td>
+                                        <strong>Daily Transactions Report</strong>
+                                        <br><small class="text-muted">All transactions for selected date</small>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-chart-bar text-primary"></i></td>
+                                    <td>
+                                        <strong>Monthly Transaction Summary</strong>
+                                        <br><small class="text-muted">Summary of receipts and payments by month</small>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- ACCOUNTING REPORTS SECTION -->
+                                <tr class="category-row">
+                                    <td colspan="5">
+                                        <i class="fas fa-chart-pie me-2"></i> ACCOUNTING REPORTS
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-scale-balanced text-success"></i></td>
+                                    <td>
+                                        <strong>Trial Balance</strong>
+                                        <br><small class="text-muted">Debit and credit balances by account</small>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-chart-line text-warning"></i></td>
+                                    <td>
+                                        <strong>Profit & Loss Statement</strong>
+                                        <br><small class="text-muted">Income and expense summary</small>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="report-icon"><i class="fas fa-building text-primary"></i></td>
+                                    <td>
+                                        <strong>Balance Sheet</strong>
+                                        <br><small class="text-muted">Assets, liabilities, and equity position</small>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-pdf" target="_blank">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button onclick="window.print()" class="btn-print">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Close
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print me-1"></i> Print Report List
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

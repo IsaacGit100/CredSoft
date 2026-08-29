@@ -1,0 +1,104 @@
+<!-- members/templates/members/member_list_manage.html -->
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <div style="background: white; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        
+        <!-- Header -->
+        <div style="background: #007bff; color: white; padding: 15px; border-radius: 5px 5px 0 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <h4 style="margin: 0;">
+                    <i class="fas fa-users"></i> Transaction Posted List
+                </h4>
+                <div>
+                    <a href="{% url 'RecPayApp:trans_home' %}" style="background: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; margin-left: 5px;">
+                        <i class="fas fa-times"></i> Exit
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div style="padding: 15px;">
+            <!-- Search Form -->
+            <form method="get" style="margin-bottom: 15px;">
+                <div style="display: flex;">
+                    <input type="text" name="q" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" 
+                           placeholder="Search by name, phone, email..." value="{{ request.GET.q }}">
+                    <button type="submit" style="background: #007bff; color: white; border: none; padding: 8px 15px; margin-left: 5px; border-radius: 4px; cursor: pointer;">
+                        Search
+                    </button>
+                    {% if request.GET.q %}
+                    <a href="{% url 'MembersApp:member_list_manage' %}" style="background: #6c757d; color: white; padding: 8px 15px; margin-left: 5px; text-decoration: none; border-radius: 4px;">
+                        Clear
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+            
+            <!-- Members Table -->
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr> 
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">ID</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Rec/Vou No</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Date</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Trans Type</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Amount</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Pay Mode</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Member</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Batch No</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Status</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trans in trans_list %}
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ trans.id }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ trans.rec_vou_no }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ trans.date|date:"d/m/Y"|default:"-" }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ trans.trans_type|default:"-" }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ trans.amount|intcomma:2 }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ trans.pay_mode}}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ trans.ledger_code|default:"-" }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ trans.batch_number|default:"-" }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ trans.status|default:"-" }}</td>
+                            
+                            <td style="padding: 8px; border: 1px solid #ddd;">
+                                <a href="{% url 'RecPayApp:trans_jour_bal_view' trans.id %}" style="background: #17a2b8; color: white; padding: 4px 8px; text-decoration: none; border-radius: 3px; display: inline-block; margin: 2px;">View</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" style="text-align: center; padding: 40px;">
+                                No members found. <a href="{% url 'MembersApp:member_create' %}">Add your first member</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if members.has_other_pages %}
+            <div style="margin-top: 20px; text-align: center;">
+                {% if members.has_previous %}
+                <a href="?page=1" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">First</a>
+                <a href="?page={{ members.previous_page_number }}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">Previous</a>
+                {% endif %}
+                
+                <span style="padding: 8px 12px; background: #007bff; color: white;">Page {{ members.number }} of {{ members.paginator.num_pages }}</span>
+                
+                {% if members.has_next %}
+                <a href="?page={{ members.next_page_number }}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">Next</a>
+                <a href="?page={{ members.paginator.num_pages }}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">Last</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

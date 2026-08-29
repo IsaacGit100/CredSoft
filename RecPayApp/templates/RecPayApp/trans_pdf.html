@@ -1,0 +1,113 @@
+# RecPayApp/views.py
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch, cm
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib import colors
+from io import BytesIO
+from datetime import datetime
+from .models import Trans
+
+@login_required
+def trans_pdf(request, pk):
+    """Export single transaction as PDF"""
+    
+    transaction = get_object_or_404(Trans, pk=pk)
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1.5*cm, bottomMargin=1.5*cm)
+    
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        alignment=TA_CENTER,
+        spaceAfter=20
+    )
+    
+    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=10)
+    label_style = ParagraphStyle('Label', parent=styles['Normal'], fontSize=10, fontName='Helvetica-Bold')
+    
+    elements = []
+    
+    # Header
+    elements.append(Paragraph("ST. ANDREWS CO-OPERATIVE CREDIT UNION", title_style))
+    elements.append(Paragraph("Transaction Receipt", title_style))
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Transaction Details
+    data = [
+        ["Transaction Number:", transaction.trans_no],
+        ["Receipt/Voucher No:", transaction.rec_vou_no],
+        ["Date:", transaction.date.strftime('%d/%m/%Y')],
+        ["Type:", transaction.trans_type],
+        ["Amount:", f"₵{transaction.amount:,.2f}"],
+        ["Payment Mode:", transaction.pay_mode],
+        ["Status:", transaction.status],
+    ]
+    
+    table = Table(data, colWidths=[4*cm, 8*cm])
+    table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Party Information
+    party_data = [
+        ["Party Information", ""],
+        ["Name Type:", "Member" if transaction.member else "Non-Member"],
+        ["Name:", transaction.member.full_name if transaction.member else transaction.non_member_name],
+    ]
+    
+    if transaction.member:
+        party_data.append(["Member ID:", transaction.member.id])
+        party_data.append(["Phone:", transaction.member.telephone1 or "-"])
+    
+    party_table = Table(party_data, colWidths=[4*cm, 8*cm])
+    party_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+    ]))
+    elements.append(party_table)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Accounting Information
+    accounting_data = [
+        ["Accounting Information", ""],
+        ["Ledger Account:", f"{transaction.ledger_code} - {transaction.ledger_name}"],
+        ["Description:", transaction.details or "-"],
+    ]
+    
+    accounting_table = Table(accounting_data, colWidths=[4*cm, 8*cm])
+    accounting_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+    ]))
+    elements.append(accounting_table)
+    
+    # Footer
+    elements.append(Spacer(1, 0.5*inch))
+    elements.append(Paragraph(f"Generated on: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}", normal_style))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Transaction_{transaction.trans_no}_{datetime.now().strftime("%Y%m%d")}.pdf"'
+    return response

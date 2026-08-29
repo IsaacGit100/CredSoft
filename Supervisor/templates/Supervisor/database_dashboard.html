@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Financial Position Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Force table headers to be dark with white text */
+    .table thead th {
+        background-color: #1e293b !important;
+        color: #ffffff !important;
+        border-color: #334155 !important;
+    }
+    .card-header.bg-dark {
+        background-color: #1e293b !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="card bg-primary text-white mb-4">
+        <div class="card-body">
+            <h2 class="mb-0">Financial Position Dashboard</h2>
+            <p class="mb-0">As at {% now "d/m/Y H:i" %}</p>
+        </div>
+    </div>
+
+    <!-- MEMBERS SECTION -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h4>👥 Members Overview</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-4"><div class="card bg-success text-white"><div class="card-body">Active: {{ active_count|intcomma }}</div></div></div>
+                <div class="col-md-4"><div class="card bg-warning text-dark"><div class="card-body">Inactive: {{ inactive_count|intcomma }}</div></div></div>
+                <div class="col-md-4"><div class="card bg-danger text-white"><div class="card-body">Deleted: {{ deleted_count|intcomma }}</div></div></div>
+            </div>
+            <h5>Financial Totals by Status</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th class="text-end">Active (₵)</th>
+                            <th class="text-end">Inactive (₵)</th>
+                            <th class="text-end">Deleted (₵)</th>
+                            <th class="text-end">Grand Total (₵)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><th>Deposits</th><td class="text-end">{{ active_agg.total_deposits|floatformat:2|intcomma }}</td><td class="text-end">{{ inactive_agg.total_deposits|floatformat:2|intcomma }}</td><td class="text-end">{{ deleted_agg.total_deposits|floatformat:2|intcomma }}</td><td class="text-end">{{ grand_member_totals.total_deposits|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Withdrawals</th><td class="text-end">{{ active_agg.total_withdrawals|floatformat:2|intcomma }}</td><td class="text-end">{{ inactive_agg.total_withdrawals|floatformat:2|intcomma }}</td><td class="text-end">{{ deleted_agg.total_withdrawals|floatformat:2|intcomma }}</td><td class="text-end">{{ grand_member_totals.total_withdrawals|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Net Deposits</th><td colspan="3"></td><td class="text-end">{{ grand_member_totals.net_deposits|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Shares</th><td class="text-end">{{ active_agg.total_shares|floatformat:2|intcomma }}</td><td class="text-end">{{ inactive_agg.total_shares|floatformat:2|intcomma }}</td><td class="text-end">{{ deleted_agg.total_shares|floatformat:2|intcomma }}</td><td class="text-end">{{ grand_member_totals.total_shares|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Shares Withdrawal</th><td class="text-end">{{ active_agg.total_shares_withdrawal|floatformat:2|intcomma }}</td><td class="text-end">{{ inactive_agg.total_shares_withdrawal|floatformat:2|intcomma }}</td><td class="text-end">{{ deleted_agg.total_shares_withdrawal|floatformat:2|intcomma }}</td><td class="text-end">{{ grand_member_totals.total_shares_withdrawal|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Net Shares</th><td colspan="3"></td><td class="text-end">{{ grand_member_totals.net_shares|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Interest Accrued</th><td class="text-end">{{ active_agg.total_interest_accrued|floatformat:2|intcomma }}</td><td class="text-end">{{ inactive_agg.total_interest_accrued|floatformat:2|intcomma }}</td><td class="text-end">{{ deleted_agg.total_interest_accrued|floatformat:2|intcomma }}</td><td class="text-end">{{ grand_member_totals.total_interest_accrued|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Dividend</th><td class="text-end">{{ active_agg.total_dividend|floatformat:2|intcomma }}</td><td class="text-end">{{ inactive_agg.total_dividend|floatformat:2|intcomma }}</td><td class="text-end">{{ deleted_agg.total_dividend|floatformat:2|intcomma }}</td><td class="text-end">{{ grand_member_totals.total_dividend|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Dividend Withdrawal</th><td class="text-end">{{ active_agg.total_dividend_withdrawal|floatformat:2|intcomma }}</td><td class="text-end">{{ inactive_agg.total_dividend_withdrawal|floatformat:2|intcomma }}</td><td class="text-end">{{ deleted_agg.total_dividend_withdrawal|floatformat:2|intcomma }}</td><td class="text-end">{{ grand_member_totals.total_dividend_withdrawal|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Net Dividend</th><td colspan="3"></td><td class="text-end">{{ grand_member_totals.net_dividend|floatformat:2|intcomma }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOANS SECTION -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h4>💰 Loan Portfolio</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-2"><div class="card bg-info text-white"><div class="card-body">New: {{ loan_status_counts.new|intcomma }}</div></div></div>
+                <div class="col-md-2"><div class="card bg-success text-white"><div class="card-body">Active: {{ loan_status_counts.active|intcomma }}</div></div></div>
+                <div class="col-md-2"><div class="card bg-warning text-dark"><div class="card-body">Owing: {{ loan_status_counts.owing|intcomma }}</div></div></div>
+                <div class="col-md-2"><div class="card bg-secondary text-white"><div class="card-body">Completed: {{ loan_status_counts.completed|intcomma }}</div></div></div>
+                <div class="col-md-2"><div class="card bg-danger text-white"><div class="card-body">Expired: {{ loan_status_counts.expired|intcomma }}</div></div></div>
+            </div>
+            <h5>Financial Totals by Status</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th class="text-end">New (₵)</th>
+                            <th class="text-end">Active (₵)</th>
+                            <th class="text-end">Owing (₵)</th>
+                            <th class="text-end">Completed (₵)</th>
+                            <th class="text-end">Expired (₵)</th>
+                            <th class="text-end">Grand Total (₵)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><th>Principal</th>
+                            <td class="text-end">{{ loan_totals.new.total_principal|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.active.total_principal|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.owing.total_principal|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.completed.total_principal|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.expired.total_principal|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ grand_loan_totals.total_principal|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr><th>Loan Balance</th>
+                            <td class="text-end">{{ loan_totals.new.total_balance|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.active.total_balance|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.owing.total_balance|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.completed.total_balance|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.expired.total_balance|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ grand_loan_totals.total_balance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr><th>Total Deductions</th>
+                            <td class="text-end">{{ loan_totals.new.total_ded|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.active.total_ded|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.owing.total_ded|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.completed.total_ded|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.expired.total_ded|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ grand_loan_totals.total_ded|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr><th>Total Interest</th>
+                            <td class="text-end">{{ loan_totals.new.total_int|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.active.total_int|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.owing.total_int|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.completed.total_int|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ loan_totals.expired.total_int|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ grand_loan_totals.total_int|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- INVESTMENTS SECTION -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h4>📈 Investment Portfolio</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Investment Type</th>
+                            <th class="text-end">Count</th>
+                            <th class="text-end">Total Invested (₵)</th>
+                            <th class="text-end">Expected Interest (₵)</th>
+                            <th class="text-end">Interest Earned (₵)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for type, data in investment_data.items %}
+                        <tr>
+                            <td>{{ type }}</td>
+                            <td class="text-end">{{ data.count|intcomma }}</td>
+                            <td class="text-end">{{ data.total_invested|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ data.total_expected|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ data.total_earned|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-secondary">
+                        <tr>
+                            <th>TOTAL</th>
+                            <th class="text-end">{{ grand_investment_totals.total_invested|floatformat:2|intcomma }}</th>
+                            <th class="text-end">{{ grand_investment_totals.total_expected|floatformat:2|intcomma }}</th>
+                            <th class="text-end">{{ grand_investment_totals.total_earned|floatformat:2|intcomma }}</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- CASH & BANK SECTION -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h4>🏦 Cash & Bank Balances</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Bank Accounts</h5>
+                    <table class="table table-sm">
+                        <tr><th>NIB Accra</th><td class="text-end">₵{{ cash_bank.nib_accra|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>GCB Haatso</th><td class="text-end">₵{{ cash_bank.gcb_haatso|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>GCB Ablekuma</th><td class="text-end">₵{{ cash_bank.gcb_ablekuma|floatformat:2|intcomma }}</td></tr>
+                        <tr><th class="fw-bold">Total Bank</th><td class="text-end fw-bold">₵{{ cash_bank.total_bank|floatformat:2|intcomma }}</td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h5>Cash Positions</h5>
+                    <table class="table table-sm">
+                        <tr><th>Current Account Cashier</th><td class="text-end">₵{{ cash_bank.current_cashier|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Savings Account Cashier</th><td class="text-end">₵{{ cash_bank.savings_cashier|floatformat:2|intcomma }}</td></tr>
+                        <tr><th>Mobile Money Cashier</th><td class="text-end">₵{{ cash_bank.momo_cashier|floatformat:2|intcomma }}</td></tr>
+                        <tr><th class="fw-bold">Total Cash</th><td class="text-end fw-bold">₵{{ cash_bank.total_cash|floatformat:2|intcomma }}</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="alert alert-info mt-3">
+                <strong>Grand Total Liquid Assets:</strong> ₵{{ cash_bank.grand_total_liquid|floatformat:2|intcomma }}
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERALL SUMMARY -->
+    <div class="card bg-light">
+        <div class="card-header bg-success text-white">
+            <h4>📊 Overall Financial Position</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5>Member Liabilities</h5>
+                            <h3>₵{{ grand_member_totals.net_deposits|add:grand_member_totals.net_shares|add:grand_member_totals.net_dividend|floatformat:2|intcomma }}</h3>
+                            <small>Net Deposits + Net Shares + Net Dividend</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5>Loan Portfolio (Outstanding)</h5>
+                            <h3>₵{{ grand_loan_totals.total_balance|floatformat:2|intcomma }}</h3>
+                            <small>Total Loan Balance Outstanding</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5>Liquid Assets</h5>
+                            <h3>₵{{ cash_bank.grand_total_liquid|floatformat:2|intcomma }}</h3>
+                            <small>Cash + Bank Balances</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

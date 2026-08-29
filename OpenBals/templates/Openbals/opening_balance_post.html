@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-upload text-primary"></i> Post Opening Balances</h2>
+        <a href="{% url 'OpenBals:opening_balance_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Only <strong>Approved</strong> lines are shown below. Select the ones you want to post to the General Ledger.
+    </div>
+
+    {% if lines %}
+        <form method="post" action="{% url 'OpenBals:opening_balance_post_execute' %}" id="post-form">
+            {% csrf_token %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" id="select-all-post">
+                                    </th>
+                                    <th>#</th>
+                                    <th>Account</th>
+                                    <th>Debit</th>
+                                    <th>Credit</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for line in lines %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="selected_ids" value="{{ line.id }}" class="row-checkbox">
+                                    </td>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ line.account }}</td>
+                                    <td>{{ line.debit }}</td>
+                                    <td>{{ line.credit }}</td>
+                                    <td>{{ line.date|date:"Y-m-d" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to post the selected lines to the General Ledger?')">
+                        <i class="fas fa-check-circle"></i> Post Selected
+                    </button>
+                    <span class="text-muted ms-3">Selected: <span id="selected-count">0</span></span>
+                </div>
+            </div>
+        </form>
+    {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> No approved lines are waiting to be posted.
+        </div>
+    {% endif %}
+</div>
+
+<!-- Select All + Counter Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('select-all-post');
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    const selectedCount = document.getElementById('selected-count');
+
+    function updateCounter() {
+        const checked = document.querySelectorAll('.row-checkbox:checked').length;
+        selectedCount.textContent = checked;
+    }
+
+    selectAll.addEventListener('change', function(e) {
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+        updateCounter();
+    });
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateCounter);
+    });
+
+    updateCounter(); // initial count
+});
+</script>
+
+<style>
+    /* Print-friendly */
+    @media print {
+        .btn, .no-print { display: none; }
+        .table { font-size: 12px; }
+    }
+</style>
+{% endblock %}

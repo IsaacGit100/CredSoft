@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>👤 User Management</h1>
+    <p class="text-muted">View all users and reset passwords.</p>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Full Name</th>
+                    <th>Role</th>
+                    <th>Default Entity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email|default:"—" }}</td>
+                    <td>{{ user.get_full_name|default:"—" }}</td>
+                    <td>
+                        {% with profile=user.djan_led_profile %}
+                            {{ profile.role|default:"user"|title }}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with profile=user.djan_led_profile %}
+                            {{ profile.default_entity.name|default:"—" }}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        <form method="post" action="{% url 'djan_led:reset_user_password' user.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Reset password for {{ user.username }}?')">
+                                <i class="fas fa-key"></i> Reset Password
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center">No users found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

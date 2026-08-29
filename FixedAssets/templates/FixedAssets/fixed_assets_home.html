@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Menu - St. Andrews Credit Union</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Main Container */
+        .supervisor-container {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.8rem;
+        }
+
+        /* Menu Grid - 2 columns */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* Menu Button - Compact Design */
+        .menu-btn {
+            background: white;
+            border-radius: 8px;
+            padding: 12px 15px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            background: #f8f9fa;
+        }
+
+        /* Icon Section */
+        .menu-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        /* Different icon colors */
+        .menu-btn:nth-child(1) .menu-icon { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .menu-btn:nth-child(2) .menu-icon { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .menu-btn:nth-child(3) .menu-icon { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .menu-btn:nth-child(4) .menu-icon { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .menu-btn:nth-child(5) .menu-icon { background: linear-gradient(135deg, #fa709a, #fee140); }
+        .menu-btn:nth-child(6) .menu-icon { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+        .menu-btn:nth-child(7) .menu-icon { background: linear-gradient(135deg, #ffecd2, #fcb69f); color: #333; }
+        .menu-btn:nth-child(8) .menu-icon { background: linear-gradient(135deg, #ff9a9e, #fecfef); color: #333; }
+        .menu-btn:nth-child(9) .menu-icon { background: linear-gradient(135deg, #a1c4fd, #c2e9fb); color: #333; }
+        .menu-btn:nth-child(10) .menu-icon { background: linear-gradient(135deg, #d4fc79, #96e6a1); color: #333; }
+
+        /* Text Section */
+        .menu-text {
+            flex: 1;
+        }
+
+        .menu-text h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+
+        .menu-text p {
+            font-size: 0.7rem;
+            color: #7f8c8d;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn-main-menu {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-main-menu:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .menu-btn {
+                padding: 10px 12px;
+            }
+            
+            .menu-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+            
+            .menu-text h3 {
+                font-size: 0.8rem;
+            }
+            
+            .menu-text p {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="supervisor-container">
+        
+        <!-- Header -->
+        <div class="header">
+            <h1>St. Andrews Credit Union</h1>
+            <p>Supervisor Control Panel</p>
+        </div>
+
+        <!-- Menu Grid - 2 columns with annotations -->
+        <div class="menu-grid">
+
+
+             <!-- System Dashboard -->
+            <a href="{% url 'FixedAssets:asset_dashboard' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Fixed Assets Dashboard</h3>
+                    <p>Dashboard for Fixed Assets</p>
+                </div>
+            </a>
+
+            
+            <!-- User Management -->
+            <a href="{% url 'FixedAssets:asset_list_manage' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Fixed Assets List Manage</h3>
+                    <p>Manage Fixed Assets</p>
+                </div>
+            </a>
+
+            <!-- Member Settings -->
+            <a href="{% url 'FixedAssets:category_list_manage' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-sliders-h"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Fixed Assets Category Manage</h3>
+                    <p>Create, Edit, Delete Fixed Assets Category</p>
+                </div>
+            </a>
+
+            <!-- Delete A Member -->
+            <a href="{% url 'FixedAssets:depreciation_list_manage' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Fixed Assets Depreciation List</h3>
+                    <p>Fixed Assets Depreciations</p>
+                </div>
+            </a>
+
+           
+
+            <!-- Delete History -->
+            <a href="{% url 'FixedAssets:fixed_asset_register' entity.slug  %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Fixed Asset Register</h3>
+                    <p>Fixed Asset Register</p>
+                </div>
+            </a>
+
+            <!-- System Backup -->
+            
+            <a href="{% url 'FixedAssets:post_depreciation' entity.slug %}" class="menu-btn">
+                <div class="menu-icon"><i class="fas fa-database"></i></div>
+                <div class="menu-text"><h3>Post Depreciation</h3>
+                    <p>Post Depreciation to Balance Sheet and Income & Expense Accounts</p></div>
+            </a>
+
+            <a href="{% url 'FixedAssets:depreciation_schedule' entity.slug %}" class="menu-btn">
+                <div class="menu-icon"><i class="fas fa-database"></i></div>
+                <div class="menu-text"><h3>Depreciation Schedule</h3>
+                    <p>Depreciation Schedule Details</p></div>
+            </a>
+
+             <a href="{% url 'FixedAssets:fixed_assets_register_list' entity.slug %}" class="menu-btn">
+                <div class="menu-icon"><i class="fas fa-database"></i></div>
+                <div class="menu-text"><h3>Fixed Assets Registrar - List</h3>
+                    <p>Fixed Assets Registrar List</p></div>
+            </a>
+
+             <a href="{% url 'FixedAssets:fixed_assets_register_PDF' entity.slug %}" class="menu-btn">
+                <div class="menu-icon"><i class="fas fa-database"></i></div>
+                <div class="menu-text"><h3>Fixed Assets Registrar - PDF</h3>
+                    <p>Generate PDF of the Fixed Assets Registrar</p></div>
+            </a>
+
+             <a href="{% url 'FixedAssets:fixed_assets_register_excel' entity.slug %}" class="menu-btn">
+                <div class="menu-icon"><i class="fas fa-database"></i></div>
+                <div class="menu-text"><h3>Fixed Assets Registrar - Excel</h3>
+                    <p>Generate Excel of The Fixed Assets Registrar</p></div>
+            </a>
+
+
+        </div>
+
+        <!-- Footer with Main Menu Button -->
+        <div class="footer">
+            <a href="{% url 'CreditUnion:union_dashboard' entity.slug %}" class="btn-main-menu">
+                <i class="fas fa-home me-2"></i> Back to Main Menu
+            </a>
+        </div>
+
+    </div>
+</body>
+</html>

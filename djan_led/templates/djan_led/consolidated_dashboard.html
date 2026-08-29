@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>🏛️ Consolidated Dashboard – {{ head_office.name }}</h1>
+        <span class="text-muted">{{ month_name }}</span>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-warning">{{ error }}</div>
+    {% else %}
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Total Revenue ({{ month_name }})</h5>
+                    <h2>{{ revenue_total|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Total Expenses ({{ month_name }})</h5>
+                    <h2>{{ expense_total|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white {% if net_income >= 0 %}bg-primary{% else %}bg-warning{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title">Net Income ({{ month_name }})</h5>
+                    <h2>{{ net_income|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Per-Entity Table -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Entity Breakdown</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Entity</th>
+                        <th class="text-end">Revenue</th>
+                        <th class="text-end">Expenses</th>
+                        <th class="text-end">Net Income</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in entity_summary %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td class="text-end">{{ item.revenue|floatformat:2 }}</td>
+                        <td class="text-end">{{ item.expenses|floatformat:2 }}</td>
+                        <td class="text-end {% if item.net >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            {{ item.net|floatformat:2 }}
+                        </td>
+                        <td>
+                            <a href="{% url 'entity_dashboard' item.slug %}" class="btn btn-sm btn-outline-primary">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center">No entities found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+{% endblock %}

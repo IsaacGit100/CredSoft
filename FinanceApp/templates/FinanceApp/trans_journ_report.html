@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+
+{% block title %}Transaction Journal Report{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Force dark table header background and white text */
+    .table thead th,
+    .table-dark thead th,
+    thead.table-dark th {
+        background-color: #1e293b !important;
+        color: #ffffff !important;
+        border-color: #334155 !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="container-fluid mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4>Transaction Journal Report</h4>
+            <div>
+                <a href="{% url 'FinanceApp:trans_journ_report_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-danger">PDF</a>
+                <a href="{% url 'FinanceApp:trans_journ_report_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success">Excel</a>
+                <a href="{% url 'Supervisor:super_home' %}" class="btn btn-success">Exit</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label>Start Date</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <label>End Date</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <label>Batch Number</label>
+                    <input type="text" name="batch" class="form-control" placeholder="e.g., DIV-20250519" value="{{ batch|default:'' }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Trns VouNo</th>
+                            <th>Trns Date</th>
+                            <th>TrnsAmt (₵)</th>
+                            <th>Trns Ledger</th>
+                            <th>Journal Entry</th>
+                            <th>JourLn Acc Code</th>
+                            <th>JourLn Acc Name</th>
+                            <th class="text-end">Ln Debit (₵)</th>
+                            <th class="text-end">Ln Credit (₵)</th>
+                            <th class="text-end">GL Bal (₵)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in report_lines %}
+                        <tr>
+                            <td>{{ line.trans_voucher }}</td>
+                            <td>{{ line.trans_date|date:"d/m/Y" }}</td>
+                            <td class="text-end">{{ line.trans_amount|floatformat:2|intcomma }}</td>
+                            <td>{{ line.trans_ledger }}</td>
+                            <td>{{ line.journal_entry }}</td>
+                            <td>{{ line.account_code }}</td>
+                            <td>{{ line.account_name }}</td>
+                            <td class="text-end">{{ line.debit|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ line.credit|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ line.ledger_bal|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="9">No transactions found.{% endfor %}
+                    </tbody>
+                    <tfoot class="table-secondary">
+                        <tr>
+                            <th colspan="7" class="text-end">TOTALS</th>
+                            <th class="text-end">{{ total_debit|floatformat:2|intcomma }}</th>
+                            <th class="text-end">{{ total_credit|floatformat:2|intcomma }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

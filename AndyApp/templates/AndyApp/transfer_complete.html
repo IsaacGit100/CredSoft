@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+{% load humanize%}
+<head>
+    <title>Transfer Completed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .transaction-details {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #dee2e6;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            min-width: 150px;
+            color: #555;
+        }
+        
+        .detail-value {
+            flex: 1;
+            color: #333;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #545b62;
+            transform: translateY(-2px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #dc3545;
+            padding-bottom: 15px;
+        }
+        
+        .header h1 {
+            color: #dc3545;
+            margin: 0;
+        }
+        
+        .warning-icon {
+            font-size: 48px;
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+        
+        .receipt-amount {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .payment-amount {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="warning-icon">⚠️</div>
+            <h1>Transaction Copying Complete</h1>
+           
+        </div>
+        
+        <div class="transaction-details">
+            <h3 style="margin-top: 0; color: #dc3545;">Transfer Details</h3>
+            
+            <div class="detail-row">
+                <span class="detail-label">Total Transactions Transferred:</span>
+                <span class="detail-value">{{ tot_trans_cnt }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">No Of Receipts Transferred:</span>
+                <span class="detail-value">{{ receipt_cnt|intcomma:2 }}</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">Total Amount Of Receipts Transferred:</span>
+                <span class="detail-value">{{ receipt_amt|intcomma:2 }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">No of Payments Transferred:</span>
+                <span class="detail-value">{{ payments_cnt|intcomma:2 }}</span>
+            </div>
+
+             <div class="detail-row">
+                <span class="detail-label">Total Amount of Payments Transferred:</span>
+                <span class="detail-value">{{ payments_amt|intcomma:2 }}</span>
+            </div>
+            
+        
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="buttons">
+                <a href="{% url 'AndyApp:andy_home' %}" class="btn btn-cancel">
+                    Press a Key to Continue
+                </a>    
+            </div>
+        </form>
+        
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #dee2e6; font-size: 12px; color: #666; text-align: center;">
+            <p>Transaction ID: {{ transaction.id }} | Last Updated: {{ transaction.updated_at|date:"d/m/Y H:i" }}</p>
+        </div>
+    </div>
+</body>
+</html>

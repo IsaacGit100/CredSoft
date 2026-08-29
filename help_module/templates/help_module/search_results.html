@@ -1,0 +1,355 @@
+<!-- help_module/templates/help_module/search_results.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Search Results - Help Center{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'help_module:dashboard' %}">Help Center</a></li>
+            <li class="breadcrumb-item active">Search Results</li>
+        </ol>
+    </nav>
+
+    <!-- Search Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5">Search Results</h1>
+            {% if query %}
+            <p class="lead">
+                Found <strong>{{ total_results }}</strong> result{% if total_results != 1 %}s{% endif %} 
+                for "<strong>{{ query }}</strong>"
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="row mb-5">
+        <div class="col-md-8 mx-auto">
+            <form action="{% url 'help_module:search' %}" method="get">
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-lg" 
+                           name="q" placeholder="Search for help..." 
+                           value="{{ query }}" required>
+                    <button class="btn btn-primary btn-lg" type="submit">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Search Results Tabs -->
+    {% if query %}
+    <div class="row">
+        <div class="col-12">
+            <ul class="nav nav-tabs mb-4" id="searchTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" 
+                            data-bs-target="#all" type="button" role="tab">
+                        <i class="fas fa-globe me-1"></i> All ({{ total_results }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="topics-tab" data-bs-toggle="tab" 
+                            data-bs-target="#topics" type="button" role="tab">
+                        <i class="fas fa-file-alt me-1"></i> Topics ({{ topics|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="articles-tab" data-bs-toggle="tab" 
+                            data-bs-target="#articles" type="button" role="tab">
+                        <i class="fas fa-book me-1"></i> Articles ({{ articles|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="guides-tab" data-bs-toggle="tab" 
+                            data-bs-target="#guides" type="button" role="tab">
+                        <i class="fas fa-download me-1"></i> Guides ({{ guides|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="searchTabsContent">
+                <!-- All Results Tab -->
+                <div class="tab-pane fade show active" id="all" role="tabpanel">
+                    {% if topics or articles or guides %}
+                        <div class="search-results">
+                            {% for topic in topics %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h5 class="card-title">
+                                                <a href="{% url 'help_module:topic' topic.slug %}" class="text-decoration-none">
+                                                    {{ topic.title }}
+                                                </a>
+                                            </h5>
+                                            <p class="card-text text-muted">{{ topic.content|truncatechars:200 }}</p>
+                                            <div class="mt-2">
+                                                <span class="badge bg-primary me-2">{{ topic.get_help_type_display }}</span>
+                                                <span class="badge bg-secondary">{{ topic.module_display }}</span>
+                                                <small class="text-muted ms-2">
+                                                    <i class="fas fa-eye"></i> {{ topic.views_count }} views
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <a href="{% url 'help_module:topic' topic.slug %}" class="btn btn-sm btn-outline-primary ms-3">
+                                            Read More <i class="fas fa-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                            {% for article in articles %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h5 class="card-title">
+                                                <a href="{% url 'help_module:topic' article.topic.slug %}" class="text-decoration-none">
+                                                    {{ article.title }}
+                                                </a>
+                                            </h5>
+                                            <p class="card-text text-muted">{{ article.content|truncatechars:200 }}</p>
+                                            <div class="mt-2">
+                                                <span class="badge bg-info">Article</span>
+                                                <span class="badge bg-secondary">{{ article.topic.module_display }}</span>
+                                            </div>
+                                        </div>
+                                        <a href="{% url 'help_module:topic' article.topic.slug %}" class="btn btn-sm btn-outline-primary ms-3">
+                                            Read More <i class="fas fa-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                            {% for guide in guides %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h5 class="card-title">
+                                                <a href="{% url 'help_module:user_guide' guide.slug %}" class="text-decoration-none">
+                                                    <i class="fas fa-file-pdf text-danger me-2"></i>{{ guide.title }}
+                                                </a>
+                                            </h5>
+                                            <p class="card-text text-muted">{{ guide.description|truncatechars:200 }}</p>
+                                            <div class="mt-2">
+                                                <span class="badge bg-danger">User Guide</span>
+                                                <span class="badge bg-secondary">{{ guide.get_module_name_display }}</span>
+                                                <small class="text-muted ms-2">
+                                                    <i class="fas fa-calendar"></i> {{ guide.published_date|date:"M d, Y" }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <a href="{% url 'help_module:user_guide' guide.slug %}" class="btn btn-sm btn-outline-danger ms-3">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                            <h3>No results found</h3>
+                            <p class="text-muted">Try different keywords or browse our help categories</p>
+                            <a href="{% url 'help_module:dashboard' %}" class="btn btn-primary mt-3">
+                                <i class="fas fa-home"></i> Return to Help Center
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Topics Tab -->
+                <div class="tab-pane fade" id="topics" role="tabpanel">
+                    {% if topics %}
+                        {% for topic in topics %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'help_module:topic' topic.slug %}" class="text-decoration-none">
+                                        {{ topic.title }}
+                                    </a>
+                                </h5>
+                                <p class="card-text text-muted">{{ topic.content|truncatechars:150 }}</p>
+                                <div class="mt-2">
+                                    <span class="badge bg-primary">{{ topic.get_help_type_display }}</span>
+                                    <span class="badge bg-secondary">{{ topic.module_display }}</span>
+                                    <small class="text-muted ms-2">
+                                        <i class="fas fa-eye"></i> {{ topic.views_count }} views
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                            <p>No topics found matching your search.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Articles Tab -->
+                <div class="tab-pane fade" id="articles" role="tabpanel">
+                    {% if articles %}
+                        {% for article in articles %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'help_module:topic' article.topic.slug %}" class="text-decoration-none">
+                                        {{ article.title }}
+                                    </a>
+                                </h5>
+                                <p class="card-text text-muted">{{ article.content|truncatechars:150 }}</p>
+                                <div class="mt-2">
+                                    <span class="badge bg-info">From: {{ article.topic.title }}</span>
+                                    <span class="badge bg-secondary">{{ article.topic.module_display }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                            <p>No articles found matching your search.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Guides Tab -->
+                <div class="tab-pane fade" id="guides" role="tabpanel">
+                    {% if guides %}
+                        {% for guide in guides %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                    <a href="{% url 'help_module:user_guide' guide.slug %}" class="text-decoration-none">
+                                        {{ guide.title }}
+                                    </a>
+                                </h5>
+                                <p class="card-text text-muted">{{ guide.description|truncatechars:150 }}</p>
+                                <div class="mt-2">
+                                    <span class="badge bg-danger">Version {{ guide.version }}</span>
+                                    <span class="badge bg-secondary">{{ guide.get_module_name_display }}</span>
+                                    <small class="text-muted ms-2">
+                                        {{ guide.published_date|date:"M d, Y" }}
+                                    </small>
+                                </div>
+                                <div class="mt-2">
+                                    <a href="{% url 'help_module:user_guide' guide.slug %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-download"></i> Download Guide
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-download fa-3x text-muted mb-3"></i>
+                            <p>No user guides found matching your search.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Did Not Find What You're Looking For? -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-envelope fa-2x mb-2"></i>
+                <h5>Didn't find what you're looking for?</h5>
+                <p>Contact our support team for personalized assistance.</p>
+                <a href="/contact/" class="btn btn-primary">
+                    <i class="fas fa-headset"></i> Contact Support
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Searches -->
+    {% if query and total_results > 0 %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <hr>
+            <p class="text-muted">
+                <i class="fas fa-lightbulb me-1"></i>
+                Related: 
+                <a href="?q=how to" class="text-decoration-none">how to</a> · 
+                <a href="?q=tutorial" class="text-decoration-none">tutorial</a> · 
+                <a href="?q=guide" class="text-decoration-none">guide</a> · 
+                <a href="?q=setup" class="text-decoration-none">setup</a> · 
+                <a href="?q=troubleshoot" class="text-decoration-none">troubleshoot</a>
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- No Search Query -->
+    <div class="row">
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-search fa-4x text-muted mb-3"></i>
+            <h3>Search for help</h3>
+            <p class="text-muted">Enter keywords to find help articles and guides</p>
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-6">
+                    <form action="{% url 'help_module:search' %}" method="get">
+                        <div class="input-group">
+                            <input type="text" class="form-control form-control-lg" 
+                                   name="q" placeholder="e.g., how to add a loan, manage members..." required>
+                            <button class="btn btn-primary btn-lg" type="submit">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="mt-5">
+                <h5>Popular searches:</h5>
+                <div class="mt-2">
+                    <a href="?q=loan" class="btn btn-sm btn-outline-secondary me-2 mb-2">loan</a>
+                    <a href="?q=member" class="btn btn-sm btn-outline-secondary me-2 mb-2">member</a>
+                    <a href="?q=guarantor" class="btn btn-sm btn-outline-secondary me-2 mb-2">guarantor</a>
+                    <a href="?q=payment" class="btn btn-sm btn-outline-secondary me-2 mb-2">payment</a>
+                    <a href="?q=interest" class="btn btn-sm btn-outline-secondary me-2 mb-2">interest</a>
+                    <a href="?q=report" class="btn btn-sm btn-outline-secondary me-2 mb-2">report</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Include Help Modal -->
+{% include "help_module/help_modal.html" %}
+
+{% block extra_js %}
+<script>
+// Highlight search terms in results
+document.addEventListener('DOMContentLoaded', function() {
+    const searchQuery = "{{ query }}";
+    if (searchQuery) {
+        const elements = document.querySelectorAll('.card-text, .card-title');
+        elements.forEach(element => {
+            const text = element.innerHTML;
+            const regex = new RegExp(`(${searchQuery})`, 'gi');
+            element.innerHTML = text.replace(regex, '<mark>$1</mark>');
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

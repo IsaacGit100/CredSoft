@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Union Management Software</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 15px;  /* REDUCED: was 20px, now 15px */
+        }
+        
+        .container { 
+            background: white; 
+            border-radius: 15px;  /* REDUCED: was 20px, now 15px */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);  /* Lighter shadow */
+            padding: 20px;  /* REDUCED: was 40px, now 20px - main reduction! */
+            max-width: 750px;  /* Slightly narrower */
+            width: 100%; 
+            text-align: center; 
+        }
+        
+        .main-title { 
+            color: #2c3e50; 
+            font-size: 1.8em;  /* REDUCED: was 2.5em, now 1.8em */
+            margin-bottom: 5px;  /* REDUCED: was 10px, now 5px */
+        }
+        
+        .subtitle { 
+            color: #7f8c8d; 
+            font-size: 0.9em;  /* REDUCED: was 1.2em, now 0.9em */
+            border-top: 1px solid #3498db;  /* THINNER: was 2px, now 1px */
+            padding-top: 5px;  /* REDUCED: was 10px, now 5px */
+        }
+        
+        .buttons-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 12px;  /* REDUCED: was 20px, now 12px */
+            margin: 20px 0;  /* REDUCED: was 40px 0, now 20px 0 */
+        }
+        
+        .module-button { 
+            background: linear-gradient(135deg, #3498db, #2980b9); 
+            color: white; 
+            border: none; 
+            padding: 10px;  /* REDUCED: was 20px, now 10px - big reduction! */
+            border-radius: 8px;  /* REDUCED: was 12px, now 8px */
+            font-size: 0.85em;  /* REDUCED: was 1.1em, now 0.85em */
+            cursor: pointer; 
+            transition: transform 0.2s ease;  /* FASTER animation */
+        }
+        
+        .module-button:hover { 
+            transform: translateY(-2px);  /* REDUCED: was -3px, now -2px */
+        }
+        
+        .company-name { 
+            color: #e74c3c; 
+            font-weight: 600; 
+        }
+        
+        /* Footer - shortened */
+        .footer {
+            margin-top: 15px;  /* REDUCED: was 30px, now 15px */
+            padding-top: 10px;  /* REDUCED: was 20px, now 10px */
+            border-top: 1px solid #ecf0f1;
+            color: #95a5a6;
+            font-size: 0.75em;  /* Smaller footer text */
+        }
+        
+        .footer p {
+            margin: 2px 0;  /* Tighten footer lines */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ANNOTATION: Title size reduced, margin reduced -->
+        <h1 class="main-title">Credit Union Management Software</h1>
+        
+        <!-- ANNOTATION: Subtitle smaller, border thinner, padding reduced -->
+        <p class="subtitle">Designed by <span class="company-name">Hi-Waves Ventures</span></p>
+        
+        <!-- ANNOTATION: Button grid - gap reduced from 20px to 12px -->
+        <div class="buttons-grid">
+            <button class="module-button" onclick="location.href='{% url 'MembersApp:members_home' %}'">
+                Member Management
+            </button>
+            
+            <button class="module-button" onclick="alert('Member Enquiries - Coming Soon!')">
+                Member Enquiries
+            </button>
+            
+            <button class="module-button" onclick="alert('Loan Processing - Coming Soon!')">
+                Loan Processing
+            </button>
+            
+            <button class="module-button" onclick="alert('Savings Accounts - Coming Soon!')">
+                Savings Accounts
+            </button>
+            
+            <button class="module-button" onclick="alert('Savings Accounts - Coming Soon!')">
+                Receipts & Payments
+            </button>
+            
+            <button class="module-button" onclick="alert('Withdrawals - Coming Soon!')">
+                Withdrawals
+            </button>
+            
+            <button class="module-button" onclick="alert('Daily Processing - Coming Soon!')">
+                Daily Processing
+            </button>
+            
+            <button class="module-button" onclick="alert('Monthly Processing - Coming Soon!')">
+                Monthly Processing
+            </button>
+            
+            <button class="module-button" onclick="alert('P&L and Balance Sheet - Coming Soon!')">
+                P&L & Balance Sheet
+            </button>
+            
+            <button class="module-button" onclick="alert('System Settings - Coming Soon!')">
+                System Settings
+            </button>
+        </div>
+        
+        <!-- ANNOTATION: Footer - margin and padding reduced, text smaller -->
+        <div class="footer">
+            <p>&copy; 2024 Credit Union Management System</p>
+            <p>Powered by <span class="company-name">Hi-Waves Ventures</span></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+{% load humanize %}
+{% load static %}
+<html>
+<head>
+    <title>Receipts and Payments - {{ entity.name }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============================================
+           CSS VARIABLES & RESET
+           ============================================ */
+        :root {
+            --primary: #1a56db;
+            --primary-dark: #1e3a5f;
+            --primary-light: #e8f0fe;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --radius: 8px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--gray-100);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--gray-900);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            padding: 20px 30px;
+            border-radius: var(--radius);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .app-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .app-header h1 i { margin-right: 10px; }
+
+        .app-header .subtitle {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header-actions .btn {
+            padding: 8px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-white {
+            background: white;
+            color: var(--primary);
+        }
+        .btn-white:hover { background: #f0f4ff; }
+
+        .btn-outline-white {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .btn-outline-white:hover { background: rgba(255,255,255,0.15); }
+
+        /* ============================================
+           CARDS
+           ============================================ */
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 14px 20px;
+            background: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header i { margin-right: 8px; color: var(--primary); }
+
+        .card-body { padding: 20px; }
+
+        /* ============================================
+           STATS
+           ============================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 14px 18px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-card .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--gray-500);
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stat-card .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .stat-card.receipts { border-color: var(--success); }
+        .stat-card.payments { border-color: var(--danger); }
+        .stat-card.total { border-color: var(--primary); }
+
+        /* ============================================
+           FORM
+           ============================================ */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .form-group label .required {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .form-control {
+            padding: 8px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            width: 100%;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.15);
+        }
+
+        .form-control:read-only {
+            background: var(--gray-100);
+            cursor: not-allowed;
+        }
+
+        select.form-control { appearance: auto; }
+
+        /* ============================================
+           BUTTONS
+           ============================================ */
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--primary-dark); }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-success:hover { background: #15803d; }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-danger:hover { background: #b91c1c; }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+        .btn-warning:hover { background: #d97706; }
+
+        .btn-outline-secondary {
+            background: transparent;
+            color: var(--gray-500);
+            border: 1px solid var(--gray-300);
+        }
+        .btn-outline-secondary:hover { background: var(--gray-100); }
+
+        .btn-sm { padding: 4px 10px; font-size: 12px; }
+        .btn-block { width: 100%; justify-content: center; }
+
+        /* ============================================
+           TAB BUTTONS
+           ============================================ */
+        .tab-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 8px 24px;
+            border: 2px solid var(--gray-300);
+            background: white;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+            color: var(--gray-500);
+        }
+
+        .tab-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .tab-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ============================================
+           TABLE
+           ============================================ */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 0 -5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        table th {
+            background: var(--gray-50);
+            color: var(--gray-700);
+            font-weight: 600;
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 2px solid var(--gray-200);
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--gray-200);
+            vertical-align: middle;
+        }
+
+        table tr:hover td { background: var(--gray-50); }
+
+        .badge {
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-receipt { background: #d1fae5; color: #065f46; }
+        .badge-payment { background: #fee2e2; color: #991b1b; }
+
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+
+        /* ============================================
+           UTILITIES
+           ============================================ */
+        .hidden { display: none !important; }
+
+        .mt-2 { margin-top: 12px; }
+        .mb-2 { margin-bottom: 12px; }
+        .gap-2 { gap: 8px; }
+
+        .flex { display: flex; align-items: center; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-wrap { flex-wrap: wrap; }
+
+        .text-center { text-align: center; }
+        .text-muted { color: var(--gray-500); font-size: 13px; }
+
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
+
+        .alert i { margin-right: 8px; }
+
+        .member-info-box {
+            padding: 10px 14px;
+            background: var(--primary-light);
+            border-radius: var(--radius);
+            border-left: 4px solid var(--primary);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .loan-info-box {
+            padding: 10px 14px;
+            background: #fefce8;
+            border-radius: var(--radius);
+            border-left: 4px solid var(--warning);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+
+            .app-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 15px;
+            }
+
+            .header-actions { justify-content: center; }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stat-card .stat-value { font-size: 18px; }
+
+            table th, table td {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+
+            .tab-group { justify-content: center; }
+            .tab-btn { padding: 6px 16px; font-size: 12px; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ============================================
+    HEADER
+    ============================================ -->
+    <header class="app-header">
+        <div>
+            <h1><i class="fas fa-hand-holding-usd"></i> Receipts & Payments</h1>
+            <div class="subtitle">{{ entity.name }}</div>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'RecPayApp:trans_create' entity.slug %}" class="btn btn-white">
+                <i class="fas fa-plus"></i> New
+            </a>
+            <a href="{% url 'RecPayApp:recpay_home' entity.slug %}" class="btn btn-outline-white">
+                <i class="fas fa-times"></i> Close
+            </a>
+        </div>
+    </header>
+
+    <!-- ============================================
+    MESSAGES
+    ============================================ -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- ============================================
+    STATS
+    ============================================ -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="stat-label"><i class="fas fa-list"></i> Total Records</div>
+            <div class="stat-value">{{ total_records }}</div>
+        </div>
+        <div class="stat-card receipts">
+            <div class="stat-label"><i class="fas fa-arrow-down"></i> Receipts</div>
+            <div class="stat-value">{{ receipts_count }} <small style="font-size:14px;color:var(--gray-500);">₵{{ receipts_total|floatformat:2 }}</small></div>
+        </div>
+        <div class="stat-card payments">
+            <div class="stat-label"><i class="fas fa-arrow-up"></i> Payments</div>
+            <div class="stat-value">{{ payments_count }} <small style="font-size:14px;color:var(--gray-500);">₵{{ payments_total|floatformat:2 }}</small></div>
+        </div>
+        <div class="stat-card" style="border-color:var(--gray-500);">
+            <div class="stat-label"><i class="fas fa-balance-scale"></i> Net Balance</div>
+            <div class="stat-value" style="color:{% if net_balance >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+                ₵{{ net_balance|floatformat:2 }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    FORM
+    ============================================ -->
+    <form method="post" id="transactionForm">
+        {% csrf_token %}
+
+        <!-- Transaction Type -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="fas fa-exchange-alt"></i> Transaction Type</span>
+            </div>
+            <div class="card-body">
+                <div class="tab-group">
+                    <button type="button" class="tab-btn active" id="btnReceipts">
+                        <i class="fas fa-arrow-down"></i> Receipts
+                    </button>
+                    <button type="button" class="tab-btn" id="btnPayments">
+                        <i class="fas fa-arrow-up"></i> Payments
+                    </button>
+                    <input type="hidden" name="trans_type" id="trans_type" value="Receipts">
+                </div>
+            </div>
+        </div>
+
+        <!-- Basic Information -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="fas fa-info-circle"></i> Basic Information</span>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Date <span class="required">*</span></label>
+                        <input type="text" name="date" id="date" class="form-control" placeholder="dd/mm/yyyy" value="{{ today|date:'d/m/Y' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Reference No <span class="required">*</span></label>
+                        <input type="text" name="trans_no" id="trans_no" class="form-control" placeholder="Receipt/Voucher No" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Mode</label>
+                        <select name="pay_mode" id="pay_mode" class="form-control">
+                            <option value="Cash">Cash</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Transfer">Transfer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (₵) <span class="required">*</span></label>
+                        <input type="number" name="amount" id="amount" class="form-control" step="0.01" min="0.01" placeholder="0.00" required>
+                    </div>
+                </div>
+                <div class="form-grid mt-2">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Description / Details</label>
+                        <input type="text" name="details" class="form-control" placeholder="Enter description...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Party Information -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="fas fa-user"></i> Party Information</span>
+                <span class="text-muted" style="font-weight:400;font-size:12px;">
+                    <i class="fas fa-info-circle"></i> Select member or enter non-member details
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="form-group" style="max-width:300px;margin-bottom:12px;">
+                    <label>Name Type</label>
+                    <select name="name_type" id="name_type" class="form-control">
+                        <option value="Member">Member</option>
+                        <option value="Non Member">Non Member</option>
+                    </select>
+                </div>
+
+                <!-- Member Section -->
+                <div id="member-fields">
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Select Member</label>
+                            <select name="member_id" id="member_id" class="form-control">
+                                <option value="">-- Select Member --</option>
+                                {% for member in members %}
+                                <option value="{{ member.id }}" data-name="{{ member.first_name }} {{ member.last_name }}" data-balance="{{ member.available_balance }}" data-phone="{{ member.telephone1 }}">
+                                    {{ member.full_name }} ({{ member.id }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <span id="memberLoader" class="loader" style="display: none;"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Member Name</label>
+                            <input type="text" name="member_name" id="member_name" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div id="memberInfo" class="member-info-box hidden"></div>
+                </div>
+
+                <!-- Non-Member Section -->
+                <div id="non-member-fields" class="hidden">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" name="non_member_name" class="form-control" placeholder="Enter full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact</label>
+                            <input type="text" name="non_member_contact" class="form-control" placeholder="Address & Phone">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accounting Information -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="fas fa-book"></i> Accounting</span>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>General Ledger Account <span class="required">*</span></label>
+                        <select name="chart_account" id="chart_account" class="form-control">
+                            {% for acc in accounts %}
+                                <option value="{{ acc.id }},{{ acc.code }},{{ acc.name }}">
+                                    {{ acc.code }} - {{ acc.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group" style="justify-content:flex-end;">
+                        <label>&nbsp;</label>
+                        <button type="submit" name="save" class="btn btn-success btn-block">
+                            <i class="fas fa-save"></i> Save Transaction
+                        </button>
+                    </div>
+                </div>
+                <div id="ledger-display-fields" class="hidden">
+                    <input type="hidden" name="ledger_id" id="ledger_id">
+                    <input type="hidden" name="ledger_code" id="ledger_code">
+                    <input type="hidden" name="ledger_name" id="ledger_name">
+                </div>
+            </div>
+        </div>
+
+        <!-- Loan Information -->
+        <div id="loan-related-fields" class="card hidden">
+            <div class="card-header">
+                <span><i class="fas fa-hand-holding-usd"></i> Loan Information</span>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Select Loan</label>
+                    <select name="loan_id" id="loan_select" class="form-control">
+                        <option value="">-- Select Loan --</option>
+                    </select>
+                    <span id="loanLoader" class="loader" style="display: none;"></span>
+                </div>
+                <div id="loanDetails" class="loan-info-box hidden"></div>
+            </div>
+        </div>
+
+        <!-- Cheque Details -->
+        <div id="cheque-fields" class="card hidden">
+            <div class="card-header">
+                <span><i class="fas fa-pen"></i> Cheque Details</span>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group"><label>Cheque Date</label><input type="text" name="cheque_date" class="form-control" placeholder="dd/mm/yyyy"></div>
+                    <div class="form-group"><label>Cheque No</label><input type="text" name="cheque_no" class="form-control" placeholder="Cheque Number"></div>
+                    <div class="form-group"><label>Bank Name</label><input type="text" name="bank" class="form-control" placeholder="Bank Name"></div>
+                    <div class="form-group"><label>Branch Name</label><input type="text" name="bank_branch" class="form-control" placeholder="Branch Name"></div>
+                    <div class="form-group"><label>Account No</label><input type="text" name="bank_no" class="form-control" placeholder="Account Number"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transfer Details -->
+        <div id="transfer-fields" class="card hidden">
+            <div class="card-header">
+                <span><i class="fas fa-mobile-alt"></i> Transfer Details</span>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group"><label>Mobile Money No</label><input type="text" name="momo_no" class="form-control" placeholder="Mobile Money Number"></div>
+                    <div class="form-group"><label>Account Name</label><input type="text" name="momo_name" class="form-control" placeholder="Account Name"></div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- ============================================
+    RECENT TRANSACTIONS
+    ============================================ -->
+    <div class="card">
+        <div class="card-header">
+            <span><i class="fas fa-clock"></i> Recent Transactions</span>
+            <span class="text-muted" style="font-weight:400;font-size:12px;">Showing latest 50</span>
+        </div>
+        <div class="card-body" style="padding:0;">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Ref</th>
+                            <th>Type</th>
+                            <th>Member/Name</th>
+                            <th>Account</th>
+                            <th>Details</th>
+                            <th style="text-align:right;">Receipts</th>
+                            <th style="text-align:right;">Payments</th>
+                            <th>Mode</th>
+                            <th style="text-align:center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in tran %}
+                        <tr>
+                            <td>{{ t.date|date:"d/m/Y" }}</td>
+                            <td><code>{{ t.rec_vou_no }}</code></td>
+                            <td>
+                                <span class="badge {% if t.trans_type == 'Receipts' %}badge-receipt{% else %}badge-payment{% endif %}">
+                                    {{ t.trans_type }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if t.church_member %}
+                                    {{ t.church_member.full_name }}
+                                {% elif t.member %}
+                                    {{ t.member.full_name }}
+                                {% elif t.non_member_name %}
+                                    {{ t.non_member_name }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ t.ledger_name|truncatechars:20|default:"—" }}</td>
+                            <td>{{ t.details|truncatechars:25|default:"—" }}</td>
+                            <td style="text-align:right;font-weight:600;color:var(--success);">
+                                {% if t.trans_type == 'Receipts' %}₵{{ t.amount|floatformat:2 }}{% else %}<span class="text-muted">—</span>{% endif %}
+                            </td>
+                            <td style="text-align:right;font-weight:600;color:var(--danger);">
+                                {% if t.trans_type == 'Payments' %}₵{{ t.amount|floatformat:2 }}{% else %}<span class="text-muted">—</span>{% endif %}
+                            </td>
+                            <td>{{ t.pay_mode }}</td>
+                            <td style="text-align:center;white-space:nowrap;">
+                                <div class="flex" style="gap:4px;justify-content:center;">
+                                    <a href="{% url 'RecPayApp:trans_view' entity.slug t.id %}" class="btn btn-primary btn-sm" title="View"><i class="fas fa-eye"></i></a>
+                                    <a href="{% url 'RecPayApp:trans_edit' entity.slug t.id %}" class="btn btn-warning btn-sm" title="Edit"><i class="fas fa-edit"></i></a>
+                                    <a href="{% url 'RecPayApp:trans_delete' entity.slug t.id %}" class="btn btn-danger btn-sm" title="Delete" onclick="return confirm('Delete this transaction?')"><i class="fas fa-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--gray-500);">
+                            <i class="fas fa-inbox" style="font-size:32px;display:block;margin-bottom:10px;"></i>
+                            No transactions found. Start by creating one above.
+                        </td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+JAVASCRIPT
+============================================ -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // ----- DOM References -----
+        const memberSelect = document.getElementById('member_id');
+        const memberLoader = document.getElementById('memberLoader');
+        const memberInfo = document.getElementById('memberInfo');
+        const memberName = document.getElementById('member_name');
+        const loanSelect = document.getElementById('loan_select');
+        const loanLoader = document.getElementById('loanLoader');
+        const loanSection = document.getElementById('loan-related-fields');
+        const loanDetails = document.getElementById('loanDetails');
+        const chartAccount = document.getElementById('chart_account');
+        const nameType = document.getElementById('name_type');
+        const memberFields = document.getElementById('member-fields');
+        const nonMemberFields = document.getElementById('non-member-fields');
+        const payMode = document.getElementById('pay_mode');
+        const chequeFields = document.getElementById('cheque-fields');
+        const transferFields = document.getElementById('transfer-fields');
+        const btnReceipts = document.getElementById('btnReceipts');
+        const btnPayments = document.getElementById('btnPayments');
+        const transType = document.getElementById('trans_type');
+        const transNo = document.getElementById('trans_no');
+        const dateInput = document.getElementById('date');
+
+        // ----- Transaction Type Toggle -----
+        btnReceipts.addEventListener('click', function() {
+            transType.value = 'Receipts';
+            transNo.placeholder = 'Receipt No';
+            btnReceipts.classList.add('active');
+            btnPayments.classList.remove('active');
+        });
+
+        btnPayments.addEventListener('click', function() {
+            transType.value = 'Payments';
+            transNo.placeholder = 'Voucher No';
+            btnPayments.classList.add('active');
+            btnReceipts.classList.remove('active');
+        });
+
+        // ----- Name Type Toggle -----
+        nameType.addEventListener('change', function() {
+            if (this.value === 'Member') {
+                memberFields.style.display = 'block';
+                nonMemberFields.style.display = 'none';
+            } else {
+                memberFields.style.display = 'none';
+                nonMemberFields.style.display = 'block';
+            }
+        });
+        nameType.dispatchEvent(new Event('change'));
+
+        // ----- Payment Mode Toggle -----
+        payMode.addEventListener('change', function() {
+            if (this.value === 'Cheque') {
+                chequeFields.classList.remove('hidden');
+                transferFields.classList.add('hidden');
+            } else if (this.value === 'Transfer') {
+                chequeFields.classList.add('hidden');
+                transferFields.classList.remove('hidden');
+            } else {
+                chequeFields.classList.add('hidden');
+                transferFields.classList.add('hidden');
+            }
+        });
+        payMode.dispatchEvent(new Event('change'));
+
+        // ----- Member Selection -----
+        memberSelect.addEventListener('change', function() {
+            const memberId = this.value;
+
+            if (!memberId) {
+                memberName.value = '';
+                memberInfo.classList.add('hidden');
+                loanSelect.innerHTML = '<option value="">-- Select Loan --</option>';
+                loanSection.classList.add('hidden');
+                loanDetails.classList.add('hidden');
+                return;
+            }
+
+            memberLoader.style.display = 'inline-block';
+
+            // Fetch member info
+            fetch(`/recpay/api/member-info/${memberId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        memberName.value = data.name;
+                        memberInfo.innerHTML = `<strong>Balance:</strong> ₵${data.balance.toFixed(2)} | <strong>Phone:</strong> ${data.phone || '-'}`;
+                        memberInfo.classList.remove('hidden');
+                    }
+                })
+                .catch(() => {})
+                .finally(() => { memberLoader.style.display = 'none'; });
+
+            // Fetch loans
+            loanLoader.style.display = 'inline-block';
+            fetch(`/recpay/api/member-loans/${memberId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    loanSelect.innerHTML = '<option value="">-- Select Loan --</option>';
+                    if (data.success && data.loans && data.loans.length > 0) {
+                        data.loans.forEach(loan => {
+                            loanSelect.innerHTML += `
+                                <option value="${loan.id}"
+                                    data-loan-id="Loan #${loan.id}"
+                                    data-principal="${loan.principal}"
+                                    data-balance="${loan.balance}"
+                                    data-interest-rate="${loan.interest_rate}">
+                                    Loan #${loan.id} - ₵${loan.principal.toFixed(2)} (Balance: ₵${loan.balance.toFixed(2)})
+                                </option>
+                            `;
+                        });
+                    } else {
+                        loanSelect.innerHTML += '<option value="" disabled>No active loans</option>';
+                    }
+                })
+                .catch(() => {})
+                .finally(() => { loanLoader.style.display = 'none'; });
+        });
+
+        // ----- Loan Selection -----
+        loanSelect.addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            const loanId = this.value;
+
+            if (!loanId) {
+                loanDetails.classList.add('hidden');
+                return;
+            }
+
+            const principal = selected.getAttribute('data-principal') || '0';
+            const balance = selected.getAttribute('data-balance') || '0';
+            const interestRate = selected.getAttribute('data-interest-rate') || '0';
+
+            loanDetails.innerHTML = `
+                <div style="display:flex;flex-wrap:wrap;gap:15px;">
+                    <div><strong>Loan:</strong> ${selected.getAttribute('data-loan-id')}</div>
+                    <div><strong>Principal:</strong> ₵${parseFloat(principal).toFixed(2)}</div>
+                    <div><strong>Balance:</strong> <span style="color:#dc2626;">₵${parseFloat(balance).toFixed(2)}</span></div>
+                    <div><strong>Interest Rate:</strong> ${interestRate}%</div>
+                </div>
+            `;
+            loanDetails.classList.remove('hidden');
+        });
+
+        // ----- Ledger Selection -----
+        chartAccount.addEventListener('change', function() {
+            const value = this.value;
+            if (value) {
+                const parts = value.split(',');
+                if (parts.length === 3) {
+                    document.getElementById('ledger_id').value = parts[0];
+                    document.getElementById('ledger_code').value = parts[1];
+                    document.getElementById('ledger_name').value = parts[2];
+
+                    const ledgerName = parts[2].toLowerCase();
+                    const selectedMember = memberSelect.value;
+
+                    if ((ledgerName.includes('loan repayment') || ledgerName.includes('loan disbursement')) && selectedMember) {
+                        loanSection.classList.remove('hidden');
+                        if (loanSelect.options.length <= 1) {
+                            memberSelect.dispatchEvent(new Event('change'));
+                        }
+                    } else {
+                        loanSection.classList.add('hidden');
+                        loanDetails.classList.add('hidden');
+                    }
+                }
+            }
+        });
+
+        // ----- Date Formatting -----
+        function formatDateInput(input) {
+            let val = input.value.replace(/\D/g, '');
+            if (val.length >= 2) val = val.slice(0,2) + '/' + val.slice(2);
+            if (val.length >= 5) val = val.slice(0,5) + '/' + val.slice(5,9);
+            input.value = val;
+        }
+
+        dateInput.addEventListener('input', function() { formatDateInput(this); });
+
+        // ----- Focus -----
+        dateInput.focus();
+
+        // ----- Auto-hide messages -----
+        setTimeout(function() {
+            document.querySelectorAll('.alert').forEach(msg => {
+                msg.style.transition = 'opacity 0.5s';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 4000);
+    });
+</script>
+
+</body>
+</html>

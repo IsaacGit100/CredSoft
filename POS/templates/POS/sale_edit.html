@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "pos/sidebar.html" %}
+    <div class="flex-grow-1 p-3" style="margin-left: 250px;">
+        <h2>Edit Sale #{{ sale.id }}</h2>
+        <form method="post" action="{% url 'pos:sale_edit' entity.slug sale.id %}">
+            {% csrf_token %}
+            <div class="mb-2">
+                <label class="form-label">Customer</label>
+                <select name="customer" class="form-select">
+                    <option value="">Walk‑in</option>
+                    {% for c in customers %}
+                    <option value="{{ c.id }}" {% if c.id == sale.customer.id %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="sale-lines">
+                {% for line in lines %}
+                <div class="row mb-2 line-row">
+                    <div class="col-4">
+                        <label class="form-label">Product</label>
+                        <select name="product_id[]" class="form-select product-select">
+                            <option value="">-- Select --</option>
+                            {% for p in products %}
+                            <option value="{{ p.id }}" {% if p.id == line.product.id %}selected{% endif %} data-price="{{ p.selling_price }}">{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-2">
+                        <label class="form-label">Qty</label>
+                        <input type="number" name="quantity[]" class="form-control qty-input" value="{{ line.quantity }}" min="1">
+                    </div>
+                    <div class="col-3">
+                        <label class="form-label">Unit Price</label>
+                        <input type="number" name="unit_price[]" class="form-control price-input" step="0.01" value="{{ line.unit_price }}">
+                    </div>
+                    <div class="col-2">
+                        <label class="form-label">Ext Price</label>
+                        <input type="text" class="form-control ext-price" value="{{ line.total_price }}" readonly>
+                    </div>
+                    <div class="col-1">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="button" class="btn btn-danger btn-sm remove-line">✕</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" class="btn btn-sm btn-secondary" id="add-line">+ Add Line</button>
+            <div class="mt-2"><strong>Total: </strong><span id="sale-total">{{ sale.total_amount|floatformat:2 }}</span></div>
+
+            <button type="submit" class="btn btn-primary mt-2">Update Sale</button>
+            <a href="{% url 'pos:sales_form' entity.slug %}" class="btn btn-secondary mt-2">Cancel</a>
+        </form>
+    </div>
+</div>
+<script>
+    // Same JS as sales_form for adding/removing lines and calculating total
+    // ... (copy from sales_form.html)
+
+    // ===== Add / Remove Sale Lines =====
+    document.getElementById('add-line').addEventListener('click', function() {
+        const clone = document.querySelector('.line-row').cloneNode(true);
+        clone.querySelectorAll('input').forEach(inp => inp.value = '');
+        clone.querySelector('.price-input').value = '';
+        clone.querySelector('.ext-price').value = '';
+        clone.querySelector('.qty-input').value = 1;
+        document.getElementById('sale-lines').appendChild(clone);
+        attachLineEvents(clone);
+    });
+
+    function attachLineEvents(row) {
+        const priceInput = row.querySelector('.price-input');
+        const qtyInput = row.querySelector('.qty-input');
+        const extInput = row.querySelector('.ext-price');
+        const productSelect = row.querySelector('.product-select');
+
+        productSelect.addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            if (selected && selected.dataset.price) {
+                priceInput.value = selected.dataset.price;
+                updateExt();
+            }
+        });
+
+        function updateExt() {
+            const qty = parseFloat(qtyInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            extInput.value = (qty * price).toFixed(2);
+            updateTotal();
+        }
+
+        qtyInput.addEventListener('input', updateExt);
+        priceInput.addEventListener('input', updateExt);
+
+        row.querySelector('.remove-line').addEventListener('click', function() {
+            if (document.querySelectorAll('.line-row').length > 1) {
+                row.remove();
+                updateTotal();
+            }
+        });
+
+        updateExt();
+    }
+
+    function updateTotal() {
+        let total = 0;
+        document.querySelectorAll('.ext-price').forEach(el => {
+            total += parseFloat(el.value) || 0;
+        });
+        document.getElementById('sale-total').textContent = total.toFixed(2);
+    }
+
+    document.querySelectorAll('.line-row').forEach(row => attachLineEvents(row));
+
+    // ===== Payment Method Toggle =====
+    document.getElementById('payment-method').addEventListener('change', function() {
+        const val = this.value;
+        document.getElementById('momo-details').style.display = val === 'Momo' ? 'block' : 'none';
+        document.getElementById('cheque-details').style.display = val === 'Cheque' ? 'block' : 'none';
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Run Savings Interest Accrual{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Manual Savings Interest Accrual</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Today:</strong> {{ today|date:"d/m/Y" }}</p>
+            <p><strong>Last run:</strong> {{     last_interest_accrual_run|date:"d/m/Y H:i:s"|default:"Never" }}</p>
+            <p><strong>Calculation method:</strong> {{ calc_type }}</p>
+            <p><strong>Application frequency:</strong> {{ frequency }}</p>
+            <div class="alert alert-warning">
+                This will calculate interest for all active members based on their daily balances.
+                Interest will be accrued in <code>sav_int_accrued</code>.
+                {% if frequency == 'MONTHLY' and today.day == 1 %}
+                    <strong>Today is a capitalisation day - interest will be applied to deposits.</strong>
+                {% endif %}
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Run Daily Accrual</button>
+                <a href="{% url 'Supervisor:super_home' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Database Backup & Restore{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Backup & Restore</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4>Full Database Backup</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'BackupRestore:backup_all' %}">
+                        {% csrf_token %}
+                        <p>Download a complete SQL dump of your entire database.</p>
+                        <button type="submit" class="btn btn-danger">Backup All</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4>Single Table Backup</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'BackupRestore:backup_table' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label>Select Table</label>
+                            <select name="table_name" class="form-select" required>
+                                <option value="">-- Choose table --</option>
+                                {% for table in tables %}
+                                <option value="{{ table }}">{{ table }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success">Backup Selected Table</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4>Restore Single Table</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'BackupRestore:restore_table' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label>Table Name</label>
+                            <select name="table_name" class="form-select" required>
+                                <option value="">-- Select table to restore --</option>
+                                {% for table in tables %}
+                                <option value="{{ table }}">{{ table }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">The uploaded SQL file must contain only this table.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label>SQL Backup File</label>
+                            <input type="file" name="sql_file" class="form-control" accept=".sql" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="truncate" class="form-check-input" id="truncateCheck">
+                            <label class="form-check-label" for="truncateCheck">
+                                <span class="text-danger">⚠️ Truncate (delete) existing table data before restore</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-warning" onclick="return confirm('Restoring a table will replace current data. Continue?')">
+                            Restore Table
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

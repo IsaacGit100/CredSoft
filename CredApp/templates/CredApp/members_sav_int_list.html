@@ -1,0 +1,111 @@
+<!-- members/templates/members/member_list_manage.html -->
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-percent me-2"></i>Members Savings Interest Calculations
+                </h4>
+                <a href="{% url 'MembersApp:members_home' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-times"></i> Exit
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <!-- Simple Search -->
+            <form method="get" class="mb-3">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Search by name..." 
+                           value="{{ request.GET.q }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    {% if request.GET.q %}
+                    <a href="{% url 'MembersApp:member_list_manage' %}" class="btn btn-secondary">Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+            
+            <!-- Debug Info - Remove after fixing -->
+            <div class="alert alert-info">
+                <strong>Debug:</strong> Found {{ members|length }} members
+            </div>
+            
+            <!-- Members Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Deposits</th>
+                            <th>Withdrawals</th>
+                            <th>Tot Accr. Int</th>
+                            <th>Avail Bal</th>
+                            <th>Member Rate</th>
+                            <th>Global Rate</th>
+                            <th>Effective Rate</th>
+                            <th>Daily Int</th>
+                            <th>Accrued Int</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr>
+                            <td>{{ member.id }}</td>
+                            <td>{{ member.full_name|default:"-" }}</td>
+                            <td class="text-end">{{ member.tot_deposits|default:"0" }}</td>
+                            <td class="text-end">{{ member.tot_deposit_withdrawal|default:"0"|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ member.tot_accrued_interest|default:"0"|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ member.sav_avail_bal|default:"0"|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ member.sav_int_rate|default:"0"|floatformat:4|intcomma }}</td>
+                            <td class="text-end">{{ member.global_savings_rate|default:"0"|floatformat:4|intcomma}}</td>
+                            <td class="text-end">{{ member.effective_savings_rate|default:"0" |floatformat:4|intcomma}}</td>
+                            <td class="text-end">{{ member.daily_interest|default:"0"|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ member.sav_int_accrued|default:"0"|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center">No members found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if members.has_other_pages %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if members.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ members.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ members.number }} of {{ members.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if members.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ members.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ members.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

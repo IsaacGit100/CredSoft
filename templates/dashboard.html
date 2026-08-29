@@ -1,0 +1,40 @@
+{% extends "base_sidebar.html" %}
+{% load humanize %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Welcome, {{ user.get_full_name|default:user.username }}! </h2>
+        <div class="text-muted" id="currentDateTime"></div>
+    </div>
+
+    <!-- You can add summary cards or statistics here if you wish -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Select a module from the left sidebar to begin.
+            </div>
+        </div>
+    </div>
+    <!-- You can also put quick stats here -->
+</div>
+
+<script>
+    function updateDateTime() {
+        const now = new Date();
+        const options = { 
+            weekday: 'short',
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        document.getElementById('currentDateTime').innerHTML = ` ${now.toLocaleDateString('en-US', options)}`;
+    }
+    updateDateTime();
+    setInterval(updateDateTime, 60000);
+</script>
+{% endblock %}

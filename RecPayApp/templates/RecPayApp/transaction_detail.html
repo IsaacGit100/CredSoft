@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Transaction Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Transaction Details</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th style="width: 40%">Voucher Number:</th>
+                            <td>{{ transaction.rec_vou_no }}</td>
+                        </tr>
+                        <tr>
+                            <th>Transaction Number:</th>
+                            <td>{{ transaction.trans_no }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date:</th>
+                            <td>{{ transaction.date|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Type:</th>
+                            <td>
+                                {% if transaction.trans_type == 'Receipts' %}
+                                    <span class="badge bg-success">Receipt</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Payment</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Amount:</th>
+                            <td class="fw-bold">₵{{ transaction.amount|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <th>Payment Mode:</th>
+                            <td>{{ transaction.pay_mode }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if transaction.status == 'DRAFT' %}
+                                    <span class="badge bg-warning">Draft</span>
+                                {% elif transaction.status == 'POSTED' %}
+                                    <span class="badge bg-success">Posted</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Void</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th style="width: 40%">Member:</th>
+                            <td>
+                                {% if transaction.member %}
+                                    {{ transaction.member.full_name }}
+                                    <br><small class="text-muted">ID: {{ transaction.member.id }}</small>
+                                {% elif transaction.non_member_name %}
+                                    {{ transaction.non_member_name }}
+                                    <br><small class="text-muted">Non-Member</small>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Ledger:</th>
+                            <td>
+                                {{ transaction.ledger_name|default:"-" }}
+                                <br><small class="text-muted">{{ transaction.ledger_code|default:"" }}</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Purpose:</th>
+                            <td>{{ transaction.purpose|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Details:</th>
+                            <td>{{ transaction.details|default:"-" }}</td>
+                        </tr>
+                        {% if transaction.cheque_no %}
+                        <tr>
+                            <th>Cheque No:</th>
+                            <td>{{ transaction.cheque_no }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th>Created By:</th>
+                            <td>{{ transaction.created_by|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Created At:</th>
+                            <td>{{ transaction.created_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{% url 'RecPayApp:transaction_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+                {% if transaction.status == 'DRAFT' %}
+                    <a href="{% url 'RecPayApp:process_single_transaction' transaction.id %}" class="btn btn-success">
+                        <i class="fas fa-check"></i> Process Transaction
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block extra_css %}
+<style>
+    /* Force dark table header background and white text */
+    .table-dark thead th,
+    .table thead.table-dark th,
+    .table-dark th {
+        background-color: #1e2a3a !important;
+        color: #ffffff !important;
+        border-color: #334155 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Update Investment Status</h4>
+            <p class="mb-0">Search for an investment, then click "Update" to mark as discounted or written off.</p>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 mb-4">
+                <div class="col-md-10">
+                    <input type="text" name="search" class="form-control" placeholder="Search by Cert No, Bank, Branch..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-dark">   <!-- added table-dark here -->
+                    <thead>   <!-- removed class="table-dark" because it's on the table -->
+                        <tr>
+                            <th>Cert No</th>
+                            <th>Bank/Company</th>
+                            <th>Branch</th>
+                            <th>Int Expected ₵</th>
+                            <th>Int Earned ₵</th>
+                            <th>Maturity Date</th>
+                            <th>Written Off</th>
+                            <th>Written Off Date</th>
+                            <th>Discounted</th>
+                            <th>Disc Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inv in investments %}
+                        <tr>
+                            <td>{{ inv.certificate_no }}</td>
+                            <td>{{ inv.get_bank_company_display }}</td>
+                            <td>{{ inv.branch }}</td>
+                            <td class="text-end">{{ inv.interest_expected|intcomma:2 }}</td>
+                            <td class="text-end">{{ inv.interest_earned|intcomma:2 }}</td>
+                            <td>{{ inv.maturity_date|date:"d/m/Y" }}</td>
+                            <td>{{ inv.written_off|yesno:"Yes,No" }} </td>
+                            <td>{{ inv.written_off_date|date:"d/m/Y"|default:"-" }}</td>
+                            <td>{{ inv.discounted|yesno:"Yes,No" }} </td>
+                            <td>{{ inv.discounted_date|date:"d/m/Y"|default:"-" }}</td>
+                            <td>
+                                <a href="{% url 'InvestApp:investment_status_update_pk' inv.pk %}" class="btn btn-sm btn-warning">Update Status</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center">No investments found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

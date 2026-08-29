@@ -1,0 +1,66 @@
+<!-- members/templates/members/member_delete_confirm.html -->
+{% extends "base.html" %}
+
+{% block title %}Delete Member - {{ member.full_name }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto;">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion</h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <strong> You are about to delete:</strong>
+                <h4 class="mt-2">{{ member.full_name }}</h4>
+                <p class="mb-0">ID: {{ member.id }} | Phone: {{ member.telephone1|default:"-" }}</p>
+            </div>
+            
+            <!-- Related Records Warning -->
+            {% if related_info.has_loans or related_info.has_guarantees or related_info.has_transactions %}
+            <div class="alert alert-danger">
+                <strong> WARNING!</strong>
+                <p>This member has related records:</p>
+                <ul>
+                    {% if related_info.has_loans %}
+                    <li>{{ related_info.loan_count }} loan(s) associated with this member</li>
+                    {% endif %}
+                    {% if related_info.has_guarantees %}
+                    <li>{{ related_info.guarantee_count }} guarantee(s) given by this member</li>
+                    {% endif %}
+                    {% if related_info.has_transactions %}
+                    <li>Transaction(s) associated with this member</li>
+                    {% endif %}
+                </ul>
+                <p class="mb-0">Deleting this member will mark them as inactive but keep related records.</p>
+            </div>
+            {% endif %}
+            
+            <form method="post" action="{% url 'Supervisor:member_delete_perform' member.id %}">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label">Type the member's full name to confirm:</label>
+                    <input type="text" name="confirm_name" class="form-control" 
+                           placeholder="{{ member.full_name }}" required>
+                    <small class="text-muted">Enter: {{ member.full_name }}</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Enter your password to confirm:</label>
+                    <input type="password" name="confirm_password" class="form-control" required>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'Supervisor:member_list_delete' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Confirm Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base_sidebar.html" %}
+
+{% block title %}Confirm Data Migration{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-warning">
+            <h4>Confirm Migration from AndyState to Trans</h4>
+        </div>
+        <div class="card-body">
+            <p>This will copy all records from the old <strong>StateAndy</strong> table to the new <strong>Trans</strong> table.</p>
+            <p><strong>Action cannot be undone.</strong> Please confirm.</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Start Migration</button>
+                <a href="{% url 'AndyApp:andy_home' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

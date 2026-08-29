@@ -1,0 +1,291 @@
+<!-- ChurchApp/templates/ChurchApp/member_detail.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3>{{ member.full_name }}</h3>
+                <div>
+                    <a href="{% url 'ChurchApp:member_edit' entity.slug member.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'ChurchApp:member_list_manage' entity.slug %}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Personal Information -->
+                <div class="col-md-6">
+                    <h5>Personal Information</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Title</th>
+                            <td>{{ member.title|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Full Name</th>
+                            <td>{{ member.full_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ member.email|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Phone</th>
+                            <td>{{ member.telephone1|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Alternative Phone</th>
+                            <td>{{ member.telephone2|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date of Birth</th>
+                            <td>{{ member.date_of_birth|date:"Y-m-d"|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Education Level</th>
+                            <td>{{ member.education_level|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Profession</th>
+                            <td>{{ member.profession|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Ghana Card No.</th>
+                            <td>{{ member.ghana_card_no|default:"—" }}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Address Information -->
+                <div class="col-md-6">
+                    <h5>Address Information</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Postal Address</th>
+                            <td>{{ member.postal_address|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Residential Address</th>
+                            <td>{{ member.res_address|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Near Landmark</th>
+                            <td>{{ member.near_landmark|default:"—" }}</td>
+                        </tr>
+                    </table>
+
+                    <h5>Church Information</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Date Baptised</th>
+                            <td>{{ member.date_baptised|date:"Y-m-d"|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date Confirmed</th>
+                            <td>{{ member.date_confirmed|date:"Y-m-d"|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date Enrolled</th>
+                            <td>{{ member.date_enrolled|date:"Y-m-d"|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date Expired</th>
+                            <td>{{ member.date_expired|date:"Y-m-d"|default:"—" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Guild Information -->
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <h5>Guild Information</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Primary Guild</th>
+                            <td>{{ member.guild_first|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Secondary Guild</th>
+                            <td>{{ member.guild_second|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tertiary Guild</th>
+                            <td>{{ member.guild_third|default:"—" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Family Information -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <h5>Family Information</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Marital Status</th>
+                            <td>{{ member.marital_status|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Spouse</th>
+                            <td>{{ member.spouse_name|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Number of Children</th>
+                            <td>{{ member.no_of_children|default:"0" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Children</th>
+                            <td>
+                                {% if member.names_of_children %}
+                                    <ul class="mb-0">
+                                        {% for child in member.names_of_children %}
+                                            <li>{{ child }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="col-md-6">
+                    <h5>Parents</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Father's Name</th>
+                            <td>{{ member.father_name|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Father's Address</th>
+                            <td>{{ member.father_res_address|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Father's Phone</th>
+                            <td>{{ member.father_telephone|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Father Deceased</th>
+                            <td>{{ member.father_deceased|yesno:"Yes,No" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Mother's Name</th>
+                            <td>{{ member.mother_name|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Mother's Address</th>
+                            <td>{{ member.mother_res_address|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Mother's Phone</th>
+                            <td>{{ member.mother_telephone|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Mother Deceased</th>
+                            <td>{{ member.mother_deceased|yesno:"Yes,No" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Roles -->
+            {% if member.member_roles.all %}
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <h5>Roles</h5>
+                    <div>
+                        {% for role in member.member_roles.all %}
+                            {% if role.is_active %}
+                                <span class="badge bg-info">{{ role.role.display_name }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Office Information -->
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <h5>Office Information</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Office Name</th>
+                            <td>{{ member.office_name|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Office Address</th>
+                            <td>{{ member.office_address|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Office Residential Address</th>
+                            <td>{{ member.office_res_address|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Office Phone</th>
+                            <td>{{ member.office_phone|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Office Email</th>
+                            <td>{{ member.office_email|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Nature of Business</th>
+                            <td>{{ member.nature_of_business|default:"—" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <!-- ChurchApp/templates/ChurchApp/member_detail.html -->
+
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>{{ member.full_name }}</h3>
+                    <div>
+                        <a href="{% url 'ChurchApp:member_roles_detail' entity.slug member.pk %}" class="btn btn-info btn-sm">
+                            <i class="fas fa-user-tag"></i> View Roles
+                        </a>
+                        <a href="{% url 'ChurchApp:member_edit' entity.slug member.pk %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{% url 'ChurchApp:member_list_manage' entity.slug %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+
+            <!-- Audit Information -->
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <h5>Audit Information</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Created At</th>
+                            <td>{{ member.created_at|date:"Y-m-d H:i"|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Updated At</th>
+                            <td>{{ member.updated_at|date:"Y-m-d H:i"|default:"—" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

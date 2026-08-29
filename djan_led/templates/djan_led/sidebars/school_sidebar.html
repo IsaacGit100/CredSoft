@@ -1,0 +1,42 @@
+<div class="list-group">
+    <a href="{% url 'djan_led:entity_dashboard' entity.slug %}" class="list-group-item list-group-item-action active">
+        <i class="fas fa-home"></i> Dashboard
+    </a>
+    <a href="{% url 'djan_led:chart_of_accounts' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Chart of Accounts
+    </a>
+    <a href="{% url 'djan_led:journal_entries' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-list"></i> Journal Entries
+    </a>
+    <a href="{% url 'RecPayApp:school_trans_create' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-plus-circle"></i> Enter New Transactions
+    </a>
+
+    <a href="{% url 'djan_led:trial_balance' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-balance-scale"></i> Trial Balance
+    </a>
+    <a href="{% url 'djan_led:income_statement' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-chart-line"></i> Income Statement
+    </a>
+    <a href="{% url 'djan_led:balance_sheet' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-file-alt"></i> Balance Sheet
+    </a>
+    <a href="{% url 'djan_led:cash_flow' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-money-bill-wave"></i> Cash Flow
+    </a>
+    <a href="{% url 'djan_led:opening_balance_form' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-coins"></i> Opening Balance
+    </a>
+    <a href="{% url 'djan_led:members_list' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-users"></i> Members
+    </a>
+    <a href="{% url 'djan_led:offerings' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-hand-holding-heart"></i> Offerings
+    </a>
+    <a class="nav-link" href="{% url 'userauth:change_password' %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-key"></i> Change Password
+    </a>
+    <a href="{% url 'userauth:logout' %}" class="btn btn-danger w-100">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </a>
+</div>

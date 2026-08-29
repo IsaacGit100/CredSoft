@@ -1,0 +1,27 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ system_settings.company_name }} - Dashboard</title>
+    <!-- rest of head -->
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="welcome-card">
+            <div class="welcome-icon">
+                <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <h1>{{ system_settings.company_name }}</h1>
+            <p>{{ system_settings.system_name }}</p>
+            <!-- rest of dashboard -->
+        </div>
+        
+        <!-- Footer with company info -->
+        <div class="footer">
+            <p>&copy; {% now "Y" %} {{ system_settings.company_name }}. All rights reserved.</p>
+            <p>{{ system_settings.company_address }}</p>
+            <p>{{ system_settings.company_phone }} | {{ system_settings.company_email }}</p>
+        </div>
+    </div>
+</body>
+</html>

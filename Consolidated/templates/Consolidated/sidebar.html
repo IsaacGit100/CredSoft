@@ -1,0 +1,55 @@
+<div class="bg-light border-end" style="min-height: 100vh; padding-top: 20px; width: 250px; position: fixed; top: 56px; left: 0; overflow-y: auto;">
+    <div class="px-3">
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Consolidated Reports</span>
+        </h6>
+        <div class="list-group">
+            <a href="{% url 'Consolidated:portal' %}" 
+               class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'portal' %}active{% endif %}">
+                <i class="fas fa-home"></i> Portal
+            </a>
+            <a href="{% url 'Consolidated:dashboard' %}" 
+               class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="{% url 'Consolidated:income_statement' %}" 
+               class="list-group-item list-group-item-action">
+                <i class="fas fa-chart-line"></i> Income Statement
+            </a>
+            <a href="{% url 'Consolidated:balance_sheet' %}" 
+               class="list-group-item list-group-item-action">
+                <i class="fas fa-file-alt"></i> Balance Sheet
+            </a>
+            <a href="{% url 'Consolidated:cash_flow' %}" 
+               class="list-group-item list-group-item-action">
+                <i class="fas fa-money-bill-wave"></i> Cash Flow
+            </a>
+            <a href="{% url 'Consolidated:trial_balance' %}" 
+               class="list-group-item list-group-item-action">
+                <i class="fas fa-balance-scale"></i> Trial Balance
+            </a>
+        </div>
+
+        <hr>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Quick Actions</span>
+        </h6>
+        <div class="list-group">
+            <a href="{% url 'Consolidated:export_pdf' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </a>
+            <a href="{% url 'Consolidated:export_excel' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </a>
+        </div>
+
+        <hr>
+
+        <div class="px-3 mt-3">
+            <a href="{% url 'djan_led:entity_dashboard' root_entity.slug %}" class="btn btn-sm btn-outline-secondary w-100">
+                <i class="fas fa-arrow-left"></i> Back to Head Office
+            </a>
+        </div>
+    </div>
+</div>

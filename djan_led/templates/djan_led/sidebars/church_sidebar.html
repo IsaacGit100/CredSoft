@@ -1,0 +1,58 @@
+<div class="list-group">
+    <a href="{% url 'djan_led:entity_dashboard' entity.slug %}" class="list-group-item list-group-item-action active">
+        <i class="fas fa-home"></i> Dashboard
+    </a>
+
+
+    <a href="{% url 'ChurchApp:role_create' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Create Roles for Church Members
+    </a>
+
+    <a href="{% url 'ChurchApp:dues_tithe_list_manage' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Enter Dues, Tithes for Church Members
+    </a>
+
+    <a href="{% url 'ChurchApp:trans_create' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Enter Other Receipts And Payments
+    </a>
+
+    <a href="{% url 'ChurchApp:service_activity_create' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Enter Details of a Service 
+    </a>
+
+
+    <a href="{% url 'ChurchApp:church_data_entry_home' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Enter Data For Members, Clergy, Guilds & Events
+    </a>
+     <a href="{#}" class="list-group-item list-group-item-action">
+        <i class="fas fa-plus-circle"></i> Reports
+    </a>
+    
+    <a href="{% url 'ChurchApp:supervisor_church' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-book"></i> Supervisor Operations
+      </a>
+
+    <a href="{% url 'djan_led:trial_balance' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-balance-scale"></i> Trial Balance
+    </a>
+    <a href="{% url 'djan_led:income_statement' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-chart-line"></i> Income Statement
+    </a>
+    <a href="{% url 'djan_led:cash_flow' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-file-alt"></i> Cash Flow
+    </a>
+    <a href="{% url 'djan_led:balance_sheet' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-money-bill-wave"></i> Balance Sheet
+    </a>
+    <a href="{% url 'userauth:change_password' %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-key"></i> Change Password
+    </a>
+    <a href="{% url 'DocMgt:document_list' entity.slug %}" class="list-group-item list-group-item-action">
+        <i class="fas fa-file-alt"></i> Document Management
+    </a>
+    <hr>
+    <a href="{% url 'userauth:logout' %}" class="btn btn-danger w-100">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </a>
+
+</div>

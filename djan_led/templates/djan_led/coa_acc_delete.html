@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "djan_led/sidebars/finance_sidebar.html" %}
+    <div class="flex-grow-1 p-4" style="margin-left: 250px;">
+        <h2> Delete Account</h2>
+        <p><strong>Entity:</strong> {{ entity.name }}</p>
+        <p>Are you sure you want to delete account <strong>{{ account.code }} – {{ account.name }}</strong>?</p>
+        {% if account.transactionmodel_set.exists %}
+        <div class="alert alert-danger">
+             This account has transactions and cannot be deleted.
+        </div>
+        <a href="{% url 'djan_led:coa_list_manage' entity.slug %}" class="btn btn-secondary">Back</a>
+        {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Yes, delete</button>
+            <a href="{% url 'djan_led:coa_list_manage' entity.slug %}" class="btn btn-secondary">Cancel</a>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3> {{ usher.name }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Name:</strong> {{ usher.name }}</p>
+                    <p><strong>Phone:</strong> {{ usher.telephone|default:"—" }}</p>
+                    <p><strong>Address:</strong> {{ usher.address|default:"—" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Church Member:</strong> {{ usher.member.full_name|default:"—" }}</p>
+                    <p><strong>Entity:</strong> {{ usher.entity.name }}</p>
+                </div>
+            </div>
+            <a href="{% url 'ChurchApp:usher_update' entity.slug usher.pk %}" class="btn btn-primary">Edit</a>
+            <a href="{% url 'ChurchApp:usher_list_manage' entity.slug %}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

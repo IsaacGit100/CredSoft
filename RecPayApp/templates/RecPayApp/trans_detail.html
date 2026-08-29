@@ -1,0 +1,68 @@
+<!-- RecPayApp/templates/RecPayApp/trans_detail.html -->
+{% extends "base.html" %}
+
+{% block title %}Transaction Details{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 20px auto;">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Transaction Details</h4>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tr>
+                    <th width="35%">Transaction Number:</th>
+                    <td>{{ transaction.trans_no }}</td
+                </tr>
+                <tr>
+                    <th>Receipt/Voucher No:</th>
+                    <td>{{ transaction.rec_vou_no }}</td
+                </tr>
+                <tr>
+                    <th>Date:</th>
+                    <td>{{ transaction.date }}</td
+                </tr>
+                <tr>
+                    <th>Type:</th>
+                    <td>{{ transaction.trans_type }}</td
+                </tr>
+                <tr>
+                    <th>Amount:</th>
+                    <td><strong>₵{{ transaction.amount|floatformat:2 }}</strong></td
+                </tr>
+                <tr>
+                    <th>Payment Mode:</th>
+                    <td>{{ transaction.pay_mode }}</td
+                </tr>
+                <tr>
+                    <th>Member:</th>
+                    <td>{{ transaction.member_name|default:"-" }}</td
+                </tr>
+                <tr>
+                    <th>Ledger Account:</th>
+                    <td>{{ transaction.ledger_code }} - {{ transaction.ledger_name }}</td
+                </tr>
+                <tr>
+                    <th>Details:</th>
+                    <td>{{ transaction.details|default:"-" }}</td
+                </tr>
+                <tr>
+                    <th>Status:</th>
+                    <td>
+                        {% if transaction.status == 'POSTED' %}
+                            <span class="badge bg-success">Posted</span>
+                        {% else %}
+                            <span class="badge bg-warning">Draft</span>
+                        {% endif %}
+                    </td
+                </tr>
+            </table>
+            <div class="mt-3">
+                <a href="{% url 'RecPayApp:trans_list' %}" class="btn btn-secondary">Back to List</a>
+                <a href="{% url 'RecPayApp:trans_edit' transaction.id %}" class="btn btn-warning">Edit</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

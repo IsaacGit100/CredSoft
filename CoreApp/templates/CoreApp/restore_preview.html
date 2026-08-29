@@ -1,0 +1,148 @@
+<!-- CoreApp/templates/core/restore_preview.html -->
+{% extends "base.html" %}
+
+{% block title %}Restore Preview - {{ backup.backup_name }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-undo-alt me-2 text-warning"></i>Restore Preview</h2>
+            <p class="text-muted">Review backup before restoring</p>
+        </div>
+        <a href="{% url 'core:backup_dashboard' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Backup
+        </a>
+    </div>
+    
+    <!-- Backup Information -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Backup Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="35%">Backup Name:</th>
+                            <td><strong>{{ backup.backup_name }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Created:</th>
+                            <td>{{ backup.backup_started|date:"Y-m-d H:i:s" }}</td>
+                        </tr>
+                        <tr>
+                            <th>File Size:</th>
+                            <td>{{ backup.file_size_mb }} MB ({# backup.file_size|filesizeformat #})</td>
+                        </tr>
+                        <tr>
+                            <th>Tables:</th>
+                            <td>{{ table_count }} tables found</td>
+                        </tr>
+                        <tr>
+                            <th>Created By:</th>
+                            <td>{{ backup.created_by|default:"System" }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> Restoring will overwrite current data!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tables in Backup -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-table me-2"></i>Tables in Backup ({{ table_count }})</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for table in table_list %}
+                <div class="col-md-3">
+                    <span class="badge bg-secondary mb-2 p-2">
+                        <i class="fas fa-database me-1"></i>{{ table }}
+                    </span>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-muted">No tables found in preview</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Preview Content -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-file-code me-2"></i>Preview (First 50 lines)</h5>
+        </div>
+        <div class="card-body">
+            <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 12px; max-height: 400px;">
+{% for line in preview_lines %}{{ line }}
+{% endfor %}
+            </pre>
+        </div>
+    </div>
+    
+    <!-- Restore Confirmation Form -->
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Restore Confirmation</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'core:restore_backup' backup.id %}" onsubmit="return confirmFinalRestore()">
+                {% csrf_token %}
+                
+                <div class="alert alert-danger">
+                    <strong>⚠️ WARNING!</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>This will OVERWRITE your current database</li>
+                        <li>All current data will be replaced with backup data</li>
+                        <li>This action CANNOT be undone</li>
+                        <li>Make sure you have a recent backup of current data</li>
+                    </ul>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input type="checkbox" name="drop_tables" class="form-check-input" id="dropTables">
+                    <label class="form-check-label" for="dropTables">
+                        <strong>Drop existing tables before restore</strong>
+                        <br>
+                        <small class="text-muted">Recommended for clean restore. This will delete all current tables first.</small>
+                    </label>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">
+                        Type <strong class="text-danger">YES</strong> to confirm restore:
+                    </label>
+                    <input type="text" name="confirm" class="form-control" placeholder="Type YES here" required>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'core:backup_dashboard' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-undo-alt me-2"></i>Confirm Restore
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmFinalRestore() {
+    return confirm('FINAL WARNING: This will permanently overwrite your database!\n\nAre you absolutely sure?');
+}
+</script>
+{% endblock %}

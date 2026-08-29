@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3> {{ officiant.name }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Name:</strong> {{ officiant.name }}</p>
+                    <p><strong>Description:</strong></p>
+                    <p>{{ officiant.description|default:"No description provided." }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Church Member:</strong> {{ officiant.member.full_name|default:"—" }}</p>
+                    <p><strong>Entity:</strong> {{ officiant.entity.name }}</p>
+                </div>
+            </div>
+            <a href="{% url 'ChurchApp:officiant_update' entity.slug officiant.pk %}" class="btn btn-primary">Edit</a>
+            <a href="{% url 'ChurchApp:officiant_list_manage' entity.slug %}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

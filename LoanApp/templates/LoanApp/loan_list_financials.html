@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+{%load humanize %}
+<html>
+<head>
+    <title>All Loans</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            .no-print {
+                display: none;
+            }
+            .table-responsive {
+                overflow-x: visible;
+            }
+        }
+        .btn-toolbar {
+            margin-bottom: 20px;
+        }
+        .btn {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>All Loans Report</h3>
+                    <div class="btn-toolbar no-print">
+                        <!-- Exit Button -->
+                        <form action="{% url 'LoanApp:loans_home' entity.slug %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-sign-out-alt"></i> Exit
+                            </button>
+                        </form>
+                        
+                        <!-- PDF Button -->
+                        <a href="{% url 'LoanApp:loan_list_financials_pdf' entity.slug %}" class="btn btn-danger" target="_blank">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                        
+                        <!-- Excel Button -->
+                        <a href="{% url 'LoanApp:loan_list_financials_excel' entity.slug %}" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                        
+                        <!-- Print Button -->
+                        <button onclick="window.print()" class="btn btn-info">
+                            <i class="fas fa-print"></i> Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Borrower</th>
+                                <th>Principal</th>
+                                <th>Rate</th>
+                                <th>Term</th>
+                                <th>Tot Int</th>
+                                <th>Tot Repay</th>
+                                <th>Loan Balance</th>
+                                <th>Mons Rem</th>
+                                <th>Due Int</th>
+                                <th>Due Repay</th>
+                                <th>Mon Repay</th>
+                                <th>Disb Date</th>
+                                <th>Next Date</th>
+                                <th>Exp Date </th>
+
+                                <th>Status</th>
+                                <th class="no-print">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in loans %}
+                            <tr>
+                                <td>#{{ loan.id }}</td>
+                                <td>{{ loan.master.full_name }}</td>
+                                <td>{{ loan.principal|floatformat:2 }}</td>
+                                <td>{{ loan.effective_interest_rate }}%</td>
+                                <td>{{ loan.loan_term }}</td>
+                                <td>{{ loan.tot_int|floatformat:2 }}</td>
+                                <td>{{ loan.tot_ded|floatformat:2 }}</td>
+                                <td>{{ loan.loan_balance|floatformat:2 }}</td>
+                                <td>{{ loan.months_remain }}</td>
+                                <td>{{ loan.int_calc|floatformat:2 }}</td>
+                                <td>{{ loan.ded_calc|floatformat:2 }}</td>
+                                <td>{{ loan.calculate_monthly_repayment|floatformat:2 }}</td>
+                                <td>{{ loan.disbursement_date }}</td>
+                                <td>{{ loan.next_repayment_date }}</td>
+                                <td>{{ loan.expiry_date }}</td>
+                                <td>
+                                    {% if loan.payment_status == 'Active' %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% elif loan.payment_status == 'Completed' %}
+                                        <span class="badge bg-primary">Completed</span>
+                                    {% elif loan.payment_status == 'Defaulted' %}
+                                        <span class="badge bg-danger">Defaulted</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">{{ loan.payment_status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="no-print">
+                                    <a href="{% url 'LoanApp:master_loans' entity.slug loan.master.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-user"></i> View Member
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="14" class="text-center">No loans found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <th colspan="2" class="text-end">Totals:</th>
+                                <th>{{ total_principal|floatformat:2 }}</th>
+                                <th></th>
+                                <th></th>
+                                <th>{{ total_interest|floatformat:2 }}</th>
+                                <th>{{ total_repayable|floatformat:2 }}</th>
+                                <th>{{ total_balance|floatformat:2 }}</th>
+                                <th></th>
+                                <th>{{ total_due_interest|floatformat:2 }}</th>
+                                <th>{{ total_due_repayment|floatformat:2 }}</th>
+                                <th>{{ total_monthly_repayment|floatformat:2 }}</th>
+                                <th colspan="2"></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

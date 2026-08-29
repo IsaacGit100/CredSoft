@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3>🏅 {{ guild.name }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Name:</strong> {{ guild.name }}</p>
+                    <p><strong>Description:</strong></p>
+                    <p>{{ guild.description|default:"No description provided." }}</p>
+                    <p><strong>Status:</strong>
+                        {% if guild.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Entity:</strong> {{ guild.entity.name }}</p>
+                    <p><strong>Created:</strong> {{ guild.created_at|date:"Y-m-d H:i" }}</p>
+                    <p><strong>Updated:</strong> {{ guild.updated_at|date:"Y-m-d H:i" }}</p>
+                </div>
+            </div>
+            <a href="{% url 'ChurchApp:guild_update' entity.slug guild.pk %}" class="btn btn-primary">Edit</a>
+            <a href="{% url 'ChurchApp:guild_list_manage' entity.slug %}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

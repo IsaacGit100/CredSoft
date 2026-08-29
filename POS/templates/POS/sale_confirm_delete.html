@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "pos/sidebar.html" %}
+    <div class="flex-grow-1 p-3" style="margin-left: 250px;">
+        <div class="card">
+            <div class="card-body">
+                <h3>Confirm Delete</h3>
+                <p>Are you sure you want to delete Sale #{{ sale.id }}?</p>
+                <p><strong>Total:</strong> {{ sale.total_amount }}</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Yes, delete</button>
+                    <a href="{% url 'pos:sales_form' entity.slug %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

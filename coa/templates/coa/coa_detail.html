@@ -1,0 +1,197 @@
+<!-- coa/templates/coa/coa_detail.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ account.name }} - Account Details{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-book me-2"></i>{{ account.accountno }} - {{ account.name }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="35%">Account Number:</th>
+                            <td><strong>{{ account.accountno }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Account Name:</th>
+                            <td>{{ account.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Account Type:</th>
+                            <td>
+                                <span class="badge bg-primary">{{ account.get_account_type_display }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Behavior:</th>
+                            <td>
+                                <span class="badge bg-info">{{ account.get_behavior_display }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Parent Account:</th>
+                            <td>
+                                {% if parent %}
+                                <a href="{% url 'coa:coa_detail' parent.pk %}">
+                                    {{ parent.accountno }} - {{ parent.name }}
+                                </a>
+                                {% else %}
+                                <em class="text-muted">Top Level Account</em>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Data Entry Account:</th>
+                            <td>
+                                {% if account.is_data_entry %}
+                                <span class="badge bg-success">Yes - Available for data entry</span>
+                                {% else %}
+                                <span class="badge bg-secondary">No - Heading only</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Data Filled:</th>
+                            <td>
+                                {% if account.is_data_filled %}
+                                <span class="badge bg-warning text-dark">
+                                    Yes - Has ledger entries
+                                </span>
+                                {% else %}
+                                <span class="badge bg-info">No - Can have sub-accounts</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Show in Lists:</th>
+                            <td>
+                                {% if account.is_data_view %}
+                                <span class="badge bg-success">Yes - Visible</span>
+                                {% else %}
+                                <span class="badge bg-danger">No - Hidden</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if account.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Created:</th>
+                            <td>{{ account.created_at|date:"Y-m-d H:i:s" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Last Updated:</th>
+                            <td>{{ account.updated_at|date:"Y-m-d H:i:s" }}</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'coa:coa_edit' account.pk %}" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Edit Account
+                        </a>
+                        <a href="{% url 'coa:coa_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                        {% if can_add_children %}
+                        <a href="{% url 'coa:coa_create' %}?parent={{ account.id }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Add Sub-Account
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Sub-accounts Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sitemap me-2"></i>Sub-Accounts
+                        <span class="badge bg-secondary float-end">{{ children.count }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if children %}
+                    <div class="list-group">
+                        {% for child in children %}
+                        <a href="{% url 'coa:coa_detail' child.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ child.accountno }}</strong><br>
+                                    <small>{{ child.name }}</small>
+                                </div>
+                                <div>
+                                    {% if child.is_data_entry %}
+                                    <span class="badge bg-success" title="Data Entry">📝</span>
+                                    {% endif %}
+                                    {% if child.is_data_filled %}
+                                    <span class="badge bg-warning" title="Has Data">✓</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">
+                        <i class="fas fa-info-circle"></i><br>
+                        No sub-accounts.
+                    </p>
+                    {% endif %}
+                    
+                    {% if can_add_children %}
+                    <div class="mt-3">
+                        <a href="{% url 'coa:coa_create' %}?parent={{ account.id }}" class="btn btn-sm btn-primary w-100">
+                            <i class="fas fa-plus"></i> Add Sub-Account
+                        </a>
+                    </div>
+                    {% elif account.is_data_filled %}
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="fas fa-lock"></i>
+                        <small>Cannot add sub-accounts because this account has ledger entries.</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Stats</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Level:</td>
+                            <td><strong>Level {{ account.get_level }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Full Path:</td>
+                            <td><small class="text-muted">{{ account.get_full_path }}</small></td>
+                        </tr>
+                        <tr>
+                            <td>Children Count:</td>
+                            <td>{{ children.count }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

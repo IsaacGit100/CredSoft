@@ -1,0 +1,55 @@
+<!-- templates/users/user_confirm_delete.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete User</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h4> Confirm Delete</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <strong>Warning!</strong> This action cannot be undone.
+                        </div>
+                        
+                        <p>Are you sure you want to delete the following user?</p>
+                        
+                        <table class="table">
+                            <tr>
+                                <th>Username:</th>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            <tr>
+                                <th>Name:</th>
+                                <td>{{ user.get_full_name|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td>{{ user.email|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Role:</th>
+                                <td>{{ user.profile.get_role_display }}</td>
+                            </tr>
+                        </table>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'userauth:user_list' %}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-danger">Yes, Delete User</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

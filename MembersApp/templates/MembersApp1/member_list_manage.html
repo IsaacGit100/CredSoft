@@ -1,0 +1,140 @@
+<!-- members/templates/members/member_list_manage.html -->
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <div style="background: white; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        
+        <!-- Header -->
+        <div style="background: #007bff; color: white; padding: 15px; border-radius: 5px 5px 0 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <h4 style="margin: 0;">
+                    <i class="fas fa-users"></i> Member Management
+                </h4>
+                <div>
+                    <div style="display: inline-block; position: relative;">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                             Reports
+                    </button>
+                     <ul class="dropdown-menu">
+                            <li class="dropdown-header">PDF Reports</li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_info_pdf' entity.slug %}">📄 Members Information</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_contact_pdf' entity.slug %}">📞 Members Contact</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:next_of_kin_pdf' entity.slug %}">👨‍👩‍👧 Next of Kin</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:financial_report_pdf' entity.slug %}">💰 Financial Report</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="dropdown-header">Excel Reports</li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_info_excel' entity.slug %}">📊 Members Information</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_contact_excel' entity.slug %}">📞 Members Contact</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:next_of_kin_excel' entity.slug %}">👨‍👩‍👧 Next of Kin</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:financial_report_excel' entity.slug %}">💰 Financial Report</a></li>
+                        </ul>
+                    </div>
+                    <a href="{% url 'MembersApp:member_create' entity.slug %}" style="background: #28a745; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; margin-left: 5px;">
+                        <i class="fas fa-plus"></i> Add Member
+                    </a>
+                    <a href="{% url 'CreditUnion:union_dashboard' entity.slug %}" style="background: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; margin-left: 5px;">
+                        <i class="fas fa-times"></i> Exit
+                    </a>
+                   
+                </div>
+            </div>
+        </div>
+        
+        <div style="padding: 15px;">
+            <!-- Search Form -->
+            <form method="get" style="margin-bottom: 15px;">
+                <div style="display: flex;">
+                    <input type="text" name="q" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" 
+                           placeholder="Search by name, phone, email..." value="{{ request.GET.q }}">
+                    <button type="submit" style="background: #007bff; color: white; border: none; padding: 8px 15px; margin-left: 5px; border-radius: 4px; cursor: pointer;">
+                        Search
+                    </button>
+                    {% if request.GET.q %}
+                    <a href="{% url 'MembersApp:member_list_manage' entity.slug %}" style="background: #6c757d; color: white; padding: 8px 15px; margin-left: 5px; text-decoration: none; border-radius: 4px;">
+                        Clear
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+            
+            <!-- Members Table -->
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr> 
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">ID</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Last Name</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">First Name</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Other Names</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Phone</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Mobile</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Date of Birth</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Ghana Card</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Status</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #454d55;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ member.id }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ member.last_name|default:"-" }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ member.first_name|default:"-" }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ member.other_names|default:"-" }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ member.telephone1|default:"-" }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ member.telephone2|default:"-" }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ member.date_of_birth|date:"Y-m-d"|default:"-" }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ member.ghana_card_no|default:"-" }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">
+                                {% if member.is_deleted %}
+                                    <span style="background: #dc3545; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Deleted</span>
+                                {% else %}
+                                    <span style="background: #28a745; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Active</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">
+                                <a href="{% url 'MembersApp:member_view' entity.slug member.id %}" style="background: #17a2b8; color: white; padding: 4px 8px; text-decoration: none; border-radius: 3px; display: inline-block; margin: 2px;">View</a>
+                                <a href="{% url 'MembersApp:member_edit' entity.slug member.id %}" style="background: #ffc107; color: black; padding: 4px 8px; text-decoration: none; border-radius: 3px; display: inline-block; margin: 2px;">Edit</a>
+                                <a href="{% url 'MembersApp:view_member_images' entity.slug member.id %}" style="background: #17a2b8; color: white; padding: 4px 8px; text-decoration: none; border-radius: 3px; display: inline-block; margin: 2px;">Images</a>
+
+                                <a href="{% url 'MembersApp:member_delete' entity.slug member.id %}" style="background: #dc3545; color: white; padding: 4px 8px; text-decoration: none; border-radius: 3px; display: inline-block; margin: 2px;" onclick="return confirm('Delete member?')">Delete</a>
+                               
+                                <a href="{% url 'MembersApp:member_single_setting' entity.slug member.id %}" style="background: #17a2b8; color: white; padding: 4px 8px; text-decoration: none; border-radius: 3px; display: inline-block; margin: 2px;">Settings</a>
+                               <a href="{% url 'MembersApp:member_pdf' entity.slug member.id %}" style="background: #ffc107; color: black; padding: 4px 8px; text-decoration: none; border-radius: 3px; display: inline-block; margin: 2px;">PDF</a>
+                               <a href="{% url 'MembersApp:member_excel' entity.slug member.id %}" style="background: #ffc107; color: black; padding: 4px 8px; text-decoration: none; border-radius: 3px; display: inline-block; margin: 2px;">Excel</a>
+                               
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" style="text-align: center; padding: 40px;">
+                                No members found. <a href="{% url 'MembersApp:member_create' entity.slug %}">Add your first member</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if members.has_other_pages %}
+            <div style="margin-top: 20px; text-align: center;">
+                {% if members.has_previous %}
+                <a href="?page=1" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">First</a>
+                <a href="?page={{ members.previous_page_number }}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">Previous</a>
+                {% endif %}
+                
+                <span style="padding: 8px 12px; background: #007bff; color: white;">Page {{ members.number }} of {{ members.paginator.num_pages }}</span>
+                
+                {% if members.has_next %}
+                <a href="?page={{ members.next_page_number }}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">Next</a>
+                <a href="?page={{ members.paginator.num_pages }}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">Last</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

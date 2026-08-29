@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+{% load humanize %}
+<title>Add Statement</title>
+<style>
+body { background-color: #E6F0FA; font-family: Arial; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+td, th { padding: 8px; border: 1px solid #ccc; text-align: left; }
+button { background-color: #007BFF; color: white; border: none; padding: 6px 10px; border-radius: 4px; }
+.edit-btn { background-color: #28a745; color: white; text-decoration: none; padding: 4px 8px; border-radius: 3px; font-size: 12px; }
+.edit-btn:hover { background-color: #218838; }
+.error-message { background-color: #ffebee; border: 1px solid #f44336; padding: 10px; margin-bottom: 15px; border-radius: 8px; color: #d32f2f; font-weight: bold; }
+.success-message { background-color: #e8f5e8; border: 1px solid #4caf50; padding: 10px; margin-bottom: 15px; border-radius: 8px; color: #2e7d32; font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>Unique Filtered Water Producing Company</h1>
+<h3>Sales & Payments Entry Form</h3>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="{% if message.tags == 'error' %}error-message{% else %}success-message{% endif %}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div style="background-color:#cce5ff; border:1px solid #99ccff; padding:10px; margin-bottom:15px; border-radius:8px;">
+  <strong>Total Records:</strong> {{ total_records }} &nbsp; | &nbsp;
+  <strong>Sales Count:</strong> {{ debit_count }} &nbsp; | &nbsp;
+  <strong>Payments Count:</strong> {{ credit_count }} &nbsp; | &nbsp;
+  <strong>Sales Total:</strong> {{ debit_total|intcomma:2 }} &nbsp; | &nbsp;
+  <strong>Payments Total:</strong> {{ credit_total|intcomma:2 }}
+</div>
+
+<form method="post">{% csrf_token %}
+  <div class="top-buttons">
+    <a href="{% url 'StateApp:statement_pdf' master.id %}" target="_blank">
+      <button type="button">Generate PDF</button>
+    </a>
+    &nbsp;
+    <a href="{% url 'StateApp:statement_excel' master.id %}">
+      <button type="button">Export Excel</button>
+    </a>
+    &nbsp;
+    <button type="submit" name="close" formnovalidate>Close</button>
+  </div>
+
+  <table>
+    <tr>
+      <th>Date</th>
+      <th>Item</th>
+      <th>Customer</th>
+      <th>Product</th>
+      <th>Unit Price</th>
+      <th>Actions</th>
+    </tr>
+    <tr>
+      <td>
+        <input type="text" 
+               name="date" 
+               placeholder="DD/MM/YYYY" 
+               pattern="\d{1,2}/\d{1,2}/\d{4}"
+               title="Please enter date in dd/mm/yyyy format (e.g., 25/01/2024)"
+               required
+               style="width: 60%;">
+       
+      </td>
+      <td><input type="text" name="rec_no" value="00" required></td>
+      <td>
+        <select name="trans_type" required>
+          <option value="dr">Dr</option>
+          <option value="cr">Cr</option>
+        </select>
+      </td>
+      <td>
+        <select name="state_code" required>
+          
+          <option value="Savings Interest">Savings Interest</option>
+          <option value="Savings">Savings</option>
+          <option value="Withdrawals">Withdrawals</option>
+          <option value="Loan Disbursement">Loans Disbursement</option>
+          <option value="Loan Repayment">Loan Repayment</option>
+          <option value="Loan Interest">Loan Interest</option>
+          <option value="Shares">Shares</option>
+        </select>
+      </td>
+      <td><input type="number" name="amount" step="0.01" required></td>
+      <td>
+        <button type="submit" name="save">Save</button>
+      </td>
+    </tr>
+  </table>
+</form>
+
+<h4>Existing Statements</h4>
+<table>
+  <tr>
+    <th>Date</th>
+    <th>Receipt No</th>
+    <th>Dr/Cr</th>
+    <th>State Code</th>
+    <th>Amount</th>
+    <th>Balance</th>
+    <th>Actions</th> <!-- 🟩 NEW COLUMN FOR EDIT BUTTON -->
+  </tr>
+  {% for s in statements %}
+    <tr>
+      <td>{{ s.date|date:"d/m/Y" }}</td>
+      <td>{{ s.rec_no }}</td>
+      <td>{{ s.get_trans_type_display }}</td>
+      <td>{{ s.state_code }}</td>
+      <td style="text-align:right;">{{ s.amount|intcomma:2 }}</td>
+      <td style="text-align:right;">{{ s.balance|intcomma:2 }}</td>
+      <td>
+        <!-- 🟩 EDIT BUTTON FOR EACH RECORD -->
+        <a href="{% url 'StateApp:edit_statement' s.id %}" class="edit-btn">
+          Edit
+        </a>
+      </td>
+    </tr>
+  {% endfor %}
+</table>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.querySelector('input[name="date"]');
+    if (dateInput) {
+        dateInput.focus();
+    }
+});
+</script>
+
+</body>
+</html>

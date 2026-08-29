@@ -1,0 +1,63 @@
+{% extends "base.html" %}  <!-- adjust to your base template -->
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>Entity Configuration – {{ entity.name }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.savings_interest_rate.label_tag }}
+                            {{ form.savings_interest_rate }}
+                            {{ form.savings_interest_rate.errors }}
+                            <small class="form-text text-muted">Annual interest rate in percent (e.g., 5.0 for 5%).</small>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.savings_interest_application.label_tag }}
+                            {{ form.savings_interest_application }}
+                            {{ form.savings_interest_application.errors }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.savings_calc_type.label_tag }}
+                            {{ form.savings_calc_type }}
+                            {{ form.savings_calc_type.errors }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.interest_expense_account_code.label_tag }}
+                            {{ form.interest_expense_account_code }}
+                            {{ form.interest_expense_account_code.errors }}
+                            <small class="form-text text-muted">Chart of Accounts code for interest expense (e.g., 5020).</small>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.savings_interest_payable_account_code.label_tag }}
+                            {{ form.savings_interest_payable_account_code }}
+                            {{ form.savings_interest_payable_account_code.errors }}
+                            <small class="form-text text-muted">Chart of Accounts code for savings interest payable (e.g., 2020).</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="{% url 'CreditUnion:union_dashboard' entity.slug %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+
+            <hr>
+            <div class="mt-3">
+                <p><strong>Last interest accrual run:</strong> {{ config.last_interest_accrual_run|default:"Never" }}</p>
+                <p><strong>Last accrual date:</strong> {{ config.last_interest_accrual_date|default:"Never" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

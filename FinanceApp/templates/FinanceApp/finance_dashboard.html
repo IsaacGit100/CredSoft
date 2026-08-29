@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>💰 Finance Dashboard</h1>
+        <span class="text-muted">{{ entity.name }}</span>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Revenue ({{ month_name }})</h5>
+                    <h2>{{ revenue_total|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Expenses ({{ month_name }})</h5>
+                    <h2>{{ expense_total|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white {% if net_income >= 0 %}bg-primary{% else %}bg-warning{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title">Net Income ({{ month_name }})</h5>
+                    <h2>{{ net_income|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Transactions ({{ month_name }})</h5>
+                    <h2>{{ transaction_count }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Year-to-Date Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <h5 class="card-title">YTD Revenue</h5>
+                    <h3>{{ ytd_revenue|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <h5 class="card-title">YTD Expenses</h5>
+                    <h3>{{ ytd_expense|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white {% if ytd_net >= 0 %}bg-primary{% else %}bg-warning{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title">YTD Net Income</h5>
+                    <h3>{{ ytd_net|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Cards -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-2x text-primary"></i>
+                    <h5 class="card-title mt-2">Income Statement</h5>
+                    <a href="{% url 'FinanceApp:monthly_income_statement' entity.slug %}" class="btn btn-outline-primary btn-sm">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-balance-scale fa-2x text-success"></i>
+                    <h5 class="card-title mt-2">Trial Balance</h5>
+                    <a href="{% url 'djan_led:trial_balance' entity.slug %}" class="btn btn-outline-success btn-sm">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-alt fa-2x text-info"></i>
+                    <h5 class="card-title mt-2">Balance Sheet</h5>
+                    <a href="{% url 'djan_led:balance_sheet' entity.slug %}" class="btn btn-outline-info btn-sm">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-2x text-warning"></i>
+                    <h5 class="card-title mt-2">Cash Flow</h5>
+                    <a href="{% url 'djan_led:cash_flow' entity.slug %}" class="btn btn-outline-warning btn-sm">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Reports -->
+    <div class="row mt-3">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-book fa-2x text-dark"></i>
+                    <h5 class="card-title mt-2">Chart of Accounts</h5>
+                    <a href="{% url 'djan_led:chart_of_accounts' entity.slug %}" class="btn btn-outline-dark btn-sm">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-eye fa-2x text-secondary"></i>
+                    <h5 class="card-title mt-2">Account Visibility</h5>
+                    <a href="{% url 'djan_led:account_visibility' entity.slug %}" class="btn btn-outline-secondary btn-sm">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar (optional – you can include your module sidebar if desired) -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar" style="min-height: 100vh; padding-top: 20px; border-right: 1px solid #ddd;">
+            <div class="position-sticky">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>Settings</span>
+                </h6>
+                <div class="list-group">
+                    <a href="{% url 'djan_led:entity_dashboard' entity.slug %}?module=finance" class="list-group-item list-group-item-action">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" style="background-color: #f8f9fa; min-height: 100vh; padding-top: 20px;">
+            <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                <h1 class="h2"> Entity Settings</h1>
+                <span class="text-muted">{{ entity.name }}</span>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary"> Save Settings</button>
+                        <a href="{% url 'djan_led:entity_dashboard' entity.slug %}?module=finance" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

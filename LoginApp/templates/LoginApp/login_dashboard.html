@@ -1,0 +1,166 @@
+<!-- LoginApp/templates/LoginApp/login_dashboard.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Login History Dashboard{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-chart-line me-2 text-primary"></i>Login History Dashboard</h2>
+            <p class="text-muted">Monitor member and admin login activities</p>
+        </div>
+        <div>
+            <a href="{% url 'LoginApp:member_login_history' %}" class="btn btn-primary">
+                <i class="fas fa-users me-2"></i>Member Logins
+            </a>
+            <a href="{% url 'LoginApp:admin_login_history' %}" class="btn btn-secondary">
+                <i class="fas fa-user-shield me-2"></i>Admin Logins
+            </a>
+            <a href="{% url 'Supervisor:super_home' %}" class="btn btn-primary">
+                <i class="fas fa-user-shield me-2"></i>Close
+            </a>
+        </div>
+    </div>
+    
+    <!-- Member Statistics -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Member Login Statistics</h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <h3>{{ member_stats.total }}</h3>
+                    <p class="text-muted">Total Logins</p>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="text-success">{{ member_stats.today }}</h3>
+                    <p class="text-muted">Today's Logins</p>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="text-danger">{{ member_stats.failed }}</h3>
+                    <p class="text-muted">Failed Attempts</p>
+                </div>
+                <div class="col-md-3">
+                    <h3>{{ member_stats.unique }}</h3>
+                    <p class="text-muted">Unique Members</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Statistics -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-user-shield me-2"></i>Admin Login Statistics</h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <h3>{{ admin_stats.total }}</h3>
+                    <p class="text-muted">Total Logins</p>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="text-success">{{ admin_stats.today }}</h3>
+                    <p class="text-muted">Today's Logins</p>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="text-danger">{{ admin_stats.failed }}</h3>
+                    <p class="text-muted">Failed Attempts</p>
+                </div>
+                <div class="col-md-3">
+                    <h3>{{ admin_stats.unique }}</h3>
+                    <p class="text-muted">Unique Users</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Member Logins -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Member Logins</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Member</th>
+                            <th>IP Address</th>
+                            <th>Device</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recent_member_logins %}
+                        <tr>
+                            <td>{{ log.login_time|date:"Y-m-d H:i:s" }}</td
+                            <td>{{ log.member.full_name }}</td
+                            <td>{{ log.ip_address|default:"-" }}</td
+                            <td>{{ log.device_type|default:"-" }}</td
+                            <td>
+                                {% if log.login_status == 'SUCCESS' %}
+                                    <span class="badge bg-success">Success</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Failed</span>
+                                {% endif %}
+                             </td
+                            </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No recent logins</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Admin Logins -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Admin Logins</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Username</th>
+                            <th>IP Address</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recent_admin_logins %}
+                        <tr>
+                            <td>{{ log.login_time|date:"Y-m-d H:i:s" }}</td
+                            <td>{{ log.user.username }}</td
+                            <td>{{ log.ip_address|default:"-" }}</td
+                            <td>
+                                {% if log.login_status == 'SUCCESS' %}
+                                    <span class="badge bg-success">Success</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Failed</span>
+                                {% endif %}
+                             </td
+                            </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">No recent logins</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

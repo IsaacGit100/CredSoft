@@ -1,0 +1,214 @@
+<!-- RecPayApp/templates/RecPayApp/batch_posting_preview.html -->
+{% extends "base.html" %}
+{% load humanize %}
+{% load core_filters %}
+
+{% block title %}Review Batch Posting{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>Review Batch Posting
+                    </h4>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Session Timeout Warning -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-clock me-2"></i>
+                        You have <strong>{{ session_timeout }} seconds</strong> to complete this posting. 
+                        Session will expire after this time.
+                    </div>
+                    
+                    <!-- Summary Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h3>{{ total_count }}</h3>
+                                    <p>Transactions to Post</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h3>₵{{ receipts_total|floatformat:2|intcomma }}</h3>
+                                    <p>Total Receipts</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center">
+                                    <h3>₵{{ payments_total|floatformat:2|intcomma }}</h3>
+                                    <p>Total Payments</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h3>₵{{ total_amount|floatformat:2|intcomma }}</h3>
+                                    <p>Net Impact</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Warnings -->
+                    {% if warnings %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warnings:</strong>
+                        <ul class="mb-0 mt-2">
+                            {% for warning in warnings %}
+                            <li>{{ warning }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Transactions List -->
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Transaction No</th>
+                                    <th>Type</th>
+                                    <th>Member Name</th>
+                                    <th>Ledger Account</th>
+                                    <th>Pay Mode</th>
+                                    <th class="text-end">Amount (₵)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in transactions %}
+                                <tr>
+                                    <td>{{ t.date|date:"d/m/Y" }}</td>
+                                    <td><strong>{{ t.trans_no }}</strong></td>
+                                    <td>
+                                        {% if t.trans_type == 'Receipts' %}
+                                            <span class="badge bg-success">Receipt</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Payment</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ t.member_name|default:t.non_member_name|default:"-" }}</td>
+                                    <td>{{ t.ledger_name|default:"-" }}</td>
+                                    <td>{{ t.pay_mode }}</td>
+                                    <td class="text-end">
+                                        {% if t.trans_type == 'Receipts' %}
+                                            <span class="text-success fw-bold">₵{{ t.amount|floatformat:2|intcomma }}</span>
+                                        {% else %}
+                                            <span class="text-danger fw-bold">(₵{{ t.amount|floatformat:2|intcomma }})</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        No transactions selected
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <th colspan="6" class="text-end">TOTAL:</th>
+                                    <th class="text-end fw-bold">
+                                        {% if net_impact >= 0 %}
+                                            <span class="text-success">₵{{ net_impact|floatformat:2|intcomma }}</span>
+                                        {% else %}
+                                            <span class="text-danger">(₵{{ net_impact|abs|floatformat:2|intcomma }})</span>
+                                        {% endif %}
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <!-- Security Confirmation Form -->
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security Verification</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'RecPayApp:batch_posting_confirm' %}" id="confirmForm">
+                                {% csrf_token %}
+                                
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>This action cannot be undone!</strong> Please verify all information before proceeding.
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Type <strong class="text-danger">CONFIRM BATCH POST</strong> to proceed:</label>
+                                    <input type="text" name="confirm_text" class="form-control" 
+                                           placeholder="CONFIRM BATCH POST" required>
+                                    <div class="form-text">Must be typed exactly as shown</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Confirm your password:</label>
+                                    <input type="password" name="confirm_password" class="form-control" required>
+                                    <div class="form-text">Enter your login password to confirm identity</div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'RecPayApp:batch_posting_dashboard' %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Go Back
+                                    </a>
+                                    <button type="submit" class="btn btn-danger btn-lg" 
+                                            onclick="return confirm('Are you absolutely sure you want to post these transactions? This will update financial records.')">
+                                        <i class="fas fa-check-circle"></i> Confirm Batch Post
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Session timeout handling
+    let timeoutSeconds = {{ session_timeout|default:300 }};
+    let timerDiv = document.createElement('div');
+    timerDiv.className = 'alert alert-warning mt-3';
+    timerDiv.id = 'sessionTimer';
+    document.querySelector('.card-body').appendChild(timerDiv);
+    
+    function updateTimer() {
+        if (timeoutSeconds <= 0) {
+            timerDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Session expired! Redirecting...';
+            setTimeout(function() {
+                window.location.href = "{% url 'RecPayApp:batch_posting_dashboard' %}";
+            }, 2000);
+        } else {
+            let minutes = Math.floor(timeoutSeconds / 60);
+            let seconds = timeoutSeconds % 60;
+            timerDiv.innerHTML = `<i class="fas fa-clock me-2"></i>Session will expire in ${minutes}:${seconds.toString().padStart(2, '0')}. Please complete the posting.`;
+            timeoutSeconds--;
+            setTimeout(updateTimer, 1000);
+        }
+    }
+    updateTimer();
+    
+    // Prevent accidental form submission on Enter key
+    document.getElementById('confirmForm').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>
+{% endblock %}

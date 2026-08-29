@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>📊 Monthly Income Statement</h1>
+        <span class="text-muted">{{ entity.name }}</span>
+    </div>
+
+    <!-- Month/Year Selector -->
+        <!-- Month/Year Selector -->
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-auto">
+            <label for="month" class="form-label">Month</label>
+            <select name="month" id="month" class="form-select">
+                {% for m in months %}
+                <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
+                    {{ m }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <label for="year" class="form-label">Year</label>
+            <select name="year" id="year" class="form-select">
+                {% for y in years %}
+                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>
+                    {{ y }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto d-flex align-items-end">
+            <button type="submit" class="btn btn-primary">Generate</button>
+        </div>
+    </form>
+
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">{{ month_name }}</h5>
+        </div>
+        <div class="card-body">
+            <h4>Revenue</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr><th>Account</th><th class="text-end">Amount</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in revenue_breakdown %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td class="text-end">{{ item.amount|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2" class="text-center">No revenue recorded.</td></tr>
+                    {% endfor %}
+                    <tr class="table-active">
+                        <th>Total Revenue</th>
+                        <th class="text-end">{{ revenue_total|floatformat:2 }}</th>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Expenses</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr><th>Account</th><th class="text-end">Amount</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in expense_breakdown %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td class="text-end">{{ item.amount|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2" class="text-center">No expenses recorded.</td></tr>
+                    {% endfor %}
+                    <tr class="table-active">
+                        <th>Total Expenses</th>
+                        <th class="text-end">{{ expense_total|floatformat:2 }}</th>
+                    </tr>
+                </tbody>
+            </table>
+
+            <hr>
+            <h3 class="text-center {% if net_income >= 0 %}text-success{% else %}text-danger{% endif %}">
+                Net Income: {{ net_income|floatformat:2 }}
+            </h3>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{% url 'FinanceApp:finance_reports_home' entity.slug %}" class="btn btn-secondary">Back to Reports</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Factory Reset{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h3><i class="fas fa-exclamation-triangle"></i> Factory Reset – DANGER ZONE</h3>
+        </div>
+        <div class="card-body">
+            <p>This action will <strong>permanently delete ALL data</strong> from the database, including:</p>
+            <ul>
+                <li>All members, loans, transactions</li>
+                <li>All chart of accounts, investments, reports</li>
+                <li>All user accounts (including the current user)</li>
+                <li>Every single record in the system.</li>
+            </ul>
+            <p>Auto‑increment counters will be reset to 1. The table structures remain intact.</p>
+            <p class="text-danger"><strong>This cannot be undone unless you have a backup.</strong></p>
+            <hr>
+            <form method="post" action="{% url 'reset:perform' %}">
+                {% csrf_token %}
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="confirm" id="confirmCheck" required>
+                    <label class="form-check-label" for="confirmCheck">
+                        I understand that this operation will erase <strong>all data</strong> and I have a recent backup.
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Really wipe the entire database? This is irreversible.')">
+                    <i class="fas fa-trash-alt"></i> Perform Factory Reset
+                </button>
+                <a href="{% url 'Supervisor:tech_menu' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

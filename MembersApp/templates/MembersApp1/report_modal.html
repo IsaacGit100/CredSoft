@@ -1,0 +1,117 @@
+<!-- templates/MembersApp/report_modal.html -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="reportModalLabel">
+                    <i class="fas fa-chart-line me-2"></i>Custom Reports
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                            <!-- Direct test modal -->
+            <div class="modal fade" id="testModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">Direct Test</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            This modal is directly in the page - if you see this, Bootstrap works!
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-info mt-2" data-bs-toggle="modal" data-bs-target="#testModal">
+                Test Direct Modal
+            </button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Report Name</th>
+                                <th>PDF</th>
+                                <th>Excel</th>
+                                <th>Print</th>
+                            </thead>
+                            <tbody>
+                                <!-- MEMBER REPORTS -->
+                                <tr class="table-secondary">
+                                    <td colspan="5"><strong>📋 MEMBER REPORTS</strong>\(
+                                </tr>
+                                <tr>
+                                    <td>1</td>
+                                    <td><strong>Member Records</strong><br><small class="text-muted">Complete list of all active members</small></td>
+                                    <td><a href="{% url 'members:member_pdf_all' %}" class="btn btn-sm btn-danger" target="_blank">PDF</a></td>
+                                    <td><a href="{% url 'members:member_excel_all' %}" class="btn btn-sm btn-success">Excel</a></td>
+                                    <td><button onclick="window.print()" class="btn btn-sm btn-secondary">Print</button></td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td><strong>Next of Kin Report</strong><br><small class="text-muted">Members with next of kin details</small></td>
+                                    <td><a href="{% url 'members:nok_pdf' %}" class="btn btn-sm btn-danger" target="_blank">PDF</a></td>
+                                    <td><a href="{% url 'members:nok_excel' %}" class="btn btn-sm btn-success">Excel</a></td>
+                                    <td><button onclick="window.print()" class="btn btn-sm btn-secondary">Print</button></td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td><strong>Members Financial Summary</strong><br><small class="text-muted">Deposits, shares, loans summary</small></td>
+                                    <td><a href="{% url 'members:financial_pdf' %}" class="btn btn-sm btn-danger" target="_blank">PDF</a></td>
+                                    <td><a href="{% url 'members:financial_excel' %}" class="btn btn-sm btn-success">Excel</a></td>
+                                    <td><button onclick="window.print()" class="btn btn-sm btn-secondary">Print</button></td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td><strong>Deleted Members Report</strong><br><small class="text-muted">Soft-deleted members for audit</small></td>
+                                    <td><a href="{% url 'members:deleted_pdf' %}" class="btn btn-sm btn-danger" target="_blank">PDF</a></td>
+                                    <td><a href="{% url 'members:deleted_excel' %}" class="btn btn-sm btn-success">Excel</a></td>
+                                    <td><button onclick="window.print()" class="btn btn-sm btn-secondary">Print</button></td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td><strong>Members by Location</strong><br><small class="text-muted">Members grouped by city/region</small></td>
+                                    <td><a href="{% url 'members:location_pdf' %}" class="btn btn-sm btn-danger" target="_blank">PDF</a></td>
+                                    <td><a href="{% url 'members:location_excel' %}" class="btn btn-sm btn-success">Excel</a></td>
+                                    <td><button onclick="window.print()" class="btn btn-sm btn-secondary">Print</button></td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td><strong>Birthday List</strong><br><small class="text-muted">Members celebrating birthdays this month</small></td>
+                                    <td><a href="{% url 'members:birthday_pdf' %}" class="btn btn-sm btn-danger" target="_blank">PDF</a></td>
+                                    <td><a href="{% url 'members:birthday_excel' %}" class="btn btn-sm btn-success">Excel</a></td>
+                                    <td><button onclick="window.print()" class="btn btn-sm btn-secondary">Print</button></td>
+                                </tr>
+                                
+                                <!-- LOAN REPORTS -->
+                                <tr class="table-secondary">
+                                    <td colspan="5"><strong>💰 LOAN REPORTS</strong>\(
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td><strong>Active Loans Report</strong><br><small class="text-muted">All currently active loans</small></td>
+                                    <td><a href="#" class="btn btn-sm btn-danger" target="_blank">PDF</a></td>
+                                    <td><a href="#" class="btn btn-sm btn-success">Excel</a></td>
+                                    <td><button onclick="window.print()" class="btn btn-sm btn-secondary">Print</button></td>
+                                </tr>
+                                <tr>
+                                    <td>8</td>
+                                    <td><strong>Loan Repayment Schedule</strong><br><small class="text-muted">Upcoming repayments schedule</small></td>
+                                    <td><a href="#" class="btn btn-sm btn-danger" target="_blank">PDF</a></td>
+                                    <td><a href="#" class="btn btn-sm btn-success">Excel</a></td>
+                                    <td><button onclick="window.print()" class="btn btn-sm btn-secondary">Print</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

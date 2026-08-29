@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Journal Entry{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Edit Journal Entry: {{ journal.entry_number }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Entry Date</label>
+                                <input type="date" name="entry_date" class="form-control" value="{{ journal.entry_date|date:'Y-m-d' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select">
+                                    {% for value, label in journal.STATUS_CHOICES %}
+                                    <option value="{{ value }}" {% if journal.status == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3" required>{{ journal.description }}</textarea>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'finance:journal_entry_detail' journal.pk %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Journal Lines Summary -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Journal Lines</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for line in lines %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ line.account.accountno }}</strong><br>
+                                    <small>{{ line.account.name|truncatechars:30 }}</small>
+                                </div>
+                                <div class="text-end">
+                                    {% if line.debit > 0 %}
+                                    <span class="text-success">DR ₵{{ line.debit|floatformat:2 }}</span>
+                                    {% else %}
+                                    <span class="text-danger">CR ₵{{ line.credit|floatformat:2 }}</span>
+                                    {% endif %}
+                                    <br>
+                                    <a href="{% url 'finance:journal_line_edit' line.pk %}" class="btn btn-sm btn-warning mt-1">Edit</a>
+                                    <a href="{% url 'finance:journal_line_delete' line.pk %}" class="btn btn-sm btn-danger mt-1" onclick="return confirm('Delete this line?')">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted">No journal lines</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total Debit:</strong>
+                        <span class="text-success">₵{{ total_debit|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total Credit:</strong>
+                        <span class="text-danger">₵{{ total_credit|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <strong>Difference:</strong>
+                        <span class="{% if total_debit == total_credit %}text-success{% else %}text-danger{% endif %}">
+                            ₵{{ difference|floatformat:2 }}
+                        </span>
+                    </div>
+                    
+                    <hr>
+                    <h6>Add New Line</h6>
+                    <form method="post" action="{% url 'finance:journal_line_create' journal.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <select name="account" class="form-select" required>
+                                <option value="">Select Account</option>
+                                {% for acc in accounts %}
+                                <option value="{{ acc.id }}">{{ acc.accountno }} - {{ acc.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <select name="member" class="form-select">
+                                <option value="">Select Member (Optional)</option>
+                                {% for member in members %}
+                                <option value="{{ member.id }}">{{ member.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="number" name="debit" class="form-control" placeholder="Debit" step="0.01">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="number" name="credit" class="form-control" placeholder="Credit" step="0.01">
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <input type="text" name="description" class="form-control" placeholder="Description (Optional)">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm mt-2 w-100">Add Line</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

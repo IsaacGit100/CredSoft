@@ -1,0 +1,94 @@
+<!-- finance/templates/finance/report_dashboard.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Financial Reports{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Financial Reports</h1>
+    
+    <div class="row">
+        <!-- Trial Balance Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Trial Balance</h5>
+                </div>
+                <div class="card-body">
+                    <p>Summary of all general ledger accounts with debit and credit balances.</p>
+                    <p class="text-muted">Verifies that total debits equal total credits.</p>
+                    <a href="{% url 'FinanceApp:trial_balance' %}" class="btn btn-primary">
+                        <i class="fas fa-chart-bar"></i> View Trial Balance
+                    </a>
+                </div>
+                <div class="card-footer text-muted">
+                    As at {{ today|date:"F d, Y" }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profit & Loss Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Profit & Loss Statement</h5>
+                </div>
+                <div class="card-body">
+                    <p>Shows income and expenses over a specific period.</p>
+                    <p class="text-muted">Calculates net profit or loss for the period.</p>
+                    <a href="{% url 'FinanceApp:profit_loss' %}" class="btn btn-success">
+                        <i class="fas fa-chart-line"></i> View P&L
+                    </a>
+                </div>
+                <div class="card-footer text-muted">
+                    {{ current_month_start|date:"M d, Y" }} - {{ today|date:"M d, Y" }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Balance Sheet Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Balance Sheet</h5>
+                </div>
+                <div class="card-body">
+                    <p>Shows assets, liabilities, and equity at a point in time.</p>
+                    <p class="text-muted">Assets = Liabilities + Equity.</p>
+                    <a href="{% url 'FinanceApp:balance_sheet' %}" class="btn btn-info">
+                        <i class="fas fa-balance-scale"></i> View Balance Sheet
+                    </a>
+                </div>
+                <div class="card-footer text-muted">
+                    As at {{ today|date:"F d, Y" }}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'FinanceApp:trial_balance' %}?as_at_date={{ current_year_start|date:'Y-m-d' }}" class="btn btn-outline-primary">
+                            Year to Date
+                        </a>
+                        <a href="{% url 'FinanceApp:profit_loss' %}?from_date={{ current_month_start|date:'Y-m-d' }}&to_date={{ today|date:'Y-m-d' }}" class="btn btn-outline-success">
+                            Current Month
+                        </a>
+                        <a href="{% url 'FinanceApp:profit_loss' %}?from_date={{ prev_month_start|date:'Y-m-d' }}&to_date={{ prev_month_end|date:'Y-m-d' }}" class="btn btn-outline-warning">
+                            Previous Month
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

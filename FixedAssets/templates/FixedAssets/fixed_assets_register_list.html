@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>📊 Fixed Assets Registrar</h1>
+        <div>
+            <a href="{% url 'FixedAssets:fixed_assets_registrar_pdf' entity.slug %}" class="btn btn-danger">
+                <i class="fas fa-file-pdf"></i> PDF
+            </a>
+            <a href="{% url 'FixedAssets:fixed_assets_registrar_excel' entity.slug %}" class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Excel
+            </a>
+        </div>
+    </div>
+    <p><strong>Entity:</strong> {{ entity.name }}</p>
+    <p>Generated: {{ today|date:"Y-m-d H:i" }}</p>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered" id="registrar-table">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Category</th>
+                    <th>Asset</th>
+                    <th>Depreciation Rate (%)</th>
+                    <th>Cost</th>
+                    <th>Salvage Value</th>
+                    <th>Asset Account</th>
+                    <th>Accumulated Depreciation Account</th>
+                    <th>Depreciation Expense Account</th>
+                    <th>Accumulated Depreciation</th>
+                    <th>Current Value</th>
+                    <th>Year Depreciation</th>
+                    <th>Impairment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in registrar_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.category.name|default:"—" }}</td>
+                    <td>{{ item.asset.name }}</td>
+                    <td>{{ item.depreciation_rate|floatformat:2|default:"—" }}</td>
+                    <td>{{ item.cost|floatformat:2 }}</td>
+                    <td>{{ item.salvage_value|floatformat:2 }}</td>
+                    <td>{% if item.asset_account %}{{ item.asset_account.code }} - {{ item.asset_account.name }}{% else %}—{% endif %}</td>
+                    <td>{% if item.accumulated_depreciation_account %}{{ item.accumulated_depreciation_account.code }} - {{ item.accumulated_depreciation_account.name }}{% else %}—{% endif %}</td>
+                    <td>{% if item.depreciation_expense_account %}{{ item.depreciation_expense_account.code }} - {{ item.depreciation_expense_account.name }}{% else %}—{% endif %}</td>
+                    <td>{{ item.total_accumulated_depreciation|floatformat:2 }}</td>
+                    <td>{{ item.current_value|floatformat:2 }}</td>
+                    <td>{{ item.year_depreciation|floatformat:2 }}</td>
+                    <td>{{ item.impairment|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="13" class="text-center">No assets found.</td></tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-active">
+                <tr>
+                    <th colspan="4" class="text-end">Totals</th>
+                    <th>{{ registrar_data|sum:'cost'|floatformat:2 }}</th>
+                    <th>{{ registrar_data|sum:'salvage_value'|floatformat:2 }}</th>
+                    <th colspan="3"></th>
+                    <th>{{ registrar_data|sum:'total_accumulated_depreciation'|floatformat:2 }}</th>
+                    <th>{{ registrar_data|sum:'current_value'|floatformat:2 }}</th>
+                    <th>{{ registrar_data|sum:'year_depreciation'|floatformat:2 }}</th>
+                    <th>{{ registrar_data|sum:'impairment'|floatformat:2 }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endblock %}

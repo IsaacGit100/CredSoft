@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Confirm Backup{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h4>Confirm Full Database Backup</h4>
+        </div>
+        <div class="card-body">
+            <p>You are about to backup the entire database. This may take a few minutes.</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Start Backup</button>
+                <a href="{% url 'Supervisor:backup_panel' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Action{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-{{ color|default:'warning' }} text-white">
+            <h4>Confirm {{ action }}</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Batch:</strong> {{ batch.batch_number }}</p>
+            <p><strong>As At Date:</strong> {{ batch.as_at_date|date:"d/m/Y" }}</p>
+            <p><strong>Status:</strong> {{ batch.get_status_display }}</p>
+            <p><strong>Action:</strong> {{ action }}</p>
+            <p>Are you sure you want to proceed?</p>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-{{ color|default:'warning' }}">Yes, {{ action }}</button>
+                <a href="{% url 'OpenBals:opening_balance_list' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

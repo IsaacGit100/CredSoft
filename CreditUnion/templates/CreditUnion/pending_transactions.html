@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "Supervisor/supervisor_sidebar.html" %}
+    <div class="flex-grow-1 p-4" style="margin-left: 250px;">
+        <h2>📋 Pending Transactions - {{ entity.name }}</h2>
+
+        {% if processed %}
+            <!-- Results Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4>Posting Results</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Total processed:</strong> {{ results.total }}</p>
+                    <p><strong>Successful:</strong> {{ results.success|length }}</p>
+                    <p><strong>Failed:</strong> {{ results.failed|length }}</p>
+
+                    {% if results.failed %}
+                        <div class="alert alert-danger">
+                            <ul>
+                                {% for fail in results.failed %}
+                                    <li>Transaction #{{ fail.id }}: {{ fail.error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'Supervisor:run_pending_transactions' entity.slug %}" class="btn btn-primary">Run Again</a>
+                    <a href="{% url 'Supervisor:super_home' entity.slug %}" class="btn btn-secondary">Back to Supervisor</a>
+                </div>
+            </div>
+        {% else %}
+            <!-- Pending List & Post Button -->
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4>Pending Transactions ({{ pending_trans|length }})</h4>
+                </div>
+                <div class="card-body">
+                    {% if pending_trans %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Post all pending transactions?')">
+                                📤 Post All Pending
+                            </button>
+                        </form>
+                        <div class="table-responsive mt-3">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Voucher</th>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Member</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trans in pending_trans %}
+                                    <tr>
+                                        <td>{{ trans.date|date:"Y-m-d" }}</td>
+                                        <td>{{ trans.rec_vou_no }}</td>
+                                        <td>{{ trans.trans_type }}</td>
+                                        <td>{{ trans.amount|floatformat:2 }}</td>
+                                        <td>{{ trans.member.full_name|default:"Walk‑in" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No pending transactions.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

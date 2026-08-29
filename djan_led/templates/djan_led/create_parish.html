@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 50px;">
+    <h1> Create New Parish</h1>
+    <p>Fill in the details below to create a new parish with its Chart of Accounts.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Create Parish</button>
+        <a href="{% url 'djan_led:entity_dashboard' entity.slug %}" class="btn btn-secondary">Cancel</a>
+
+    </form>
+</div>
+{% endblock %}

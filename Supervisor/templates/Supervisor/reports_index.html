@@ -1,0 +1,208 @@
+<!-- reports_index.html -->
+{% extends "base_sidebar.html" %}
+{% load static %}
+
+{% block title %}Reports Index{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4><i class="fas fa-file-alt"></i> Reports Index</h4>
+            <p class="mb-0">Select a report to print, export to PDF or Excel</p>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Code</th>
+                            <th>Category</th>
+                            <th>Details (Fields)</th>
+                            <th>Print</th>
+                            <th>PDF</th>
+                            <th>Excel</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- ========== FINANCIAL REPORTS ========== -->
+                         
+                        <tr>
+                            <td>TRS-01</td>
+                            <td>Transactions</td>
+                            <td>(id, Reference, MemberID, MemberName, LedgerID, LedgerName, LoanID, Details, Credit, Debits, PayMode)</td>
+                           <td class="text-center"><a href="{$}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                           
+                            <td class="text-center"><a href="{% url 'RecPayApp:trans_pdf_all' %}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{% url 'RecPayApp:trans_excel_all' %}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+
+
+
+
+
+
+
+                        <tr>
+                            <td>FIN-01</td>
+                            <td>Financial</td>
+                            <td>Trial Balance (Account Code, Name, Debit, Credit, Totals)</td>
+
+                            
+                            <td class="text-center"><a href="{% url 'FinanceApp:trial_balance' %}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:trial_balance_pdf' %}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:trial_balance_excel' %}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+                        <tr>
+                            <td>INCS-01</td>
+                            <td>Income Statement</td>
+                            <td>Income Statement (Income, Expenses, Excess etc)</td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:inc_state_print' %}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:inc_state_pdf' %}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:inc_state_excel' %}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+                        <tr>
+                            <td>FIN-02</td>
+                            <td>Financial</td>
+                            <td>Balance Sheet (Assets, Liabilities, Equity, Totals)</td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:balance_sheet_print' %}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:balance_sheet_pdf' %}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:balance_sheet_excel' %}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+
+                        <tr>
+                            <td>LEDG-01</td>
+                            <td>General Ledger</td>
+                            <td>General Ledger (Accounts and balances)</td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:ledger_list_print' %}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:ledger_list_pdf' %}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:ledger_list_excel' %}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+                         <tr>
+                            <td>LEDG-02</td>
+                            <td>General Ledger</td>
+                            <td>Balance Sheet (Current balances on all Accounts)</td>
+                            <td class="text-center"><a href="{#}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+                         <tr>
+                            <td>LEDG-03</td>
+                            <td>General Ledger</td>
+                            <td>Balance Sheet (Opening Balances for the Year)</td>
+                            <td class="text-center"><a href="{#}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+
+
+
+                        <tr>
+                            <td>FIN-03</td>
+                            <td>Financial</td>
+                            <td>Profit & Loss (Income, Expenses, Net Profit/Loss)</td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:profit_loss_print' %}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:profit_loss_pdf' %}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:profit_loss_excel' %}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+                        <tr>
+                            <td>FIN-04</td>
+                            <td>Financial</td>
+                            <td>General Ledger Statement (Account, Opening Balance, Current Balance, Period Bal, YTD)</td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:general_ledger_print' %}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:general_ledger_pdf' %}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:general_ledger_excel' %}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+                        <tr>
+                            <td>FIN-05</td>
+                            <td>Financial</td>
+                            <td>Account Ledger (Detailed transactions per account)</td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:account_ledger_print' %}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:account_ledger_pdf' %}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{% url 'FinanceApp:account_ledger_excel' %}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+
+                        <!-- ========== TRANSACTION REPORTS ========== -->
+                        <tr>
+                            <td>TRX-01</td>
+                            <td>Transactions</td>
+                            <td>Transaction Journal Report (Voucher, Date, Amount, Ledger, Journal Entry, Account, Debit/Credit)</td>
+                            <td class="text-center"><a href="{#}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+                        <tr>                            
+                            <td>TRX-02</td>
+                            <td>Transactions</td>
+                            <td>Transaction Audit Report (Full trace: Trans, Journal Entry, Lines, GL)</td>
+                            <td class="text-center"><a href="{#}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{RecPayApp:trans_pdf_all}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{RecPayApp:trans_excel_all}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+
+                        <!-- ========== MEMBER REPORTS ========== -->
+                        <tr>
+                            <td>MEM-01</td>
+                            <td>Members</td>
+                            <td>Member List (ID, Name, Contact, Savings Balance)</td>
+                            <td class="text-center"><a href="{#}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+                        <tr>
+                            <td>MEM-02</td>
+                            <td>Members</td>
+                            <td>Member Statement (Transactions, Deposits, Withdrawals, Balance)</td>
+                            <td class="text-center"><a href="{#}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+
+                        <!-- ========== LOAN REPORTS ========== -->
+                        <tr>
+                            <td>LON-01</td>
+                            <td>Loans</td>
+                            <td>Loan Portfolio (Borrower, Principal, Balance, Interest, Status)</td>
+                            <td class="text-center"><a href="{#}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+                        <tr>
+                            <td>LON-02</td>
+                            <td>Loans</td>
+                            <td>Loan Repayment History (Loan, Member, Amount, Interest, Principal, Balance)</td>
+                            <td class="text-center"><a href="{#}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+
+                        <!-- ========== INVESTMENT REPORTS ========== -->
+                        <tr>
+                            <td>INV-01</td>
+                            <td>Investments</td>
+                            <td>Investment Portfolio (Cert No, Bank, Amount, Rate, Maturity, Interest)</td>
+                            <td class="text-center"><a href="{#}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+
+                        <!-- ========== SCHOOL REPORTS (if needed) ========== -->
+                        <tr>
+                            <td>SCH-01</td>
+                            <td>School</td>
+                            <td>Pupil List (Admission No, Name, Class, Parent, Status)</td>
+                            <td class="text-center"><a href="{#}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-danger"><i class="fas fa-file-pdf"></i></a></td>
+                            <td class="text-center"><a href="{#}" class="btn btn-sm btn-success"><i class="fas fa-file-excel"></i></a></td>
+                        </tr>
+                        <!-- Add more as needed -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle"></i> <strong>Note:</strong> Click on the icons to print, download PDF or Excel. Print will open a printer-friendly version.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

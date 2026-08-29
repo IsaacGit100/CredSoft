@@ -1,0 +1,26 @@
+<!-- members/templates/members/member_confirm_delete.html -->
+{% extends "base.html" %}
+
+{% block title %}Delete Member{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 50px auto;">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete</h4>
+        </div>
+        <div class="card-body">
+            <p>Are you sure you want to delete <strong>{{ member.full_name }}</strong>?</p>
+            <p class="text-muted small">This action can be reversed by restoring the member.</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'MembersApp:member_detail' member.id %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-danger">Yes, Delete Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

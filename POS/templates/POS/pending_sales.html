@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    {% include "pos/sidebar.html" %}
+    <div class="flex-grow-1 p-3" style="margin-left: 250px; background: #f4f7fa; min-height: 100vh;">
+        <h2>📋 Pending Sales</h2>
+        <p class="text-muted">Select sales to post to the ledger.</p>
+
+        <form method="post" action="{% url 'pos:post_selected_sales' entity.slug %}">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all"></th>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in sales %}
+                        <tr>
+                            <td><input type="checkbox" name="sale_ids" value="{{ sale.id }}"></td>
+                            <td>{{ sale.id }}</td>
+                            <td>{{ sale.sale_date|date:"Y-m-d H:i" }}</td>
+                            <td>{{ sale.customer.name|default:"Walk‑in" }}</td>
+                            <td>{{ sale.total_amount|floatformat:2 }}</td>
+                            <td>
+                                <a href="{% url 'pos:sale_detail' entity.slug sale.id %}" class="btn btn-sm btn-outline-info">View</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center">No pending sales.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" class="btn btn-success" onclick="return confirm('Post selected sales?')">
+                📤 Post Selected
+            </button>
+        </form>
+
+        <a href="{% url 'pos:sales_form' entity.slug %}" class="btn btn-secondary">Back to Sales</a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('select-all').addEventListener('change', function(e) {
+        document.querySelectorAll('input[name="sale_ids"]').forEach(cb => cb.checked = e.target.checked);
+    });
+</script>
+{% endblock %}

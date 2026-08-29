@@ -1,0 +1,114 @@
+<!-- finance/templates/finance/profit_loss.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Profit & Loss Statement{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Profit & Loss Statement</h4>
+                        <div>
+                            <a href="{% url 'FinanceApp:finance_home' %}" class="btn btn-primary">
+                                 <i class="fas fa-chart-bar"></i> Close
+                            </a> 
+                            <a href="{% url 'FinanceApp:profit_loss' %}" class="menu-btn">Profit & Loss</a>
+                            <button onclick="window.print()" class="btn btn-light btn-sm">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                    <p class="mb-0 mt-2">For the period {{ from_date|date:"F d, Y" }} to {{ to_date|date:"F d, Y" }}</p>
+                </div>
+                <div class="card-body">
+                    <!-- Filter Form -->
+                    <form method="get" class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label class="form-label">From Date</label>
+                            <input type="date" name="from_date" class="form-control" value="{{ from_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">To Date</label>
+                            <input type="date" name="to_date" class="form-control" value="{{ to_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">Run Report</button>
+                            <a href="{% url 'FinanceApp:profit_loss' %}" class="btn btn-secondary ms-2">Reset</a>
+                        </div>
+                    </form>
+                    
+                    <!-- Income Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">INCOME</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                {% for item in income_data %}
+                                <tr>
+                                    <td>{{ item.account.accountno }} - {{ item.account.name }}</td>
+                                    <td class="text-end">₵{{ item.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center">No income recorded</td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-active">
+                                    <th>TOTAL INCOME</th>
+                                    <th class="text-end">₵{{ total_income|floatformat:2 }}</th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Expenses Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">EXPENSES</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                {% for item in expense_data %}
+                                <tr>
+                                    <td>{{ item.account.accountno }} - {{ item.account.name }}</td>
+                                    <td class="text-end">₵{{ item.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center">No expenses recorded</td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-active">
+                                    <th>TOTAL EXPENSES</th>
+                                    <th class="text-end">₵{{ total_expense|floatformat:2 }}</th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Net Income Section -->
+                    <div class="card">
+                        <div class="card-header {% if is_profit %}bg-success{% else %}bg-warning{% endif %} text-white">
+                            <h5 class="mb-0">NET {{ net_income|floatformat:2 }}</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if is_profit %}
+                            <h3 class="text-success">NET PROFIT: ₵{{ net_income|floatformat:2 }}</h3>
+                            {% elif is_loss %}
+                            <h3 class="text-danger">NET LOSS: ₵{{ net_income|floatformat:2 }}</h3>
+                            {% else %}
+                            <h3>BREAK EVEN</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

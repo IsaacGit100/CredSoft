@@ -1,0 +1,539 @@
+<!-- templates/loans/loan_statistics.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Loan Statistics Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.7;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 20px 0;
+    }
+    .progress {
+        height: 25px;
+        border-radius: 12px;
+    }
+    .progress-bar {
+        border-radius: 12px;
+    }
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+    .badge {
+        font-size: 0.85rem;
+        padding: 5px 10px;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-0">
+                        <i class="fas fa-chart-line text-primary me-2"></i>Loan Statistics Dashboard
+                    </h1>
+                    <p class="text-muted mt-2">Overview of loan performance and portfolio metrics</p>
+                </div>
+                <div>
+                    <button class="btn btn-outline-secondary me-2" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <button class="btn btn-primary" onclick="exportData()">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                <i class="fas fa-hand-holding-usd me-1"></i> Total Loans
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_loans|default:"0" }}
+                            </div>
+                            <div class="small text-muted mt-1">
+                                Active: {{ active_loans|default:"0" }} | 
+                                Completed: {{ completed_loans|default:"0" }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-pie fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                <i class="fas fa-money-bill-wave me-1"></i> Total Loan Portfolio
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                ₵{{ total_portfolio|default:"0"|floatformat:2 }}
+                            </div>
+                            <div class="small text-muted mt-1">
+                                Disbursed: ₵{{ total_disbursed|default:"0"|floatformat:2 }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-coins fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                <i class="fas fa-chart-line me-1"></i> Outstanding Balance
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                ₵{{ total_outstanding|default:"0"|floatformat:2 }}
+                            </div>
+                            <div class="small text-muted mt-1">
+                                Repaid: ₵{{ total_repaid|default:"0"|floatformat:2 }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                <i class="fas fa-percent me-1"></i> Collection Rate
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ collection_rate|default:"0" }}%
+                            </div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ collection_rate|default:'0' }}%" 
+                                     aria-valuenow="{{ collection_rate|default:'0' }}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-simple fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-pie me-2"></i>Loan Status Distribution
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="mt-3">
+                        {% if status_distribution %}
+                        <div class="row text-center">
+                            {% for status in status_distribution %}
+                            <div class="col-md-4 mb-2">
+                                <span class="badge bg-{{ status.color }}">{{ status.name }}</span>
+                                <strong>{{ status.count }}</strong> 
+                                <small class="text-muted">({{ status.percentage }}%)</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-bar me-2"></i>Top 5 Loan Products
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="productsChart"></canvas>
+                    </div>
+                    {% if top_products %}
+                    <div class="mt-3">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th class="text-end">Count</th>
+                                    <th class="text-end">Amount</th>
+                                </thead>
+                                <tbody>
+                                    {% for product in top_products %}
+                                    <tr>
+                                        <td>{{ product.name }}</td>
+                                        <td class="text-end">{{ product.count }}</td>
+                                        <td class="text-end">₵{{ product.amount|floatformat:2 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Trends -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-line me-2"></i>Monthly Loan Trends
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Loans Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-table me-2"></i>Recent Loan Applications
+                    </h6>
+                    <a href="{% url 'LoanApp:loan_list' %}" class="btn btn-sm btn-primary">
+                        View All <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Loan ID</th>
+                                    <th>Member</th>
+                                    <th>Principal</th>
+                                    <th>Interest Rate</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </thead>
+                                <tbody>
+                                    {% if recent_loans %}
+                                    {% for loan in recent_loans %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'LoanApp:loan_detail' loan.id %}">
+                                                {{ loan.loan_id }}
+                                            </a>
+                                        </td>
+                                        <td>{{ loan.master.name }}</td>
+                                        <td>₵{{ loan.principal|floatformat:2 }}</td>
+                                        <td>{{ loan.int_rate }}%</td>
+                                        <td>
+                                            {% if loan.status == 'ACTIVE' %}
+                                            <span class="badge bg-success">Active</span>
+                                            {% elif loan.status == 'PENDING' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                            {% elif loan.status == 'COMPLETED' %}
+                                            <span class="badge bg-info">Completed</span>
+                                            {% elif loan.status == 'DEFAULTED' %}
+                                            <span class="badge bg-danger">Defaulted</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">{{ loan.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ loan.disbursement_date|date:"Y-m-d" }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'LoanApp:loan_detail' loan.id %}" 
+                                                   class="btn btn-outline-primary" title="View">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'LoanApp:loan_payment' loan.id %}" 
+                                                   class="btn btn-outline-success" title="Make Payment">
+                                                    <i class="fas fa-money-bill"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            No loan records found
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guarantor and Performance Section -->
+    <div class="row">
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-users me-2"></i>Top Guarantors
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if top_guarantors %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th class="text-end">Total Guaranteed</th>
+                                    <th class="text-end">Loans</th>
+                                </thead>
+                                <tbody>
+                                    {% for guarantor in top_guarantors %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ guarantor.name }}</td>
+                                        <td class="text-end">₵{{ guarantor.total|floatformat:2 }}</td>
+                                        <td class="text-end">{{ guarantor.count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                    <p class="text-center text-muted py-4">No guarantor data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-simple me-2"></i>Loan Performance Metrics
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label class="font-weight-bold">Average Loan Size</label>
+                        <div class="h4 text-primary">₵{{ avg_loan_size|default:"0"|floatformat:2 }}</div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="font-weight-bold">Average Interest Rate</label>
+                        <div class="h4 text-info">{{ avg_interest_rate|default:"0" }}%</div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="font-weight-bold">Average Loan Term</label>
+                        <div class="h4 text-success">{{ avg_loan_term|default:"0" }} months</div>
+                    </div>
+                    <div>
+                        <label class="font-weight-bold">Default Rate</label>
+                        <div class="h4 text-danger">{{ default_rate|default:"0" }}%</div>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar bg-danger" role="progressbar" 
+                                 style="width: {{ default_rate|default:'0' }}%" 
+                                 aria-valuenow="{{ default_rate|default:'0' }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Initialize charts when document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Status Distribution Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusData = {{ status_chart_data|default:'{"labels": [], "data": [], "colors": []}'|safe }};
+    
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: statusData.labels,
+            datasets: [{
+                data: statusData.data,
+                backgroundColor: statusData.colors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Products Chart
+    const productsCtx = document.getElementById('productsChart').getContext('2d');
+    const productsData = {{ products_chart_data|default:'{"labels": [], "data": []}'|safe }};
+    
+    new Chart(productsCtx, {
+        type: 'bar',
+        data: {
+            labels: productsData.labels,
+            datasets: [{
+                label: 'Loan Amount (₵)',
+                data: productsData.data,
+                backgroundColor: 'rgba(78, 115, 223, 0.7)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₵' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Monthly Trends Chart
+    const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+    const trendsData = {{ trends_chart_data|default:'{"months": [], "disbursed": [], "repaid": []}'|safe }};
+    
+    new Chart(trendsCtx, {
+        type: 'line',
+        data: {
+            labels: trendsData.months,
+            datasets: [
+                {
+                    label: 'Disbursed (₵)',
+                    data: trendsData.disbursed,
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Repaid (₵)',
+                    data: trendsData.repaid,
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₵' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+
+// Export data function
+function exportData() {
+    window.location.href = "{% url 'LoansApp:export_statistics' %}";
+}
+
+// Auto-refresh every 5 minutes (optional)
+setInterval(function() {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

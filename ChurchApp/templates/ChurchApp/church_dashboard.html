@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+     <div class="d-flex">
+          {% include "djan_led/sidebars/church_sidebar.html" with entity=entity %}
+        
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"> {{ entity.name }} Dashboard</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'Tech:entity_management' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Entities
+                    </a>
+                </div>
+            </div>
+
+            <p class="text-muted">Overview of church activities for {{ entity.name }}.</p>
+
+            <!-- Stats Cards -->
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">Members</h5>
+                            <h2>{{ total_members }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <h5 class="card-title">Offerings</h5>
+                            <h2>₵{{ total_offerings|floatformat:2 }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <h5 class="card-title">Events</h5>
+                            <h2>{{ total_events }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <h5 class="card-title">Income</h5>
+                            <h2>₵{{ total_income|floatformat:2 }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Offerings -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            Recent Offerings
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Member</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for offering in recent_offerings %}
+                                    <tr>
+                                        <td>{{ offering.member.full_name }}</td>
+                                        <td>₵{{ offering.amount }}</td>
+                                        <td>{{ offering.date }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="3">No offerings recorded.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Events -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            Upcoming Events
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                {% for event in upcoming_events %}
+                                <li class="list-group-item">
+                                    <strong>{{ event.title }}</strong><br>
+                                    {{ event.date }} at {{ event.start_time }}
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item">No upcoming events.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

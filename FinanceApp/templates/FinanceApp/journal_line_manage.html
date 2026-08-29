@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Journal Lines - {{ journal.entry_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Journal Lines: {{ journal.entry_number }}</h1>
+            <p class="text-muted">{{ journal.description }}</p>
+        </div>
+        <div>
+            <a href="{% url 'finance:journal_line_create' journal.pk %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Line
+            </a>
+            <a href="{% url 'finance:journal_entry_detail' journal.pk %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Journal
+            </a>
+        </div>
+    </div>
+    
+    <!-- Balance Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4>Total Debit</h4>
+                    <h2>₵{{ total_debit|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h4>Total Credit</h4>
+                    <h2>₵{{ total_credit|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card {% if is_balanced %}bg-info{% else %}bg-warning{% endif %} text-white">
+                <div class="card-body text-center">
+                    <h4>Difference</h4>
+                    <h2>₵{{ difference|floatformat:2 }}</h2>
+                    {% if is_balanced %}
+                    <small>✓ Balanced</small>
+                    {% else %}
+                    <small>✗ Out of Balance</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Journal Lines Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Account</th>
+                            <th>Member</th>
+                            <th class="text-end">Debit</th>
+                            <th class="text-end">Credit</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ line.account.accountno }} - {{ line.account.name }}</td>
+                            <td>{{ line.member.name|default:"-" }}</td>
+                            <td class="text-end text-success">
+                                {% if line.debit > 0 %}₵{{ line.debit|floatformat:2 }}{% else %}-{% endif %}
+                            </td>
+                            <td class="text-end text-danger">
+                                {% if line.credit > 0 %}₵{{ line.credit|floatformat:2 }}{% else %}-{% endif %}
+                            </td>
+                            <td>{{ line.line_description|default:"-" }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'finance:journal_line_edit' journal.pk line.pk %}" class="btn btn-warning">Edit</a>
+                                    <a href="{% url 'finance:journal_line_delete' journal.pk line.pk %}" class="btn btn-danger" onclick="return confirm('Delete this line?')">Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No journal lines. Click "Add Line" to create one.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-active">
+                        <tr>
+                            <th colspan="3">TOTAL</th>
+                            <th class="text-end">₵{{ total_debit|floatformat:2 }}</th>
+                            <th class="text-end">₵{{ total_credit|floatformat:2 }}</th>
+                            <th colspan="2"></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

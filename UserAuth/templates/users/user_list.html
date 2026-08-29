@@ -1,0 +1,141 @@
+<!-- templates/users/user_list.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .status-active { color: green; font-weight: bold; }
+        .status-inactive { color: red; font-weight: bold; }
+        .admin-badge { background-color: #007BFF; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+              <h2>👥 User Management - {{ system_settings.company_short_name }}</h2>
+            
+            <div>
+                <a href="{% url 'userauth:user_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New User
+                </a>
+            </div>
+            <div>
+                <a href="{% url 'userauth:dashboard' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Exit To Main Menu
+                </a>
+            </div>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5>Total Users</h5>
+                        <h3>{{ total_users }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5>Active Users</h5>
+                        <h3>{{ active_users }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-warning">
+                    <div class="card-body">
+                        <h5>Inactive Users</h5>
+                        <h3>{{ total_users|add:active_users|add:"-total_users" }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search -->
+        <form method="get" class="mb-3">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Search by username, name, email..." value="{{ query }}">
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+                {% if query %}
+                <a href="{% url 'userauth:user_list' %}" class="btn btn-outline-secondary">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+        
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        
+        <!-- Users Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Username</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Last Login</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <strong>{{ user.username }}</strong>
+                            {% if user.is_superuser %}
+                                <span class="admin-badge">Admin</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.get_full_name|default:"-" }}</td>
+                        <td>{{ user.email|default:"-" }}</td>
+                        <td>{{ user.profile.get_role_display }}</td>
+                        <td>
+                            {% if user.is_active %}
+                                <span class="status-active">Active</span>
+                            {% else %}
+                                <span class="status-inactive">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.last_login|date:"d/m/Y H:i"|default:"Never" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'userauth:user_detail' user.id %}" class="btn btn-info" title="View"></a>
+                                <a href="{% url 'userauth:user_edit' user.id %}" class="btn btn-warning" title="Edit"></a>
+                                <a href="{% url 'userauth:user_reset_password' user.id %}" class="btn btn-secondary" title="Reset Password"></a>
+                                {% if user.is_active %}
+                                    <a href="{% url 'userauth:user_toggle_status' user.id %}" class="btn btn-danger" title="Deactivate" 
+                                       onclick="return confirm('Deactivate user {{ user.username }}?')"></a>
+                                {% else %}
+                                    <a href="{% url 'userauth:user_toggle_status' user.id %}" class="btn btn-success" title="Activate"
+                                       onclick="return confirm('Activate user {{ user.username }}?')"></a>
+                                {% endif %}
+                                {% if user != request.user %}
+                                <a href="{% url 'userauth:user_delete' user.id %}" class="btn btn-danger" title="Delete"
+                                   onclick="return confirm('Delete user {{ user.username }}? This cannot be undone.')">🗑️</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            No users found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

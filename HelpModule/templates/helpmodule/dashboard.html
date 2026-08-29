@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Help Center{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4">How can we help you?</h1>
+            <p class="lead">Find answers, guides, and tutorials for all Credit Union modules</p>
+            
+            <!-- Search Bar -->
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-6">
+                    <form action="{% url 'help_module:search' %}" method="get">
+                        <div class="input-group">
+                            <input type="text" class="form-control form-control-lg" 
+                                   name="q" placeholder="Search for help...">
+                            <button class="btn btn-primary btn-lg" type="submit">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Links -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3><i class="fas fa-rocket me-2"></i>Quick Start</h3>
+            <hr>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                    <h5>Members</h5>
+                    <p class="text-muted">Add, manage, and track members</p>
+                    <a href="{% url 'help_module:module_help' 'MEMBERS' %}" class="btn btn-sm btn-outline-primary">Learn More</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-hand-holding-usd fa-3x text-success mb-3"></i>
+                    <h5>Loans</h5>
+                    <p class="text-muted">Process loans, interest, and repayments</p>
+                    <a href="{% url 'help_module:module_help' 'LOANS' %}" class="btn btn-sm btn-outline-success">Learn More</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                    <h5>Finance</h5>
+                    <p class="text-muted">Accounting, reports, and statements</p>
+                    <a href="{% url 'help_module:module_help' 'FINANCE' %}" class="btn btn-sm btn-outline-info">Learn More</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-pie fa-3x text-warning mb-3"></i>
+                    <h5>Investments</h5>
+                    <p class="text-muted">Manage investments and returns</p>
+                    <a href="{% url 'help_module:module_help' 'INVESTMENTS' %}" class="btn btn-sm btn-outline-warning">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Featured Topics -->
+    {% if featured_topics %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3><i class="fas fa-star me-2"></i>Featured Help Topics</h3>
+            <hr>
+        </div>
+        
+        {% for topic in featured_topics %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <span class="badge bg-primary mb-2">{{ topic.get_help_type_display }}</span>
+                    <h5 class="card-title">
+                        <a href="{% url 'help_module:topic' topic.slug %}" class="text-decoration-none">
+                            {{ topic.title }}
+                        </a>
+                    </h5>
+                    <p class="card-text text-muted">{{ topic.content|truncatechars:150 }}</p>
+                    <div class="mt-auto">
+                        <a href="{% url 'help_module:topic' topic.slug %}" class="btn btn-sm btn-link">
+                            Read More <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>
+                        <i class="fas fa-eye"></i> {{ topic.views_count }} views
+                        {% if topic.helpful_count > 0 %}
+                        <i class="fas fa-thumbs-up ms-2"></i> {{ topic.helpful_count }}
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Categories -->
+    <div class="row">
+        <div class="col-12">
+            <h3><i class="fas fa-folder me-2"></i>Browse by Category</h3>
+            <hr>
+        </div>
+        
+        {% for category in categories %}
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-{{ category.icon|default:'book' }} fa-2x text-primary mb-2"></i>
+                    <h5>{{ category.name }}</h5>
+                    <p class="text-muted small">{{ category.description|truncatechars:100 }}</p>
+                    <a href="{% url 'help_module:category' category.slug %}" class="btn btn-sm btn-outline-primary">
+                        View Topics <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- User Guides -->
+    {% if recent_guides %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3><i class="fas fa-book me-2"></i>User Guides & Manuals</h3>
+            <hr>
+        </div>
+        
+        {% for guide in recent_guides %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                    <h5>{{ guide.title }}</h5>
+                    <p class="text-muted small">{{ guide.description|truncatechars:100 }}</p>
+                    <div class="mt-auto">
+                        <a href="{% url 'help_module:user_guide' guide.slug %}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-download"></i> Download Guide
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>Version {{ guide.version }} | {{ guide.published_date|date:"M d, Y" }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Floating Help Button -->
+<div id="helpButton" style="position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
+    <button class="btn btn-primary rounded-circle p-3 shadow" onclick="toggleHelpModal()">
+        <i class="fas fa-question fa-2x"></i>
+    </button>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-life-ring me-2"></i>Help Center</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="list-group" id="helpTopicsList">
+                            <a href="#" class="list-group-item list-group-item-action active" data-topic="general">
+                                <i class="fas fa-info-circle me-2"></i>General Help
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action" data-topic="members">
+                                <i class="fas fa-users me-2"></i>Members
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action" data-topic="loans">
+                                <i class="fas fa-hand-holding-usd me-2"></i>Loans
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action" data-topic="finance">
+                                <i class="fas fa-chart-line me-2"></i>Finance
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action" data-topic="investments">
+                                <i class="fas fa-chart-pie me-2"></i>Investments
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div id="helpContent">
+                            <div class="text-center py-5">
+                                <i class="fas fa-question-circle fa-4x text-muted mb-3"></i>
+                                <h5>How can we help?</h5>
+                                <p>Select a topic above or use the search bar to find help articles.</p>
+                                <form action="{% url 'help_module:search' %}" method="get" class="mt-3">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="q" placeholder="Search...">
+                                        <button class="btn btn-primary" type="submit">Search</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleHelpModal() {
+    const modal = new bootstrap.Modal(document.getElementById('helpModal'));
+    modal.show();
+}
+
+// Load help content dynamically
+document.querySelectorAll('#helpTopicsList a').forEach(link => {
+    link.addEventListener('click', async function(e) {
+        e.preventDefault();
+        
+        // Update active state
+        document.querySelectorAll('#helpTopicsList a').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        
+        const topic = this.getAttribute('data-topic');
+        const helpContent = document.getElementById('helpContent');
+        
+        // Show loading
+        helpContent.innerHTML = '<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Loading...</p></div>';
+        
+        try {
+            // Fetch help content
+            const response = await fetch(`/help/contextual/?page=${topic}`);
+            const data = await response.json();
+            
+            if (data.title) {
+                helpContent.innerHTML = `
+                    <h5><i class="fas fa-question-circle me-2 text-primary"></i>${data.title}</h5>
+                    <p class="text-muted">${data.content}</p>
+                    <a href="${data.url}" class="btn btn-sm btn-primary">Read Full Article</a>
+                `;
+            } else {
+                helpContent.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5>No help articles found</h5>
+                        <p>Try searching for your question above.</p>
+                        <form action="{% url 'help_module:search' %}" method="get" class="mt-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="q" placeholder="Search...">
+                                <button class="btn btn-primary" type="submit">Search</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            helpContent.innerHTML = `
+                <div class="text-center py-5 text-danger">
+                    <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                    <p>Error loading help content. Please try again.</p>
+                </div>
+            `;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2><i class="fas fa-plus-circle me-2"></i>{{ title }}</h2>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-plus-circle me-2"></i>Investment Details
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label class="form-label">Certificate No</label>
+                    {{ form.certificate_no }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date</label>
+                    {{ form.date }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Investment Amount</label>
+                    {{ form.amount }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Account No</label>
+                    {{ form.account_no }}
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Bank/Company</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="bank_company_toggle" id="bankToggle" checked>
+                        <label class="form-check-label" for="bankToggle">Select Bank</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="bank_company_toggle" id="otherCompanyToggle">
+                        <label class="form-check-label" for="otherCompanyToggle">Other Company</label>
+                    </div>
+                    
+                    {{ form.bank }}
+                    
+                    <div class="toggle-section" id="otherCompanySection" style="display: none;">
+                        {{ form.other_company }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Bank Branch</label>
+                    {{ form.branch }}
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Term (days)</label>
+                            {{ form.term_days }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Maturity Date</label>
+                            {{ form.maturity_date }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Investment Type</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="invest_type_toggle" id="investTypeToggle" checked>
+                        <label class="form-check-label" for="investTypeToggle">Select Type</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="invest_type_toggle" id="otherInvestTypeToggle">
+                        <label class="form-check-label" for="otherInvestTypeToggle">Other Type</label>
+                    </div>
+                    
+                    {{ form.investment_type }}
+                    
+                    <div class="toggle-section" id="otherInvestTypeSection" style="display: none;">
+                        {{ form.other_investment_type }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Rate per Annum (%)</label>
+                    {{ form.rate }}
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Rollover</label>
+                            {{ form.rollover }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Processed Date</label>
+                            {{ form.processed_date }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Investment Period</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="invest_period_toggle" id="investPeriodToggle" checked>
+                        <label class="form-check-label" for="investPeriodToggle">Select Period</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="invest_period_toggle" id="otherInvestPeriodToggle">
+                        <label class="form-check-label" for="otherInvestPeriodToggle">Other Period</label>
+                    </div>
+                    
+                    {{ form.period }}
+                    
+                    <div class="toggle-section" id="otherInvestPeriodSection" style="display: none;">
+                        {{ form.other_period }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Interest Expected</label>
+                    <input type="text" class="form-control" id="interestExpected" placeholder="Calculated automatically" readonly>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Interest Earned</label>
+                            {{ form.interest_earned }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save Investment</button>
+                <a href="{% url 'InvestApp:investment_list' entity.slug %}" class="btn btn-secondary mt-2"><i class="fas fa-times me-2"></i>Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Toggle functionality
+    document.getElementById('otherCompanyToggle').addEventListener('change', function() {
+        if(this.checked) {
+            document.getElementById('id_bank').style.display = 'none';
+            document.getElementById('otherCompanySection').style.display = 'block';
+        }
+    });
+
+    document.getElementById('bankToggle').addEventListener('change', function() {
+        if(this.checked) {
+            document.getElementById('id_bank').style.display = 'block';
+            document.getElementById('otherCompanySection').style.display = 'none';
+        }
+    });
+
+    document.getElementById('otherInvestTypeToggle').addEventListener('change', function() {
+        if(this.checked) {
+            document.getElementById('id_investment_type').style.display = 'none';
+            document.getElementById('otherInvestTypeSection').style.display = 'block';
+        }
+    });
+
+    document.getElementById('investTypeToggle').addEventListener('change', function() {
+        if(this.checked) {
+            document.getElementById('id_investment_type').style.display = 'block';
+            document.getElementById('otherInvestTypeSection').style.display = 'none';
+        }
+    });
+
+    document.getElementById('otherInvestPeriodToggle').addEventListener('change', function() {
+        if(this.checked) {
+            document.getElementById('id_period').style.display = 'none';
+            document.getElementById('otherInvestPeriodSection').style.display = 'block';
+        }
+    });
+
+    document.getElementById('investPeriodToggle').addEventListener('change', function() {
+        if(this.checked) {
+            document.getElementById('id_period').style.display = 'block';
+            document.getElementById('otherInvestPeriodSection').style.display = 'none';
+        }
+    });
+
+    // Calculate interest expected when amount, rate or term changes
+    function calculateInterest() {
+        const amount = parseFloat(document.getElementById('id_amount').value) || 0;
+        const rate = parseFloat(document.getElementById('id_rate').value) || 0;
+        const termDays = parseInt(document.getElementById('id_term_days').value) || 0;
+        
+        const interestExpected = (amount * rate * termDays) / (100 * 365);
+        document.getElementById('interestExpected').value = '$' + interestExpected.toFixed(2);
+    }
+
+    document.getElementById('id_amount').addEventListener('input', calculateInterest);
+    document.getElementById('id_rate').addEventListener('input', calculateInterest);
+    document.getElementById('id_term_days').addEventListener('input', calculateInterest);
+
+    // Initial calculation
+    calculateInterest();
+</script>
+{% endblock %}
+{% endblock %}

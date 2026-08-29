@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load date_format %}
+{% load comma_format %}
+
+{% block title %}Dividend Appropriation{% endblock %}
+
+{% block content %}
+<style>
+    .table-dark thead th {
+        background-color: #1e293b !important;
+        color: #ffffff !important;
+    }
+</style>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Dividend Appropriation</h4>
+        </div>
+        <div class="card-body">
+            {% if not preview %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="form-label">Total Shares (all members)</label>
+                            <input type="text" class="form-control" value="{{ total_shares|intcomma }}" readonly>
+                        </div>
+
+
+
+                        <div class="col-md-3">
+                            <label class="form-label">Dividend Amount (₵)</label>
+                            <input type="text" name="dividend_amount" class="form-control" 
+                                placeholder="e.g., 1,234.56" required>
+                            <small class="text-muted">Use commas for thousands (e.g., 1,234.56)</small>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Dividend Period </label>
+                            <input type="text" name="dividend_period" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Dividend Date </label>
+                            <input type="text" name="dividend_date"   placeholder="dd/mm/yyyy" class="form-control" required >
+                        </div>
+                        
+                        <div class="col-md-3 d-flex align-items-end ">
+                            <button type="submit" class="btn btn-primary">Preview</button>
+                        </div>
+
+                        <div class="col-md-3 d-flex align-items-end">
+                            <a href="{% url 'Supervisor:super_home' %}" class="btn btn-secondary"> <i class="fas fa-times"></i> Close</a>
+                        </div>
+
+                        
+                    </div>
+                </form>
+            {% else %}
+                <div class="alert alert-info">
+                    <strong>Dividend Amount:</strong> ₵{{ dividend_amount|floatformat:2|intcomma }} &nbsp;|&nbsp;
+                    <strong>Total Shares:</strong> {{ total_shares|intcomma }} &nbsp;|&nbsp;
+                    <strong>Dividend per Share:</strong> ₵{{ per_share|floatformat:4 }}
+                </div>
+
+                <div class="table-responsive">
+                    
+                    <table class="table table-dark table-striped table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Member Name</th>
+                                <th class="text-end">Number of Shares</th>
+                                <th class="text-end">Dividend (₵)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in members %}
+                            <tr>
+                                <td>{{ item.member.full_name }}</td>
+                                <td class="text-end">{{ item.shares|intcomma }}</td>
+                                <td class="text-end">₵{{ item.dividend|floatformat:2|intcomma }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <th class="text-end">TOTAL</th>
+                                <th class="text-end">{{ total_shares|intcomma }}</th>
+                                <th class="text-end">₵{{ total_dividend|floatformat:2|intcomma }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="mt-3">
+                    <form method="post" action="{% url 'Supervisor:dividend_appropriation_execute' %}" style="display: inline-block;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success" onclick="return confirm('Create draft transactions for all members? This action cannot be undone.')">
+                            <i class="fas fa-check"></i> Appropriate Dividend
+                        </button>
+                    </form>
+                    
+                   
+                    
+                    <a href="{% url 'Supervisor:dividend_appropriation_preview' %}" class="btn btn-secondary">Back</a>
+                    <a href="{% url 'Supervisor:dividend_appropriation_pdf' %}" class="btn btn-danger">Download PDF</a>
+                    <a href="{% url 'Supervisor:dividend_appropriation_excel' %}" class="btn btn-success">Download Excel</a>
+                    <a href="{% url 'Supervisor:super_home' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Close</a>
+                </div>
+                            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

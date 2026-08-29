@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>POS Dashboard - {{ entity.name }}</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <h3>Products</h3>
+        <div class="row">
+            {% for product in products %}
+            <div class="col-md-3">
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h5>{{ product.name }}</h5>
+                        <p>{{ product.code }}</p>
+                        <p>Price: {{ product.selling_price }}</p>
+                        <p>Stock: {{ product.stock }}</p>
+                        <form method="post" action="{% url 'pos:add_to_cart' entity.slug %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="number" name="qty" value="1" min="1" max="{{ product.stock }}">
+                            <button type="submit" class="btn btn-sm btn-primary">Add</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <h3>Cart</h3>
+        <ul>
+            {% for key, item in cart.items %}
+            <li>{{ item.name }} x {{ item.qty }} = {{ item.total }}</li>
+            {% endfor %}
+        </ul>
+        <a href="{% url 'pos:checkout' entity.slug %}" class="btn btn-success">Checkout</a>
+    </div>
+</div>
+{% endblock %}

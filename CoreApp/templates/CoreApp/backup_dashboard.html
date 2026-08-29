@@ -1,0 +1,231 @@
+<!-- CoreApp/templates/core/backup_dashboard.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Database Backup{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-database me-2"></i>Database Backup</h2>
+            <p class="text-muted">Backup and restore your database</p>
+        </div>
+        <a href="{% url 'core:batch_dashboard' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-database fa-3x text-primary mb-3"></i>
+                    <h5>Full Backup</h5>
+                    <p class="text-muted">Backup entire database</p>
+                    <form method="post" action="{% url 'core:backup_full' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary" onclick="return confirm('Start full database backup?')">
+                            <i class="fas fa-play me-2"></i>Start Full Backup
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-table fa-3x text-success mb-3"></i>
+                    <h5>Backup Tables</h5>
+                    <p class="text-muted">Select specific tables</p>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tableModal">
+                        <i class="fas fa-check-square me-2"></i>Select Tables
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-folder-open fa-3x text-info mb-3"></i>
+                    <h5>Backup History</h5>
+                    <p class="text-muted">{{ backups|length }} backups available</p>
+                    <button class="btn btn-info" onclick="document.getElementById('historySection').scrollIntoView()">
+                        <i class="fas fa-history me-2"></i>View History
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Add this button in the quick actions section -->
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-upload fa-3x text-warning mb-3"></i>
+                    <h5>Upload & Restore</h5>
+                    <p class="text-muted">Restore from uploaded SQL file</p>
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="fas fa-upload me-2"></i>Upload & Restore
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Modal -->
+        <div class="modal fade" id="uploadModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title"><i class="fas fa-upload me-2"></i>Upload & Restore</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="post" action="{% url 'core:restore_upload' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="alert alert-danger">
+                                <strong>⚠️ Warning!</strong> This will overwrite your current database!
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Select SQL Backup File</label>
+                                <input type="file" name="backup_file" class="form-control" accept=".sql" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Type "YES" to confirm</label>
+                                <input type="text" name="confirm" class="form-control" placeholder="YES" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Upload & Restore</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Backup History -->
+    <div id="historySection">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Backup History</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Backup Name</th>
+                                <th>Date</th>
+                                <th>Tables</th>
+                                <th>Size</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for backup in backups %}
+                            <tr>
+                                <td>{{ backup.backup_name }}</td>
+                                <td>{{ backup.backup_started|date:"Y-m-d H:i:s" }}</td>
+                                <td>{{ backup.tables_backup|default:"All tables"|truncatechars:50 }}</td>
+                                <td>{{ backup.file_size_mb }} MB</td>
+                                <td>
+                                    {% if backup.status == 'COMPLETED' %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% elif backup.status == 'FAILED' %}
+                                        <span class="badge bg-danger">Failed</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">{{ backup.status }}</span>
+                                    {% endif %}
+                                 </td>
+                                 <td>
+                                    <div class="btn-group btn-group-sm">
+                                        {% if backup.backup_file %}
+                                        <a href="{% url 'core:download_backup' backup.id %}" class="btn btn-primary">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <button class="btn btn-warning" onclick="confirmRestore({{ backup.id }}, '{{ backup.backup_name }}')">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                        {% endif %}
+                                        <button class="btn btn-danger" onclick="confirmDelete({{ backup.id }}, '{{ backup.backup_name }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                             </tr>
+                            {% empty %}
+                             <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <p>No backups found</p>
+                                 </td>
+                             </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table Selection Modal -->
+<div class="modal fade" id="tableModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-table me-2"></i>Select Tables to Backup</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'core:backup_tables' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        {% for table in tables %}
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input type="checkbox" name="tables" value="{{ table }}" class="form-check-input" id="table_{{ forloop.counter }}">
+                                <label class="form-check-label" for="table_{{ forloop.counter }}">
+                                    {{ table }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Backup Selected</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmRestore(backupId, backupName) {
+    if (confirm(`WARNING: Restoring "${backupName}" will overwrite current data!\n\nThis action cannot be undone.\n\nAre you sure?`)) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/core/backup/restore/${backupId}/`;
+        form.innerHTML = '{% csrf_token %}';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function confirmDelete(backupId, backupName) {
+    if (confirm(`Delete backup "${backupName}"?`)) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/core/backup/delete/${backupId}/`;
+        form.innerHTML = '{% csrf_token %}';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

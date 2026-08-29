@@ -1,0 +1,142 @@
+<!-- loans/templates/loans/loan_repayment.html -->
+{% extends "base.html" %}
+
+{% block title %}Loan Repayment - {{ loan.loan_id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>Loan Repayment</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Loan: {{ loan.loan_id }}</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Borrower:</th>
+                            <td>{{ loan.master.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Principal:</th>
+                            <td>₵{{ loan.principal|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Current Balance:</th>
+                            <td><strong class="text-danger">₵{{ loan.balance|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Monthly Interest:</th>
+                            <td>₵{{ monthly_interest|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Due (Balance + Interest):</th>
+                            <td><strong class="text-warning">₵{{ total_due|floatformat:2 }}</strong></td>
+                        </tr>
+                    </table>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Payment Amount (₵)</label>
+                            <input type="number" name="amount" class="form-control" 
+                                   step="0.01" min="0.01" max="{{ total_due }}" required>
+                            <div class="form-text">Maximum: ₵{{ total_due|floatformat:2 }}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Payment Date</label>
+                            <input type="date" name="payment_date" class="form-control" 
+                                   value="{{ today|date:'Y-m-d' }}" required>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'loan_detail' loan.id %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success">Process Repayment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <!-- Guarantors Section -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Guarantors</h5>
+                </div>
+                <div class="card-body">
+                    {% if guarantors %}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Guaranteed</th>
+                                <th>Redeemed</th>
+                                <th>Remaining</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for g in guarantors %}
+                            <tr>
+                                <td>{{ g.master.name }}</td>
+                                <td>₵{{ g.guaranteed_amount|floatformat:2 }}</td>
+                                <td>₵{{ g.redeemed_amount|default:"0"|floatformat:2 }}</td>
+                                <td>₵{{ g.guaranteed_diff|floatformat:2 }}</td>
+                                <td>
+                                    {% if g.redeemed_status == 'FULLY_REDEEMED' %}
+                                    <span class="badge bg-success">Fully Redeemed</span>
+                                    {% elif g.redeemed_amount > 0 %}
+                                    <span class="badge bg-warning">Partially Redeemed</span>
+                                    {% else %}
+                                    <span class="badge bg-info">Active</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No guarantors for this loan</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Recent Repayments -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Repayments</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_repayments %}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Principal</th>
+                                <th>Interest</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in recent_repayments %}
+                            <tr>
+                                <td>{{ r.payment_date }}</td>
+                                <td>₵{{ r.amount|floatformat:2 }}</td>
+                                <td>₵{{ r.principal_paid|floatformat:2 }}</td>
+                                <td>₵{{ r.interest_paid|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No repayments yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

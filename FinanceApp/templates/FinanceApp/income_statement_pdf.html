@@ -1,0 +1,84 @@
+<!-- templates/FinanceApp/income_statement_pdf.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Income Statement</title>
+    <style>
+        @page { size: A4 portrait; margin: 15mm 12mm; }
+        body { font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.2; color: #1e1e1e; }
+        .report-header { text-align: center; margin-bottom: 16px; }
+        .report-header h1 { font-size: 16pt; font-weight: bold; margin: 0; }
+        .report-header .sub { font-size: 10pt; color: #444; }
+        .report-date { text-align: right; font-size: 9pt; color: #555; margin-bottom: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { padding: 4px 6px; border: none !important; text-align: left; vertical-align: top; }
+        th { font-weight: 600; background-color: #f2f2f2; border-bottom: 1px solid #ccc; }
+        .text-end { text-align: right; }
+        .text-center { text-align: center; }
+        .section-header { font-weight: 700; background-color: #f9f9f9; }
+        .total-row { font-weight: 600; border-top: 1px solid #333; }
+        .net-income { font-weight: 700; border-top: 2px solid #333; }
+        .footer { margin-top: 20px; font-size: 8pt; color: #888; text-align: center; border-top: 1px solid #ddd; padding-top: 8px; }
+        @media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-header">
+        <h1>Income Statement</h1>
+        <div class="sub">Period: {{ from_date|date:"d/m/Y" }} – {{ to_date|date:"d/m/Y" }}</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 70%;">Account</th>
+                <th class="text-end" style="width: 30%;">Amount (₵)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- INCOME -->
+            <tr class="section-header"><th colspan="2">INCOME</th></tr>
+            {% for item in income_data %}
+            <tr>
+                <td>{{ item.account.name }}</td>
+                <td class="text-end">{{ item.amount|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="2">No income accounts found.</td></tr>
+            {% endfor %}
+            <tr class="total-row">
+                <th>Total Income</th>
+                <th class="text-end">{{ total_income|floatformat:2 }}</th>
+            </tr>
+
+            <!-- EXPENSES -->
+            <tr class="section-header"><th colspan="2">EXPENSES</th></tr>
+            {% for item in expense_data %}
+            <tr>
+                <td>{{ item.account.name }}</td>
+                <td class="text-end">{{ item.amount|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="2">No expense accounts found.</td></tr>
+            {% endfor %}
+            <tr class="total-row">
+                <th>Total Expenses</th>
+                <th class="text-end">{{ total_expense|floatformat:2 }}</th>
+            </tr>
+
+            <!-- NET INCOME -->
+            <tr class="net-income">
+                <th>Net Income (Loss)</th>
+                <th class="text-end">{{ net_income|floatformat:2 }}</th>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Generated on {{ generated_date|date:"d/m/Y H:i" }} &bull; St. Andrews Credit Union
+    </div>
+</body>
+</html>

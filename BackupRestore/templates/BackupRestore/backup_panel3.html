@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Backup & Restore{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Backup & Restore</h2>
+
+    <div class="row">
+        <!-- Full Backup Card -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4>Full Database Backup</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'BackupRestore:backup_all' %}" target="_blank">
+                        {% csrf_token %}
+                        <p>Creates a complete dump of all tables.</p>
+                        <button type="submit" class="btn btn-danger">Backup Entire Database</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Single Table Backup Card -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4>Single Table Backup</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'BackupRestore:backup_table' %}" target="_blank">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label>Select Table</label>
+                            <select name="table_name" class="form-select" required>
+                                <option value="">-- Choose table --</option>
+                                {% for table in tables %}
+                                <option value="{{ table }}">{{ table }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success">Backup Selected Table</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restore from Existing Backup File (with two-step option) -->
+    <div class="card mt-3">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h4>Restore from Backup File</h4>
+            <div>
+                <button id="refreshBackupListBtn" class="btn btn-light btn-sm me-2">
+                    🔄 Refresh list
+                </button>
+                <a href="{% url 'Supervisor:super_home' %}" class="btn btn-secondary btn-sm">
+                    ❌ Close
+                </a>
+            </div>
+        </div>
+        <div class="card-body" id="backupTableContainer">
+            {% if backups %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Backup File</th>
+                            <th>Size</th>
+                            <th>Date/Time</th>
+                            <th>Action</th>
+                        </thead>
+                        <tbody>
+                            {% for backup in backups %}
+                            <tr id="row-{{ forloop.counter }}">
+                                <td><code>{{ backup.filename }}</code></td>
+                                <td>{{ backup.size|filesizeformat }}</td>
+                                <td>{{ backup.modified|date:"Y-m-d H:i:s" }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning restore-btn"
+                                            data-file="{{ backup.filename }}"
+                                            data-url="{% url 'BackupRestore:restore_start' %}">
+                                        Restore (Direct)
+                                    </button>
+                                    <button class="btn btn-sm btn-info safe-restore-btn"
+                                            data-file="{{ backup.filename }}"
+                                            data-url="{% url 'BackupRestore:safe_restore_step1' %}">
+                                        Safe Restore (2-step)
+                                    </button>
+                                    <div class="restore-progress" style="display:none;">
+                                        <span class="spinner-border spinner-border-sm"></span> Running...
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No backup files found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto‑refresh after backup (since forms have target="_blank", page stays)
+    document.querySelectorAll('form[action*="backup_all"], form[action*="backup_table"]').forEach(form => {
+        form.addEventListener('submit', function() {
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        });
+    });
+
+    // Refresh backup list manually
+    document.getElementById('refreshBackupListBtn').addEventListener('click', function() {
+        window.location.reload();
+    });
+
+    // Direct restore (background job, same as before)
+    function attachDirectRestore() {
+        document.querySelectorAll('.restore-btn').forEach(btn => {
+            btn.removeEventListener('click', handleDirectRestore);
+            btn.addEventListener('click', handleDirectRestore);
+        });
+    }
+
+    function handleDirectRestore(e) {
+        const btn = e.currentTarget;
+        const file = btn.dataset.file;
+        const url = btn.dataset.url;
+        const row = btn.closest('tr');
+        const progressDiv = row.querySelector('.restore-progress');
+        const restoreUrl = "{% url 'BackupRestore:restore_start' %}";
+
+        if (!confirm(`Restore ${file} directly? This will overwrite the table immediately.`)) return;
+
+        btn.disabled = true;
+        progressDiv.style.display = 'inline-block';
+
+        fetch(restoreUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `backup_file=${encodeURIComponent(file)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.job_id) {
+                pollStatus(data.job_id, row, btn, progressDiv);
+            } else {
+                alert('Failed to start restore: ' + (data.error || 'unknown error'));
+                btn.disabled = false;
+                progressDiv.style.display = 'none';
+            }
+        })
+        .catch(err => {
+            alert('Error: ' + err);
+            btn.disabled = false;
+            progressDiv.style.display = 'none';
+        });
+    }
+
+    function pollStatus(jobId, row, btn, progressDiv) {
+        const statusUrl = `/backuprestore/status/${jobId}/`;
+        const interval = setInterval(() => {
+            fetch(statusUrl)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'SUCCESS') {
+                    clearInterval(interval);
+                    progressDiv.innerHTML = '<span class="text-success">✓ Restore completed</span>';
+                    setTimeout(() => location.reload(), 2000);
+                } else if (data.status === 'FAILED') {
+                    clearInterval(interval);
+                    progressDiv.innerHTML = `<span class="text-danger">✗ Failed: ${data.error}</span>`;
+                    btn.disabled = false;
+                } else if (data.status === 'RUNNING') {
+                    // keep polling
+                } else if (data.status === 'NOT_FOUND') {
+                    clearInterval(interval);
+                    progressDiv.innerHTML = '<span class="text-danger">Job lost</span>';
+                    btn.disabled = false;
+                }
+            })
+            .catch(() => {});
+        }, 2000);
+    }
+
+    attachDirectRestore();
+
+    // Safe Restore (two-step) will be implemented in next version
+    document.querySelectorAll('.safe-restore-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const file = this.dataset.file;
+            window.location.href = `{% url 'BackupRestore:safe_restore_step1' %}?file=${encodeURIComponent(file)}`;
+        });
+    });
+</script>
+{% endblock %}
