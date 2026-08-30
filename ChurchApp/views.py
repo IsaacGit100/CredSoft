@@ -2219,7 +2219,7 @@ def guild_create(request, slug):
             guild.entity = entity
             guild.save()
             messages.success(request, f"Guild '{guild.name}' created successfully.")
-            return redirect("ChurchApp:guild_list_mange", slug=entity.slug)
+            return redirect("ChurchApp:guild_list_manage", slug=entity.slug)
     else:
         form = GuildForm()
     context = {
