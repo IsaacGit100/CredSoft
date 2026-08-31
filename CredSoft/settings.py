@@ -24,7 +24,7 @@ warnings.filterwarnings("ignore", module="django_ledger.models.deprecations")
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8#uhl1f@w56z9r&j*r0w8-o28sra&6_$_71^ns-hfw)l2$x*7k'
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -128,18 +128,17 @@ DEBUG = False
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mataheko_CredSoft_db',
-        'USER': 'mataheko_admin',
-        'PASSWORD': 'BigOne1@1234',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': config("DB_NAME"),
+        'USER': config("DB_USER"),
+        'PASSWORD': config("DB_PASSWORD"),
+        'HOST': config("DB_HOST", default="localhost"),
+        'PORT': config("DB_PORT", default="3306"),
         'OPTIONS': {
             'init_command': "SET sql_mode=''",
             'charset': 'utf8mb4',
         },
     }
 }
-
 #DATABASES = {
 #    'default': {
 #        'ENGINE': 'django.db.backends.mysql',

@@ -45,3 +45,11 @@ Thumbs.db
 IsaacGitFiles/
 IsaacGitFiles_backup_20260828/
 IsaacGitFiles_before_cpanel_rebuild_20260828/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Local settings backup
+CredSoft/settings.py.before_env
