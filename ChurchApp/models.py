@@ -296,10 +296,10 @@ class Service(models.Model):
         # Special totals
         specials = [
             self.special_thank_offering,
-            self.harvest_thank_offering,
-            self.christmas_thank_offering,
+            self.harvest_offering,
+            self.christmas_offering,
             self.easter_offering,
-            self.other_thank_offerings,
+            self.other_collections,
         ]
         self.special_total = 0
         for special_list in specials:
@@ -309,10 +309,12 @@ class Service(models.Model):
 
         # Grand total
         self.grand_total = (
-            self.general_offertory
-            or 0 + self.dues
-            or 0 + self.tithes
-            or 0 + self.day_born_total + self.guild_total + self.special_total
+            (self.general_offertory or 0)
+            + (self.dues or 0)
+            + (self.tithes or 0)
+            + (self.day_born_total or 0)
+            + (self.guild_total or 0)
+            + (self.special_total or 0)
         )
 
     def save(self, *args, **kwargs):
