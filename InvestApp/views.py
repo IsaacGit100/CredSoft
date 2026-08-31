@@ -239,7 +239,8 @@ def get_filtered_investments(request, slug):
     if search_query:
         investments = investments.filter(
             Q(certificate_no__icontains=search_query) |
-            Q(bank_company__icontains=search_query) |
+            Q(bank__name__icontains=search_query) |
+            Q(other_company__icontains=search_query) |
             Q(branch__icontains=search_query)
         )
 
@@ -297,7 +298,8 @@ def investment_status_update(request, slug, pk=None):
     if search_query:
         investments = investments.filter(
             Q(certificate_no__icontains=search_query) |
-            Q(bank_company__icontains=search_query) |
+            Q(bank__name__icontains=search_query) |
+            Q(other_company__icontains=search_query) |
             Q(branch__icontains=search_query)
         )
     context = {
