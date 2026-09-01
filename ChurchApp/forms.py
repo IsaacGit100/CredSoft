@@ -111,12 +111,23 @@ class MemberForm(forms.ModelForm):
         if self.entity:
             from .models import Guild
 
-            guild_qs = Guild.objects.filter(entity=self.entity)
-            for field in ["guild_first", "guild_second", "guild_third"]:
-                if field in self.fields:
-                    self.fields[field].queryset = guild_qs
-                    self.fields[field].empty_label = "Select Guild"
+            guild_qs = Guild.objects.filter(
+                entity=self.entity,
+                is_active=True
+            ).order_by("name")
 
+            guild_choices = [("", "Select Guild")] + [
+                (guild.name, guild.name)
+                for guild in guild_qs
+            ]
+
+            for field_name in ["guild_first", "guild_second", "guild_third"]:
+                if field_name in self.fields:
+                    self.fields[field_name] = forms.ChoiceField(
+                        choices=guild_choices,
+                        required=False,
+                        widget=forms.Select(attrs={"class": "form-select"}),
+                    )
         # Set member field for clergy (if editing)
         if self.instance and self.instance.pk:
             children_list = self.instance.names_of_children or []
