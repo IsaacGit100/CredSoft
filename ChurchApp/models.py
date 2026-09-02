@@ -142,9 +142,6 @@ class Member(models.Model):
     spouse_near_landmark = models.CharField(
         max_length=100, null=True, blank=True, default=""
     )
-    spouse_religion = models.CharField(
-        max_length=100, null=True, blank=True, default=""
-    )
     spouse_church = models.CharField(max_length=100, null=True, blank=True, default="")
 
     father_name = models.CharField(max_length=100, null=True, blank=True, default="")
