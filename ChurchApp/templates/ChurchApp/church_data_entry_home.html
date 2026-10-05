@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supervisor Menu - ADOA-HuB</title>
-    <h3>  {{ entity.name }} </h3>
+  
     <style>
         * {
             margin: 0;
@@ -180,7 +180,7 @@
         
         <!-- Header -->
         <div class="header">
-            <h1>Anglican Diocese Of Accra</h1>
+            <h1>{{ entity_config.organization_name }}</h1>
             <h2> {{ entity.name }} </h2>
             <h3>Church Data Entry Form</h3>
         </div>
@@ -195,15 +195,6 @@
                 <div class="menu-text">
                     <h3>Date Entry of New Church Members</h3>
                     <p>Enter Data for New members</p>
-                </div>
-            </a>
-            <a href="{% url 'ChurchApp:role_create' entity.slug %}" class="menu-btn">
-                <div class="menu-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="menu-text">
-                    <h3>Enter Member Roles</h3>
-                    <p>Assign Roles to Members, eg Ushers, Officiants, Servers, Clergy etc</p>
                 </div>
             </a>
 
@@ -228,7 +219,16 @@
                     <p>Enter Guilds Within the Church</p>
                 </div>
             </a>
-
+            <!-- System Dashboard -->
+            <a href="{% url 'ChurchApp:role_management' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Create Roles for Members</h3>
+                    <p>Create Roles such as Wardens, Ushers etc, & Assign to Members</p>
+                </div>
+            </a>
 
 
            

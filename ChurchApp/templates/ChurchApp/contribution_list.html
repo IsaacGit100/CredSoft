@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<style>
+    .ct-page { padding:20px; max-width:1300px; margin:0 auto; }
+    .ct-head { display:flex; justify-content:space-between; align-items:center;
+               margin-bottom:16px; }
+    .ct-head h2 { margin:0; color:#1e3a5f; font-size:20px; }
+    .ct-card { background:#fff; border-radius:10px;
+               box-shadow:0 1px 3px rgba(0,0,0,0.08);
+               padding:18px; margin-bottom:16px; }
+    .ct-filters { display:grid;
+                  grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+                  gap:12px; align-items:end; }
+    .ct-filters label { font-size:11px; font-weight:700; color:#374151;
+                        text-transform:uppercase; letter-spacing:0.4px;
+                        display:block; margin-bottom:4px; }
+    .ct-filters input, .ct-filters select {
+        width:100%; padding:8px 10px; border:1px solid #d1d5db;
+        border-radius:6px; font-size:13px; }
+    .ct-actions { display:flex; gap:8px; margin-top:12px; }
+
+    .ct-tiles { display:grid; grid-template-columns:repeat(4,1fr);
+                gap:10px; margin-bottom:16px; }
+    .ct-tile { padding:12px 14px; border-radius:8px; background:#eff6ff;
+               color:#1e40af; }
+    .ct-tile.green { background:#ecfdf5; color:#065f46; }
+    .ct-tile .lbl { font-size:10px; font-weight:700;
+                    text-transform:uppercase; letter-spacing:0.4px; }
+    .ct-tile .val { font-size:20px; font-weight:700; margin-top:4px;
+                    font-family:monospace; }
+
+    table.ct { width:100%; border-collapse:collapse; font-size:13px; }
+    table.ct th { background:#f3f4f6; padding:9px 12px; text-align:left;
+                  font-size:11px; text-transform:uppercase;
+                  letter-spacing:0.4px; color:#374151;
+                  border-bottom:2px solid #e5e7eb; }
+    table.ct td { padding:8px 12px; border-bottom:1px solid #f3f4f6; }
+    table.ct td.num { text-align:right; font-family:monospace; }
+    table.ct tr:last-child td { border-bottom:none;
+                                background:#f9fafb; font-weight:700; }
+</style>
+
+<div class="ct-page">
+
+    <div class="ct-head">
+        <div>
+            <h2><i class="fas fa-hand-holding-usd"></i> Member Giving Report</h2>
+            <div style="color:#6b7280; font-size:13px;">{{ entity.name }}</div>
+        </div>
+    </div>
+
+    <!-- filters -->
+    <div class="ct-card">
+        <form method="get">
+            <div class="ct-filters">
+                <div>
+                    <label>Member</label>
+                    <select name="member">
+                        <option value="">— All members —</option>
+                        {% for m in members %}
+                            <option value="{{ m.pk }}"
+                                {% if member and member.pk == m.pk %}selected{% endif %}>
+                                {{ m.full_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>From</label>
+                    <input type="date" name="start"
+                           value="{{ start|date:'Y-m-d' }}">
+                </div>
+                <div>
+                    <label>To</label>
+                    <input type="date" name="end"
+                           value="{{ end|date:'Y-m-d' }}">
+                </div>
+                <div>
+                    <label>Ledger code</label>
+                    <input type="text" name="ledger" value="{{ ledger }}"
+                           placeholder="e.g. 4011">
+                </div>
+                <div>
+                    <label>Search</label>
+                    <input type="text" name="q" value="{{ q }}"
+                           placeholder="name, receipt, details">
+                </div>
+            </div>
+            <div class="ct-actions">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-filter"></i> Apply
+                </button>
+                <a href="{{ request.path }}" class="btn btn-outline-secondary btn-sm">
+                    Clear
+                </a>
+                <a href="{% url 'ChurchApp:contribution_pdf' entity.slug %}?{{ request.GET.urlencode }}"
+                   target="_blank" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+                <a href="{% url 'ChurchApp:contribution_excel' entity.slug %}?{{ request.GET.urlencode }}"
+                   class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-file-excel"></i> Excel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- summary tiles -->
+    <div class="ct-tiles">
+        <div class="ct-tile green">
+            <div class="lbl">Grand Total</div>
+            <div class="val">₵{{ total|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="ct-tile">
+            <div class="lbl">Records</div>
+            <div class="val">{{ total_count }}</div>
+        </div>
+        <div class="ct-tile">
+            <div class="lbl">Categories</div>
+            <div class="val">{{ by_category|length }}</div>
+        </div>
+        <div class="ct-tile">
+            <div class="lbl">Period</div>
+            <div class="val" style="font-size:13px;">
+                {% if start %}{{ start|date:"d M" }}{% else %}—{% endif %}
+                to
+                {% if end %}{{ end|date:"d M Y" }}{% else %}—{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- category summary table -->
+    {% if by_category %}
+    <div class="ct-card">
+        <div style="font-size:13px; font-weight:700; color:#1a56db;
+                    text-transform:uppercase; letter-spacing:0.5px;
+                    border-bottom:2px solid #e5e7eb; padding-bottom:8px;
+                    margin-bottom:12px;">
+            Summary by Category
+        </div>
+        <table class="ct">
+            <thead>
+                <tr>
+                    <th>Ledger</th>
+                    <th>Category</th>
+                    <th style="text-align:right;">Count</th>
+                    <th style="text-align:right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in by_category %}
+                <tr>
+                    <td style="font-family:monospace;">{{ c.ledger_code|default:"—" }}</td>
+                    <td>{{ c.ledger_name|default:"—" }}</td>
+                    <td class="num">{{ c.count }}</td>
+                    <td class="num">₵{{ c.total|floatformat:2|intcomma }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="3" style="text-align:right;">GRAND TOTAL</td>
+                    <td class="num">₵{{ total|floatformat:2|intcomma }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- detail table -->
+    <div class="ct-card">
+        <div style="font-size:13px; font-weight:700; color:#1a56db;
+                    text-transform:uppercase; letter-spacing:0.5px;
+                    border-bottom:2px solid #e5e7eb; padding-bottom:8px;
+                    margin-bottom:12px;">
+            Detailed Records
+        </div>
+
+        {% if rows %}
+        <div style="max-height:600px; overflow-y:auto;">
+            <table class="ct">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Member</th>
+                        <th>Ledger</th>
+                        <th>Receipt</th>
+                        <th>Details</th>
+                        <th style="text-align:right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rows %}
+                    <tr>
+                        <td>{{ r.date|date:"d M Y" }}</td>
+                        <td>{{ r.member.full_name }}</td>
+                        <td>{{ r.ledger_name|default:r.ledger_code|default:"—" }}</td>
+                        <td><code>{{ r.receipt_no }}</code></td>
+                        <td style="color:#6b7280; font-size:12px;">
+                            {{ r.details|default:"—"|truncatechars:50 }}
+                        </td>
+                        <td class="num">₵{{ r.amount|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="5" style="text-align:right;">TOTAL</td>
+                        <td class="num">₵{{ total|floatformat:2|intcomma }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div style="padding:40px; text-align:center; color:#9ca3af;">
+                <i class="fas fa-inbox" style="font-size:32px; opacity:0.4;"></i>
+                <div style="margin-top:8px;">No contributions match the current filter.</div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

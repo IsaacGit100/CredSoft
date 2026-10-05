@@ -1,0 +1,516 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    .mf-page        { padding: 20px; max-width: 1200px; margin: 0 auto; }
+    .mf-header      { display: flex; justify-content: space-between;
+                      align-items: center; margin-bottom: 20px;
+                      flex-wrap: wrap; gap: 10px; }
+    .mf-header h2   { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .mf-header .subtitle { color: #6b7280; font-size: 13px; margin-top: 4px; }
+
+    .mf-card        { background: #fff; border-radius: 8px;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                      padding: 22px; margin-bottom: 18px; }
+
+    .mf-section-title {
+                      font-size: 14px; color: #1a56db; font-weight: 700;
+                      border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;
+                      margin: 0 0 16px 0;
+                      display: flex; align-items: center; gap: 8px; }
+    .mf-section-title i { color: #1a56db; }
+
+    .mf-grid        { display: grid;
+                      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                      gap: 14px; }
+    .mf-grid-3      { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .mf-full        { grid-column: 1 / -1; }
+
+    .mf-field       { display: flex; flex-direction: column; }
+    .mf-field label { font-size: 12px; font-weight: 600;
+                      color: #374151; margin-bottom: 4px; }
+    .mf-field .req  { color: #dc2626; }
+
+    /* Style all inputs inside the form uniformly */
+    .mf-form input[type="text"],
+    .mf-form input[type="email"],
+    .mf-form input[type="number"],
+    .mf-form input[type="date"],
+    .mf-form input[type="tel"],
+    .mf-form input[type="url"],
+    .mf-form select,
+    .mf-form textarea {
+                      width: 100%; padding: 8px 10px;
+                      border: 1px solid #d1d5db; border-radius: 6px;
+                      font-size: 14px; background: #fff;
+                      transition: border-color 0.15s; }
+    .mf-form input:focus,
+    .mf-form select:focus,
+    .mf-form textarea:focus {
+                      outline: none; border-color: #1a56db;
+                      box-shadow: 0 0 0 3px rgba(26,86,219,0.12); }
+    .mf-form input[readonly] { background: #f3f4f6; cursor: not-allowed; }
+    .mf-form input[type="checkbox"] { width: auto; }
+
+    .mf-error       { color: #dc2626; font-size: 12px; margin-top: 3px; }
+
+    .mf-image-preview { max-height: 110px; border: 1px solid #e5e7eb;
+                        border-radius: 6px; padding: 2px; margin-top: 8px; }
+    .mf-image-hint    { color: #6b7280; font-size: 12px; margin-top: 4px; }
+
+    .mf-messages    { margin-bottom: 14px; }
+    .mf-message     { padding: 10px 14px; border-radius: 6px;
+                      margin-bottom: 10px; font-size: 13px; }
+    .mf-message-success { background: #ecfdf5; border: 1px solid #a7f3d0;
+                          color: #065f46; }
+    .mf-message-error   { background: #fef2f2; border: 1px solid #fca5a5;
+                          color: #991b1b; }
+
+    .mf-actions     { display: flex; gap: 10px; justify-content: flex-end;
+                      padding: 16px 22px; border-top: 1px solid #e5e7eb;
+                      background: #f9fafb; border-radius: 0 0 8px 8px;
+                      margin: -22px; margin-top: 22px; }
+
+    @media (max-width: 640px) {
+        .mf-actions { flex-direction: column-reverse; }
+        .mf-actions .btn { width: 100%; justify-content: center; }
+    }
+</style>
+
+<div class="mf-page">
+
+    <!-- ===== Header ===== -->
+    <div class="mf-header">
+        <div>
+            <h2>
+                <i class="fas fa-user{% if member %}-edit{% else %}-plus{% endif %}"></i>
+                {% if member %}Edit Member{% else %}Add New Member{% endif %}
+            </h2>
+            {% if member %}
+                <div class="subtitle">{{ member.full_name }}</div>
+            {% endif %}
+        </div>
+        <a href="{% if member %}{% url 'ChurchApp:member_detail' entity.slug member.pk %}{% else %}{% url 'ChurchApp:member_list_manage' entity.slug %}{% endif %}"
+           class="btn btn-outline-secondary">
+            <i class="fas fa-times"></i> Close
+        </a>
+    </div>
+
+    <!-- ===== Messages ===== -->
+    {% if messages %}
+        <div class="mf-messages">
+            {% for message in messages %}
+                <div class="mf-message {% if message.tags == 'error' %}mf-message-error{% else %}mf-message-success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- ===== Form ===== -->
+    <form method="post" enctype="multipart/form-data" class="mf-form" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="mf-message mf-message-error">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- ============ PERSONAL DETAILS ============ -->
+        <div class="mf-card">
+            <h3 class="mf-section-title">
+                <i class="fas fa-user"></i> Personal Details
+            </h3>
+
+            <div class="mf-grid">
+
+                <div class="mf-field">
+                    <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}<div class="mf-error">{{ form.title.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.first_name.id_for_label }}">
+                        First Name {% if form.first_name.field.required %}<span class="req">*</span>{% endif %}
+                    </label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}<div class="mf-error">{{ form.first_name.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.other_names.id_for_label }}">{{ form.other_names.label }}</label>
+                    {{ form.other_names }}
+                    {% if form.other_names.errors %}<div class="mf-error">{{ form.other_names.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.last_name.id_for_label }}">
+                        Last Name {% if form.last_name.field.required %}<span class="req">*</span>{% endif %}
+                    </label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}<div class="mf-error">{{ form.last_name.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<div class="mf-error">{{ form.email.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.telephone1.id_for_label }}">{{ form.telephone1.label }}</label>
+                    {{ form.telephone1 }}
+                    {% if form.telephone1.errors %}<div class="mf-error">{{ form.telephone1.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.telephone2.id_for_label }}">{{ form.telephone2.label }}</label>
+                    {{ form.telephone2 }}
+                    {% if form.telephone2.errors %}<div class="mf-error">{{ form.telephone2.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.ghana_card_no.id_for_label }}">{{ form.ghana_card_no.label }}</label>
+                    {{ form.ghana_card_no }}
+                    {% if form.ghana_card_no.errors %}<div class="mf-error">{{ form.ghana_card_no.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.date_of_birth.id_for_label }}">{{ form.date_of_birth.label }}</label>
+                    {{ form.date_of_birth }}
+                    {% if form.date_of_birth.errors %}<div class="mf-error">{{ form.date_of_birth.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.education_level.id_for_label }}">{{ form.education_level.label }}</label>
+                    {{ form.education_level }}
+                    {% if form.education_level.errors %}<div class="mf-error">{{ form.education_level.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.profession.id_for_label }}">{{ form.profession.label }}</label>
+                    {{ form.profession }}
+                    {% if form.profession.errors %}<div class="mf-error">{{ form.profession.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field mf-full">
+                    <label for="{{ form.postal_address.id_for_label }}">{{ form.postal_address.label }}</label>
+                    {{ form.postal_address }}
+                    {% if form.postal_address.errors %}<div class="mf-error">{{ form.postal_address.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field mf-full">
+                    <label for="{{ form.res_address.id_for_label }}">{{ form.res_address.label }}</label>
+                    {{ form.res_address }}
+                    {% if form.res_address.errors %}<div class="mf-error">{{ form.res_address.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field mf-full">
+                    <label for="{{ form.near_landmark.id_for_label }}">{{ form.near_landmark.label }}</label>
+                    {{ form.near_landmark }}
+                    {% if form.near_landmark.errors %}<div class="mf-error">{{ form.near_landmark.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field mf-full">
+                    <label for="{{ form.passport_picture.id_for_label }}">
+                        {{ form.passport_picture.label|default:"Passport Picture" }}
+                    </label>
+                    {{ form.passport_picture }}
+                    {% if member and member.passport_picture %}
+                        <img src="{{ member.passport_picture.url }}"
+                             alt="" class="mf-image-preview">
+                        <div class="mf-image-hint">
+                            Current photo — upload a new one to replace it.
+                        </div>
+                    {% endif %}
+                    {% if form.passport_picture.errors %}
+                        <div class="mf-error">{{ form.passport_picture.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============ CHURCH DETAILS ============ -->
+        <div class="mf-card">
+            <h3 class="mf-section-title">
+                <i class="fas fa-church"></i> Church Details
+            </h3>
+
+            <div class="mf-grid">
+
+                <div class="mf-field">
+                    <label for="{{ form.date_baptised.id_for_label }}">{{ form.date_baptised.label }}</label>
+                    {{ form.date_baptised }}
+                    {% if form.date_baptised.errors %}<div class="mf-error">{{ form.date_baptised.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.date_confirmed.id_for_label }}">{{ form.date_confirmed.label }}</label>
+                    {{ form.date_confirmed }}
+                    {% if form.date_confirmed.errors %}<div class="mf-error">{{ form.date_confirmed.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.date_enrolled.id_for_label }}">{{ form.date_enrolled.label }}</label>
+                    {{ form.date_enrolled }}
+                    {% if form.date_enrolled.errors %}<div class="mf-error">{{ form.date_enrolled.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.date_expired.id_for_label }}">{{ form.date_expired.label }}</label>
+                    {{ form.date_expired }}
+                    {% if form.date_expired.errors %}<div class="mf-error">{{ form.date_expired.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.guild_first.id_for_label }}">{{ form.guild_first.label }}</label>
+                    {{ form.guild_first }}
+                    {% if form.guild_first.errors %}<div class="mf-error">{{ form.guild_first.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.guild_second.id_for_label }}">{{ form.guild_second.label }}</label>
+                    {{ form.guild_second }}
+                    {% if form.guild_second.errors %}<div class="mf-error">{{ form.guild_second.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.guild_third.id_for_label }}">{{ form.guild_third.label }}</label>
+                    {{ form.guild_third }}
+                    {% if form.guild_third.errors %}<div class="mf-error">{{ form.guild_third.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.no_of_children.id_for_label }}">{{ form.no_of_children.label }}</label>
+                    {{ form.no_of_children }}
+                    {% if form.no_of_children.errors %}<div class="mf-error">{{ form.no_of_children.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                {% if form.roles %}
+                <div class="mf-field mf-full">
+                    <label for="{{ form.roles.id_for_label }}">{{ form.roles.label }}</label>
+                    {{ form.roles }}
+                    {% if form.roles.errors %}<div class="mf-error">{{ form.roles.errors|join:", " }}</div>{% endif %}
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <!-- ============ OFFICE INFORMATION ============ -->
+        <div class="mf-card">
+            <h3 class="mf-section-title">
+                <i class="fas fa-briefcase"></i> Office Information
+            </h3>
+
+            <div class="mf-grid">
+
+                <div class="mf-field">
+                    <label for="{{ form.office_name.id_for_label }}">{{ form.office_name.label }}</label>
+                    {{ form.office_name }}
+                    {% if form.office_name.errors %}<div class="mf-error">{{ form.office_name.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.office_phone.id_for_label }}">{{ form.office_phone.label }}</label>
+                    {{ form.office_phone }}
+                    {% if form.office_phone.errors %}<div class="mf-error">{{ form.office_phone.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.office_email.id_for_label }}">{{ form.office_email.label }}</label>
+                    {{ form.office_email }}
+                    {% if form.office_email.errors %}<div class="mf-error">{{ form.office_email.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.nature_of_business.id_for_label }}">{{ form.nature_of_business.label }}</label>
+                    {{ form.nature_of_business }}
+                    {% if form.nature_of_business.errors %}<div class="mf-error">{{ form.nature_of_business.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field mf-full">
+                    <label for="{{ form.office_address.id_for_label }}">{{ form.office_address.label }}</label>
+                    {{ form.office_address }}
+                    {% if form.office_address.errors %}<div class="mf-error">{{ form.office_address.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field mf-full">
+                    <label for="{{ form.office_res_address.id_for_label }}">{{ form.office_res_address.label }}</label>
+                    {{ form.office_res_address }}
+                    {% if form.office_res_address.errors %}<div class="mf-error">{{ form.office_res_address.errors|join:", " }}</div>{% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============ SPOUSE INFORMATION ============ -->
+        <div class="mf-card">
+            <h3 class="mf-section-title">
+                <i class="fas fa-heart"></i> Spouse Information
+            </h3>
+
+            <div class="mf-grid">
+
+                <div class="mf-field">
+                    <label for="{{ form.spouse_title.id_for_label }}">{{ form.spouse_title.label }}</label>
+                    {{ form.spouse_title }}
+                    {% if form.spouse_title.errors %}<div class="mf-error">{{ form.spouse_title.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.spouse_name.id_for_label }}">{{ form.spouse_name.label }}</label>
+                    {{ form.spouse_name }}
+                    {% if form.spouse_name.errors %}<div class="mf-error">{{ form.spouse_name.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.spouse_telephone.id_for_label }}">{{ form.spouse_telephone.label }}</label>
+                    {{ form.spouse_telephone }}
+                    {% if form.spouse_telephone.errors %}<div class="mf-error">{{ form.spouse_telephone.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.spouse_email_address.id_for_label }}">{{ form.spouse_email_address.label }}</label>
+                    {{ form.spouse_email_address }}
+                    {% if form.spouse_email_address.errors %}<div class="mf-error">{{ form.spouse_email_address.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.spouse_date_of_birth.id_for_label }}">{{ form.spouse_date_of_birth.label }}</label>
+                    {{ form.spouse_date_of_birth }}
+                    {% if form.spouse_date_of_birth.errors %}<div class="mf-error">{{ form.spouse_date_of_birth.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.spouse_religion.id_for_label }}">{{ form.spouse_religion.label }}</label>
+                    {{ form.spouse_religion }}
+                    {% if form.spouse_religion.errors %}<div class="mf-error">{{ form.spouse_religion.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.spouse_education_level.id_for_label }}">{{ form.spouse_education_level.label }}</label>
+                    {{ form.spouse_education_level }}
+                    {% if form.spouse_education_level.errors %}<div class="mf-error">{{ form.spouse_education_level.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.spouse_occupation.id_for_label }}">{{ form.spouse_occupation.label }}</label>
+                    {{ form.spouse_occupation }}
+                    {% if form.spouse_occupation.errors %}<div class="mf-error">{{ form.spouse_occupation.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.spouse_company_name.id_for_label }}">{{ form.spouse_company_name.label }}</label>
+                    {{ form.spouse_company_name }}
+                    {% if form.spouse_company_name.errors %}<div class="mf-error">{{ form.spouse_company_name.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.spouse_church.id_for_label }}">{{ form.spouse_church.label }}</label>
+                    {{ form.spouse_church }}
+                    {% if form.spouse_church.errors %}<div class="mf-error">{{ form.spouse_church.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field mf-full">
+                    <label for="{{ form.spouse_postal_address.id_for_label }}">{{ form.spouse_postal_address.label }}</label>
+                    {{ form.spouse_postal_address }}
+                    {% if form.spouse_postal_address.errors %}<div class="mf-error">{{ form.spouse_postal_address.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field mf-full">
+                    <label for="{{ form.spouse_res_address.id_for_label }}">{{ form.spouse_res_address.label }}</label>
+                    {{ form.spouse_res_address }}
+                    {% if form.spouse_res_address.errors %}<div class="mf-error">{{ form.spouse_res_address.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field mf-full">
+                    <label for="{{ form.spouse_near_landmark.id_for_label }}">{{ form.spouse_near_landmark.label }}</label>
+                    {{ form.spouse_near_landmark }}
+                    {% if form.spouse_near_landmark.errors %}<div class="mf-error">{{ form.spouse_near_landmark.errors|join:", " }}</div>{% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============ PARENTS ============ -->
+        <div class="mf-card">
+            <h3 class="mf-section-title">
+                <i class="fas fa-users"></i> Parents
+            </h3>
+
+            <div class="mf-grid">
+
+                <div class="mf-field">
+                    <label for="{{ form.father_name.id_for_label }}">Father's Name</label>
+                    {{ form.father_name }}
+                    {% if form.father_name.errors %}<div class="mf-error">{{ form.father_name.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.father_telephone.id_for_label }}">{{ form.father_telephone.label }}</label>
+                    {{ form.father_telephone }}
+                    {% if form.father_telephone.errors %}<div class="mf-error">{{ form.father_telephone.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field mf-full">
+                    <label for="{{ form.father_res_address.id_for_label }}">{{ form.father_res_address.label }}</label>
+                    {{ form.father_res_address }}
+                    {% if form.father_res_address.errors %}<div class="mf-error">{{ form.father_res_address.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.father_deceased.id_for_label }}">
+                        {{ form.father_deceased }} Father Deceased
+                    </label>
+                    {% if form.father_deceased.errors %}<div class="mf-error">{{ form.father_deceased.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.mother_name.id_for_label }}">Mother's Name</label>
+                    {{ form.mother_name }}
+                    {% if form.mother_name.errors %}<div class="mf-error">{{ form.mother_name.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.mother_telephone.id_for_label }}">{{ form.mother_telephone.label }}</label>
+                    {{ form.mother_telephone }}
+                    {% if form.mother_telephone.errors %}<div class="mf-error">{{ form.mother_telephone.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field mf-full">
+                    <label for="{{ form.mother_res_address.id_for_label }}">{{ form.mother_res_address.label }}</label>
+                    {{ form.mother_res_address }}
+                    {% if form.mother_res_address.errors %}<div class="mf-error">{{ form.mother_res_address.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mf-field">
+                    <label for="{{ form.mother_deceased.id_for_label }}">
+                        {{ form.mother_deceased }} Mother Deceased
+                    </label>
+                    {% if form.mother_deceased.errors %}<div class="mf-error">{{ form.mother_deceased.errors|join:", " }}</div>{% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============ ACTIONS ============ -->
+        <div class="mf-actions">
+            <a href="{% if member %}{% url 'ChurchApp:member_detail' entity.slug member.pk %}{% else %}{% url 'ChurchApp:member_list_manage' entity.slug %}{% endif %}"
+               class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" name="save" class="btn btn-success">
+                <i class="fas fa-save"></i>
+                {% if member %}Update Member{% else %}Save Member{% endif %}
+            </button>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

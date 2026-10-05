@@ -4,7 +4,7 @@
 <div class="d-flex">
     {% include "Supervisor/supervisor_sidebar.html" %}
     <div class="flex-grow-1 p-4" style="margin-left: 250px;">
-        <h2>📋 Pending Transactions - {{ entity.name }}</h2>
+        <h2> Pending Transactions - {{ entity.name }}</h2>
 
         {% if processed %}
             <!-- Results Section -->
@@ -43,7 +43,7 @@
                         <form method="post">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger" onclick="return confirm('Post all pending transactions?')">
-                                📤 Post All Pending
+                                 Post All Pending
                             </button>
                         </form>
                         <div class="table-responsive mt-3">
@@ -64,7 +64,7 @@
                                         <td>{{ trans.rec_vou_no }}</td>
                                         <td>{{ trans.trans_type }}</td>
                                         <td>{{ trans.amount|floatformat:2 }}</td>
-                                        <td>{{ trans.member.full_name|default:"Walk‑in" }}</td>
+                                        <td>{{ trans.member.full_name|default:"Walk - in" }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>

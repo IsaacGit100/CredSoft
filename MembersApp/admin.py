@@ -11,7 +11,7 @@ class MasterAdmin(admin.ModelAdmin):
     list_filter = ['role', 'mem_status', 'gender', 'church_member']
     search_fields = ['first_name', 'last_name', 'other_names', 'full_name', 'email_address', 'telephone1']
     readonly_fields = ['full_name', 'date_created', 'date_updated']
-    
+
     fieldsets = (
         ('Personal Information', {
             'fields': ('title', 'first_name', 'last_name', 'other_names', 'full_name', 
@@ -33,8 +33,44 @@ class MasterAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-    
+
     def member_id(self, obj):
         return obj.id
     member_id.short_description = 'ID'
     member_id.admin_order_field = 'id'
+
+from django.contrib import admin
+from .models import SavingsDailyLog, SavIntApplication
+
+
+@admin.register(SavingsDailyLog)
+class SavingsDailyLogAdmin(admin.ModelAdmin):
+    list_display = (
+        "date",
+        "master",
+        "old_balance",
+        "effective_rate",
+        "daily_interest",
+        "new_balance",
+        "was_month_end",
+    )
+    list_filter = ("date", "was_month_end")
+    search_fields = ("master__full_name", "master__member_no")
+    date_hierarchy = "date"
+    readonly_fields = [f.name for f in SavingsDailyLog._meta.fields]
+
+
+@admin.register(SavIntApplication)
+class SavIntApplicationAdmin(admin.ModelAdmin):
+    list_display = (
+        "period_end",
+        "master",
+        "frequency",
+        "amount",
+        "days",
+        "status",
+        "applied_at",
+    )
+    list_filter = ("status", "frequency", "period_end")
+    search_fields = ("master__full_name", "master__member_no")
+    date_hierarchy = "period_end"

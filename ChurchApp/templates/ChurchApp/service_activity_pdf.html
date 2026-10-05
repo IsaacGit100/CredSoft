@@ -1,0 +1,1056 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+
+    <style>
+
+        @page {
+            size: A4 portrait;
+
+            margin-top: 1.2cm;
+            margin-bottom: 1.2cm;
+            margin-left: 1.2cm;
+            margin-right: 1.2cm;
+
+            @frame footer_frame {
+                -pdf-frame-content: pdf_footer;
+                left: 1.2cm;
+                right: 1.2cm;
+                bottom: 0.5cm;
+                height: 0.5cm;
+            }
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 9px;
+            color: #222222;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            font-size: 12px;
+            margin: 0;
+        }
+
+        h3 {
+            font-size: 10px;
+            margin: 0;
+        }
+
+        .header {
+            width: 100%;
+            border-bottom: 2px solid #333333;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .header-title {
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .header-subtitle {
+            font-size: 9px;
+            color: #555555;
+            margin-top: 3px;
+        }
+
+        .status {
+            font-size: 8px;
+            font-weight: bold;
+            padding: 3px 7px;
+            border: 1px solid #999999;
+        }
+
+        .section {
+            margin-bottom: 10px;
+            border: 1px solid #cccccc;
+        }
+
+        .section-title {
+            background-color: #eeeeee;
+            border-bottom: 1px solid #cccccc;
+            padding: 6px 7px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .section-body {
+            padding: 7px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table td {
+            padding: 4px;
+            vertical-align: top;
+        }
+
+        .label {
+            font-size: 7px;
+            color: #666666;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .value {
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .people-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .people-table td {
+            width: 25%;
+            padding: 5px;
+            vertical-align: top;
+            border: 1px solid #eeeeee;
+        }
+
+        .person-name {
+            font-size: 9px;
+            margin-top: 3px;
+        }
+
+        .finance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .finance-table td {
+            padding: 5px;
+            border: 1px solid #dddddd;
+        }
+
+        .finance-label {
+            color: #666666;
+            font-size: 8px;
+        }
+
+        .finance-value {
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .two-column {
+            width: 100%;
+        }
+
+        .two-column td {
+            width: 50%;
+            vertical-align: top;
+            padding-right: 5px;
+        }
+
+        table.report-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table.report-table th {
+            background-color: #eeeeee;
+            border: 1px solid #bbbbbb;
+            padding: 5px;
+            font-size: 8px;
+            text-align: left;
+        }
+
+        table.report-table td {
+            border: 1px solid #cccccc;
+            padding: 4px;
+            font-size: 8px;
+        }
+
+        .amount {
+            text-align: right;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background-color: #f2f2f2;
+        }
+
+        .accounting-table th {
+            background-color: #333333;
+            color: #ffffff;
+            border: 1px solid #333333;
+            padding: 5px;
+            font-size: 8px;
+        }
+
+        .accounting-table td {
+            border: 1px solid #cccccc;
+            padding: 4px;
+            font-size: 8px;
+        }
+
+        .grand-total {
+            width: 100%;
+            border: 2px solid #333333;
+            margin-top: 8px;
+        }
+
+        .grand-total td {
+            padding: 8px;
+        }
+
+        .grand-total-label {
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .grand-total-value {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .small {
+            font-size: 7px;
+            color: #666666;
+        }
+
+        .muted {
+            color: #777777;
+        }
+
+        .audit {
+            font-size: 7px;
+            color: #666666;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        #pdf_footer {
+            text-align: center;
+            font-size: 7px;
+            color: #777777;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- ===================================================== -->
+<!-- HEADER -->
+<!-- ===================================================== -->
+
+<table class="header">
+    <tr>
+        <td>
+            <div class="header-title">
+                {{ service.name_of_service }}
+            </div>
+
+            <div class="header-subtitle">
+                {{ entity.name }}
+                |
+                {{ service.date|date:"Y-m-d" }}
+            </div>
+        </td>
+
+        <td align="right">
+
+            {% if service.posted_to_ledger %}
+                <span class="status">
+                    POSTED
+                </span>
+            {% else %}
+                <span class="status">
+                    PENDING
+                </span>
+            {% endif %}
+
+        </td>
+    </tr>
+</table>
+
+
+<!-- ===================================================== -->
+<!-- SERVICE INFORMATION -->
+<!-- ===================================================== -->
+
+<div class="section">
+
+    <div class="section-title">
+        SERVICE INFORMATION
+    </div>
+
+    <div class="section-body">
+
+        <table class="info-table">
+
+            <tr>
+
+                <td>
+                    <div class="label">Service</div>
+                    <div class="value">
+                        {{ service.name_of_service }}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="label">Date</div>
+                    <div class="value">
+                        {{ service.date|date:"Y-m-d" }}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="label">Attendance</div>
+                    <div class="value">
+                        {{ service.attendance }}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="label">Communicants</div>
+                    <div class="value">
+                        {{ service.communicants }}
+                    </div>
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- MINISTRY TEAM -->
+<!-- ===================================================== -->
+
+<div class="section">
+
+    <div class="section-title">
+        MINISTRY TEAM
+    </div>
+
+    <div class="section-body">
+
+        <table class="people-table">
+
+            <tr>
+
+                <td>
+                    <div class="label">Clergy</div>
+
+                    {% for clergy in service.clergy.all %}
+                        <div class="person-name">
+                            {{ clergy.full_name }}
+                        </div>
+                    {% empty %}
+                        <div class="muted">None</div>
+                    {% endfor %}
+                </td>
+
+                <td>
+                    <div class="label">Officiant</div>
+
+                    {% if service.officiant %}
+                        <div class="person-name">
+                            {{ service.officiant.full_name }}
+                        </div>
+                    {% else %}
+                        <div class="muted">None</div>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <div class="label">Ushers</div>
+
+                    {% for usher in service.ushers.all %}
+                        <div class="person-name">
+                            {{ usher.full_name }}
+                        </div>
+                    {% empty %}
+                        <div class="muted">None</div>
+                    {% endfor %}
+                </td>
+
+                <td>
+                    <div class="label">Chalice Assistants</div>
+
+                    {% for assistant in service.chalice_assistants.all %}
+                        <div class="person-name">
+                            {{ assistant.full_name }}
+                        </div>
+                    {% empty %}
+                        <div class="muted">None</div>
+                    {% endfor %}
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- CHURCH OFFICERS -->
+<!-- ===================================================== -->
+
+<div class="section">
+
+    <div class="section-title">
+        CHURCH OFFICERS
+    </div>
+
+    <div class="section-body">
+
+        <table class="people-table">
+
+            <tr>
+
+                <td>
+                    <div class="label">Priest Warden</div>
+                    <div class="person-name">
+                        {{ service.priest_warden|default:"None" }}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="label">People's Warden</div>
+                    <div class="person-name">
+                        {{ service.peoples_warden|default:"None" }}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="label">Verger</div>
+                    <div class="person-name">
+                        {{ service.verger|default:"None" }}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="label">Parish-Clerk</div>
+                    <div class="person-name">
+                        {{ service.parish_clerk|default:"None" }}
+                    </div>
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <td>
+                    <div class="label">Accounts-Clerk</div>
+                    <div class="person-name">
+                        {{ service.accounts_clerk|default:"None" }}
+                    </div>
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- PCC MEMBERS -->
+<!-- ===================================================== -->
+
+<div class="section">
+
+    <div class="section-title">
+        PCC MEMBERS
+    </div>
+
+    <div class="section-body">
+
+        {% if service.pcc_members %}
+
+            <table class="people-table">
+
+                <tr>
+
+                    {% for member in service.pcc_members %}
+
+                        <td>
+                            {{ member }}
+                        </td>
+
+                        {% if forloop.counter|divisibleby:"4" %}
+                            </tr><tr>
+                        {% endif %}
+
+                    {% endfor %}
+
+                </tr>
+
+            </table>
+
+        {% else %}
+
+            <span class="muted">
+                No PCC members recorded.
+            </span>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- MAIN COLLECTIONS -->
+<!-- ===================================================== -->
+
+<div class="section">
+
+    <div class="section-title">
+        MAIN COLLECTIONS
+    </div>
+
+    <div class="section-body">
+
+        <table class="finance-table">
+
+            <tr>
+
+                <td>
+                    <div class="finance-label">
+                        General Offertory — GL 4010
+                    </div>
+                    <div class="finance-value">
+                        ₵{{ service.general_offertory|floatformat:2 }}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="finance-label">
+                        Dues — GL 4011
+                    </div>
+                    <div class="finance-value">
+                        ₵{{ service.dues|floatformat:2 }}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="finance-label">
+                        Tithes — GL 4012
+                    </div>
+                    <div class="finance-value">
+                        ₵{{ service.tithes|floatformat:2 }}
+                    </div>
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- DAY BORN + GUILD -->
+<!-- ===================================================== -->
+
+<table class="two-column">
+
+    <tr>
+
+        <td>
+
+            <div class="section">
+
+                <div class="section-title">
+                    DAY-BORN OFFERINGS
+                </div>
+
+                <div class="section-body">
+
+                    <table class="report-table">
+
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th class="amount">Amount</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for day, amount in service.ordered_day_born_offerings %}
+
+                                <tr>
+                                    <td>{{ day }}</td>
+
+                                    <td class="amount">
+                                        ₵{{ amount|floatformat:2 }}
+                                    </td>
+                                </tr>
+
+                            {% endfor %}
+
+                            <tr class="total-row">
+
+                                <td>
+                                    Total
+                                </td>
+
+                                <td class="amount">
+                                    ₵{{ service.day_born_total|floatformat:2 }}
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </td>
+
+
+        <td>
+
+            <div class="section">
+
+                <div class="section-title">
+                    GUILD OFFERINGS
+                </div>
+
+                <div class="section-body">
+
+                    <table class="report-table">
+
+                        <thead>
+                            <tr>
+                                <th>Guild</th>
+                                <th class="amount">Amount</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for item in service.guild_offerings %}
+
+                                <tr>
+
+                                    <td>
+                                        {{ item.guild_name }}
+                                    </td>
+
+                                    <td class="amount">
+                                        ₵{{ item.amount|floatformat:2 }}
+                                    </td>
+
+                                </tr>
+
+                            {% empty %}
+
+                                <tr>
+                                    <td colspan="2">
+                                        None
+                                    </td>
+                                </tr>
+
+                            {% endfor %}
+
+                            <tr class="total-row">
+
+                                <td>
+                                    Total
+                                </td>
+
+                                <td class="amount">
+                                    ₵{{ service.guild_total|floatformat:2 }}
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </td>
+
+    </tr>
+
+</table>
+
+
+<!-- ===================================================== -->
+<!-- SPECIAL COLLECTIONS -->
+<!-- ===================================================== -->
+
+<div class="section">
+
+    <div class="section-title">
+        SPECIAL COLLECTIONS
+    </div>
+
+    <div class="section-body">
+
+        <table class="report-table">
+
+            <thead>
+
+                <tr>
+                    <th>Collection</th>
+                    <th>Description</th>
+                    <th class="amount">Amount</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for item in service.special_thank_offering %}
+
+                    <tr>
+                        <td>Special Thank</td>
+                        <td>
+                            {{ item.description|default:"Special" }}
+                        </td>
+                        <td class="amount">
+                            ₵{{ item.amount|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td>Special Thank</td>
+                        <td>None</td>
+                        <td class="amount">₵0.00</td>
+                    </tr>
+
+                {% endfor %}
+
+
+                {% for item in service.easter_offering %}
+
+                    <tr>
+                        <td>Easter</td>
+                        <td>
+                            {{ item.name|default:"Easter" }}
+                        </td>
+                        <td class="amount">
+                            ₵{{ item.amount|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td>Easter</td>
+                        <td>None</td>
+                        <td class="amount">₵0.00</td>
+                    </tr>
+
+                {% endfor %}
+
+
+                {% for item in service.christmas_offering %}
+
+                    <tr>
+                        <td>Christmas</td>
+                        <td>
+                            {{ item.name|default:"Christmas" }}
+                        </td>
+                        <td class="amount">
+                            ₵{{ item.amount|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td>Christmas</td>
+                        <td>None</td>
+                        <td class="amount">₵0.00</td>
+                    </tr>
+
+                {% endfor %}
+
+
+                {% for item in service.harvest_offering %}
+
+                    <tr>
+                        <td>Harvest</td>
+                        <td>
+                            {{ item.description|default:"Harvest" }}
+                        </td>
+                        <td class="amount">
+                            ₵{{ item.amount|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td>Harvest</td>
+                        <td>None</td>
+                        <td class="amount">₵0.00</td>
+                    </tr>
+
+                {% endfor %}
+
+
+                {% for item in service.other_collections %}
+
+                    <tr>
+                        <td>Other Collections</td>
+                        <td>
+                            {{ item.name|default:"Other" }}
+                        </td>
+                        <td class="amount">
+                            ₵{{ item.amount|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td>Other Collections</td>
+                        <td>None</td>
+                        <td class="amount">₵0.00</td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- ACCOUNTING SUMMARY -->
+<!-- ===================================================== -->
+
+<div class="section">
+
+    <div class="section-title">
+        ACCOUNTING SUMMARY
+    </div>
+
+    <div class="section-body">
+
+        <table class="report-table accounting-table">
+
+            <thead>
+
+                <tr>
+                    <th>Collection</th>
+                    <th>General Ledger Code</th>
+                    <th class="amount">Amount</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+                    <td>General Offertory</td>
+                    <td>4010</td>
+                    <td class="amount">
+                        ₵{{ service.general_offertory|floatformat:2 }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Dues</td>
+                    <td>4011</td>
+                    <td class="amount">
+                        ₵{{ service.dues|floatformat:2 }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Tithes</td>
+                    <td>4012</td>
+                    <td class="amount">
+                        ₵{{ service.tithes|floatformat:2 }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Day-Born Collection</td>
+                    <td>4013</td>
+                    <td class="amount">
+                        ₵{{ service.day_born_total|floatformat:2 }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Guild Collection</td>
+                    <td>4014</td>
+                    <td class="amount">
+                        ₵{{ service.guild_total|floatformat:2 }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Special Thank Offering</td>
+                    <td>4015</td>
+                    <td class="amount">
+                        ₵{{ service.special_thank_offering_total|floatformat:2 }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Easter Thank Offering</td>
+                    <td>4016</td>
+                    <td class="amount">
+                        ₵{{ service.easter_total|floatformat:2 }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Christmas Thank Offering</td>
+                    <td>4017</td>
+                    <td class="amount">
+                        ₵{{ service.christmas_total|floatformat:2 }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Harvest Thank Offering</td>
+                    <td>4018</td>
+                    <td class="amount">
+                        ₵{{ service.harvest_total|floatformat:2 }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Other Collections</td>
+                    <td>4019</td>
+                    <td class="amount">
+                        ₵{{ service.other_collections_total|floatformat:2 }}
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+
+        <table class="grand-total">
+
+            <tr>
+
+                <td>
+                    <div class="grand-total-label">
+                        TOTAL COLLECTIONS FOR THE DAY
+                    </div>
+
+                    <div class="small">
+                        Service financial total
+                    </div>
+                </td>
+
+                <td class="grand-total-value">
+                    ₵{{ service.grand_total|floatformat:2 }}
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- AUDIT INFORMATION -->
+<!-- ===================================================== -->
+
+<div class="section">
+
+    <div class="section-title">
+        RECORD INFORMATION
+    </div>
+
+    <div class="section-body">
+
+        <table class="info-table">
+
+            <tr>
+
+                <td class="audit">
+                    <strong>Created:</strong>
+                    {{ service.created_at|date:"Y-m-d H:i" }}
+                </td>
+
+                <td class="audit">
+                    <strong>Last Updated:</strong>
+                    {{ service.updated_at|date:"Y-m-d H:i" }}
+                </td>
+
+                <td class="audit">
+
+                    <strong>Status:</strong>
+
+                    {% if service.posted_to_ledger %}
+                        Posted
+                    {% else %}
+                        Pending
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- FOOTER -->
+<!-- ===================================================== -->
+
+<div id="pdf_footer">
+    {{ entity.name }} — {{ service.name_of_service }} —
+    {{ service.date|date:"Y-m-d" }}
+</div>
+
+</body>
+</html>
+```

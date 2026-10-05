@@ -13,7 +13,7 @@ urlpatterns = [
     path('restore/start/', views.restore_start, name='restore_start'),
     path('status/<str:job_id>/', views.restore_status, name='restore_status'),
 
-    # Safe restore (2‑step)
+    # Safe restore (2-step)
     path('safe-restore/start/', views.safe_restore_start, name='safe_restore_start'),
     path('safe-restore/status/<str:job_id>/', views.safe_restore_status, name='safe_restore_status'),  # <-- this is critical
     path('safe-restore/step2/', views.safe_restore_step2, name='safe_restore_step2'),

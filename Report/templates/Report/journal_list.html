@@ -1,0 +1,77 @@
+{% extends "Report/base_report.html" %}
+{% load humanize %}
+
+{% block report_title %}Journal List {{ period_label }}{% endblock %}
+{% block report_period %}{% endblock %}
+
+{% block report_body %}
+
+<form method="get" class="no-print"
+      style="background:#f9fafb; padding:14px 18px; border-radius:8px;
+             margin-bottom:18px; display:flex; gap:12px; align-items:end; flex-wrap:wrap;">
+    <input type="hidden" name="format" value="html">
+    <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#374151;">From</label>
+        <input type="text" name="start" value="{{ start }}" placeholder="dd/mm/yyyy"
+               style="padding:6px 10px; border:1px solid #d1d5db; border-radius:6px;">
+    </div>
+    <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#374151;">To</label>
+        <input type="text" name="end" value="{{ end }}" placeholder="dd/mm/yyyy"
+               style="padding:6px 10px; border:1px solid #d1d5db; border-radius:6px;">
+    </div>
+    <button type="submit" class="btn btn-primary">Apply</button>
+    <a href="?" class="btn btn-secondary">Reset</a>
+</form>
+
+<table style="width:100%; border-collapse:collapse; font-size:12px; background:white;
+              box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:8px; overflow:hidden;">
+    <thead>
+        <tr style="background:#f3f4f6;">
+            <th style="text-align:left;  padding:9px 10px; border-bottom:2px solid #e5e7eb;">Date</th>
+            <th style="text-align:left;  padding:9px 10px; border-bottom:2px solid #e5e7eb;">Ref</th>
+            <th style="text-align:left;  padding:9px 10px; border-bottom:2px solid #e5e7eb;">Code</th>
+            <th style="text-align:left;  padding:9px 10px; border-bottom:2px solid #e5e7eb;">Account</th>
+            <th style="text-align:left;  padding:9px 10px; border-bottom:2px solid #e5e7eb;">Description</th>
+            <th style="text-align:right; padding:9px 10px; border-bottom:2px solid #e5e7eb;">Debit</th>
+            <th style="text-align:right; padding:9px 10px; border-bottom:2px solid #e5e7eb;">Credit</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ln in lines %}
+        <tr>
+            <td style="padding:6px 10px;">{{ ln.date|date:"d/m/y" }}</td>
+            <td style="padding:6px 10px;"><code>{{ ln.je_number }}</code></td>
+            <td style="padding:6px 10px;">{{ ln.account_code }}</td>
+            <td style="padding:6px 10px;">{{ ln.account_name }}</td>
+            <td style="padding:6px 10px;">{{ ln.description|truncatechars:70 }}</td>
+            <td style="padding:6px 10px; text-align:right;">
+                {% if ln.dr %}₵{{ ln.dr|floatformat:2|intcomma }}{% endif %}
+            </td>
+            <td style="padding:6px 10px; text-align:right;">
+                {% if ln.cr %}₵{{ ln.cr|floatformat:2|intcomma }}{% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center; padding:30px; color:#9ca3af;">
+            No journal entries in this period.
+        </td></tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr style="background:#f9fafb; font-weight:700; border-top:2px solid #e5e7eb;">
+            <td colspan="5" style="padding:10px;">Totals</td>
+            <td style="padding:10px; text-align:right;">₵{{ total_dr|floatformat:2|intcomma }}</td>
+            <td style="padding:10px; text-align:right;">₵{{ total_cr|floatformat:2|intcomma }}</td>
+        </tr>
+    </tfoot>
+</table>
+
+{% if not balanced %}
+    <div style="margin-top:12px; padding:10px 14px; background:#fef2f2;
+                border:1px solid #fca5a5; color:#991b1b; border-radius:6px; font-weight:600;">
+        ⚠ Out of balance — DR ≠ CR. Check your postings.
+    </div>
+{% endif %}
+
+{% endblock %}

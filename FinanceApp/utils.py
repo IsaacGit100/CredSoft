@@ -33,7 +33,7 @@ def get_trial_balance_data(as_at_date=None):
             debit = Decimal('0.00')
             credit = Decimal('0.00')
 
-        # Only include accounts with non‑zero balance
+        # Only include accounts with non-zero balance
         if debit != 0 or credit != 0:
             trial_balance.append({
                 'account': account,

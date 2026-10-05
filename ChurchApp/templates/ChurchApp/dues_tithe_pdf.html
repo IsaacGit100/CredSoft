@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 1.5cm;
+        }
+        body { font-family: 'DejaVu Sans', Arial, sans-serif; font-size: 12px; color: #222; }
+        .header { text-align: center; margin-bottom: 16px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .header h1 { font-size: 18px; margin: 0; }
+        .header h2 { font-size: 14px; margin: 4px 0; color: #555; }
+        .header p { font-size: 11px; color: #777; margin: 2px 0; }
+        .receipt-title {
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+            margin: 16px 0 12px;
+            background: #f0f0f0;
+            padding: 6px;
+            border: 1px solid #ccc;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { padding: 8px 10px; border: 1px solid #999; font-size: 12px; }
+        th { background: #f5f5f5; text-align: left; width: 32%; }
+        .amount-row td { font-size: 16px; font-weight: bold; background: #e8f5e9; }
+        .footer { margin-top: 24px; text-align: center; font-size: 10px; color: #888; }
+        .signature { margin-top: 40px; display: flex; justify-content: space-between; }
+        .signature div { border-top: 1px solid #333; width: 40%; padding-top: 4px; text-align: center; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>{{ entity.name }}</h1>
+        <h2>Dues / Tithe Receipt</h2>
+        <p>Voucher: {{ trans.rec_vou_no }}</p>
+    </div>
+
+    <div class="receipt-title">
+        OFFICIAL RECEIPT
+    </div>
+
+    <table>
+        <tr><th>Date</th><td>{{ trans.date|date:"l, F d, Y" }}</td></tr>
+        <tr><th>Receipt No</th><td>{{ trans.rec_vou_no }}</td></tr>
+        <tr>
+            <th>Received From</th>
+            <td>
+                {% if trans.church_member %}{{ trans.church_member.full_name }}
+                {% elif trans.member %}{{ trans.member.full_name }}
+                {% elif trans.non_member_name %}{{ trans.non_member_name }}
+                {% else %}—{% endif %}
+            </td>
+        </tr>
+        <tr><th>Payment Type</th><td>{{ trans.purpose|default:"—" }}</td></tr>
+        <tr><th>Payment Mode</th><td>{{ trans.pay_mode }}</td></tr>
+        <tr><th>Ledger Account</th><td>{{ trans.ledger_code|default:"—" }} – {{ trans.ledger_name|default:"—" }}</td></tr>
+        <tr><th>Description</th><td>{{ trans.details|default:"—" }}</td></tr>
+        <tr class="amount-row"><th>Amount</th><td>₵{{ trans.amount|floatformat:2 }}</td></tr>
+        <tr><th>Status</th><td>{{ trans.get_journal_status_display }}</td></tr>
+    </table>
+
+    <div class="signature">
+        <div>Received By</div>
+        <div>Signature</div>
+    </div>
+
+    <div class="footer">
+        Generated on {{ now|date:"Y-m-d H:i" }} &nbsp;|&nbsp; {{ entity.name }}
+    </div>
+
+</body>
+</html>

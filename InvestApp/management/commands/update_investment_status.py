@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
         for inv in investments:
             if inv.status == 'discounted' or inv.status == 'written_off':
-                continue  # manual statuses never auto‑changed
+                continue  # manual statuses never auto-changed
 
             if inv.maturity_date and inv.maturity_date <= today:
                 # Matured by date

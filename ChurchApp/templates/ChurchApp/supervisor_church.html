@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Supervisor Menu</title>
+
+    <title>{% block title %}{{ entity_config.organization_name }}{% endblock %}</title>
     <style>
         * {
             margin: 0;
@@ -179,15 +180,13 @@
         
         <!-- Header -->
         <div class="header">
-            <h1>Anglican Church Of Ghana</h1>
-            <p>Supervisor Menu</p>
+            <h1>{{ entity_config.organization_name }}</h1>
+            <h1> {{ entity.name }} </h1>
+            <h1>Supervisor Menu</h1>
         </div>
 
         <!-- Menu Grid - 2 columns with annotations -->
         <div class="menu-grid">
-
-            
-            <!-- System Dashboard -->
             <a href="{% url 'ChurchApp:church_config_edit' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
                     <i class="fas fa-users"></i>
@@ -198,10 +197,6 @@
                 </div>
             </a>
 
-
-
-            
-            <!-- Entity Settings -->
             <a href="{% url 'djan_led:coa_home' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
                     <i class="fas fa-users"></i>
@@ -211,12 +206,10 @@
                     <p>Chart of Accounts for this entity</p>
                 </div>
             </a>
-
-            <!-- Member Settings -->
-            <a href="{% url 'OpenBals:opening_balance_home' entity.slug %}" class="menu-btn">
-
+  
+            <a href="{% url 'OpenBals:open_bal_home' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
-                    <i class="fas fa-sliders-h"></i>
+                    <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
                     <h3>Opening Balances</h3>
@@ -224,52 +217,63 @@
                 </div>
             </a>
 
-            <!-- Member Settings -->
-            <a href="{% url 'FixedAssets:fixed_assets_home' entity.slug %}" class="menu-btn">
+            <a href="{% url 'FixedAssets:fixed_asset_home' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
-                    <i class="fas fa-sliders-h"></i>
+                    <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
                     <h3>Fixed Assets</h3>
                     <p>Fixed Assets Management </p>
                 </div>
             </a>
-
-            <!-- Delete A Member -->
-            <a href="{% url 'InvestApp:invest_home' entity.slug}" class="menu-btn">
+ 
+            <a href="{% url 'InvestApp:invest_home' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
-                    <i class="fas fa-trash-alt"></i>
+                    <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
-                    <h3>Image Management</h3>
-                    <p>Capture and Manage Member's Images</p>
+                    <h3>Investment Management</h3>
+                    <p>Capture and Manage Parish's Investments</p>
                 </div>
             </a>
 
-           
-
-            <!-- Delete History -->
-            <a href="{#}" class="menu-btn">
+             <a href="{% url 'Supervisor:trans_report' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
-                    <i class="fas fa-history"></i>
+                    <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
-                    <h3>Generate Chart of Accounts PDF</h3>
-                    <p>Generate Chart Of accounts for Printing and Sending</p>
+                    <h3>Transaction Report To Be Posting</h3>
+                    <p>Review Transactions before Posting</p>
                 </div>
             </a>
 
-            <!-- Login History -->
-            <a href="{#}" class="menu-btn">
+            <a href="{% url 'RecPayApp:supervisor_queue' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
-                    <i class="fas fa-sign-in-alt"></i>
+                    <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
-                    <h3>Transfer Chart of Accounts To Excel</h3>
-                    <p>Generate Chart of Accounts in Excel and Check Downloads</p>
+                    <h3>Supervisor's Queue</h3>
+                    <p>Transactions Ready for Supervisor's Approval And Post</p>
                 </div>
             </a>
 
+            <a href="{% url 'ChurchApp:member_contributions_list' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Church Member Dues & Tithes</h3>
+                    <p>Print Church Member Dues & Tithes</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Footer with Main Menu Button -->
+        <div class="footer">
+            <a href="{% url 'djan_led:back_to_home' entity.slug %}" class="btn-main-menu">
+                <i class="fas fa-home me-2"></i> Back to Main Menu
+            </a>
+        </div>
 
     </div>
 </body>

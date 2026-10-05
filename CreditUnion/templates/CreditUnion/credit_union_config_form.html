@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .cu-cfg-page      { max-width: 900px; margin: 0 auto; padding: 24px; }
+    .cu-cfg-header    { display: flex; justify-content: space-between;
+                        align-items: center; margin-bottom: 20px;
+                        flex-wrap: wrap; gap: 10px; }
+    .cu-cfg-header h2 { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .cu-cfg-header .sub { color: #6b7280; font-size: 13px; margin-top: 4px; }
+
+    .cu-cfg-card      { background: #fff; border-radius: 10px;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                        padding: 22px; margin-bottom: 16px; }
+    .cu-cfg-section   { font-size: 13px; color: #1a56db; font-weight: 700;
+                        text-transform: uppercase; letter-spacing: 0.5px;
+                        border-bottom: 2px solid #e5e7eb;
+                        padding-bottom: 8px; margin: 0 0 16px 0;
+                        display: flex; align-items: center; gap: 8px; }
+
+    .cu-cfg-grid      { display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                        gap: 14px; }
+    .cu-cfg-field     { display: flex; flex-direction: column; }
+    .cu-cfg-field label {
+        font-size: 12px; font-weight: 600; color: #374151;
+        margin-bottom: 4px;
+    }
+    .cu-cfg-field .hint {
+        font-size: 11px; color: #9ca3af; margin-top: 3px;
+    }
+
+    .cu-cfg-actions   { display: flex; gap: 10px; justify-content: flex-end;
+                        padding-top: 16px; border-top: 1px solid #e5e7eb; }
+</style>
+
+<div class="cu-cfg-page">
+
+    <!-- Header -->
+    <div class="cu-cfg-header">
+        <div>
+            <h2><i class="fas fa-cog"></i> {{ title }}</h2>
+            <div class="sub">
+                {{ entity.name }}
+                {% if created %}<span style="color:#16a34a;"> new</span>{% endif %}
+            </div>
+        </div>
+        <a href="{% url 'CreditUnion:credit_union_dashboard' entity.slug %}"
+           class="btn btn-outline-secondary">
+            <i class="fas fa-times"></i> Close
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding:10px 14px; border-radius:6px; margin-bottom:14px;
+                        background:{% if message.tags == 'error' %}#fef2f2{% else %}#ecfdf5{% endif %};
+                        border:1px solid {% if message.tags == 'error' %}#fca5a5{% else %}#a7f3d0{% endif %};
+                        color:{% if message.tags == 'error' %}#991b1b{% else %}#065f46{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div style="background:#fef2f2; border:1px solid #fca5a5;
+                        color:#991b1b; padding:10px 14px; border-radius:6px;
+                        margin-bottom:16px;">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- SAVINGS -->
+        <div class="cu-cfg-card">
+            <h3 class="cu-cfg-section">
+                <i class="fas fa-piggy-bank"></i> Savings Settings
+            </h3>
+            <div class="cu-cfg-grid">
+                <div class="cu-cfg-field">
+                    <label>{{ form.savings_interest_rate.label }}</label>
+                    {{ form.savings_interest_rate }}
+                    <span class="hint">Annual rate in percent</span>
+                    {% if form.savings_interest_rate.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.savings_interest_rate.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.savings_interest_application.label }}</label>
+                    {{ form.savings_interest_application }}
+                    {% if form.savings_interest_application.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.savings_interest_application.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.savings_calc_type.label }}</label>
+                    {{ form.savings_calc_type }}
+                    {% if form.savings_calc_type.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.savings_calc_type.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.min_savings_balance.label }}</label>
+                    {{ form.min_savings_balance }}
+                    {% if form.min_savings_balance.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.min_savings_balance.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.savings_frequency.label }}</label>
+                    {{ form.savings_frequency }}
+                    {% if form.savings_frequency.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.savings_frequency.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- LOANS -->
+        <div class="cu-cfg-card">
+            <h3 class="cu-cfg-section">
+                <i class="fas fa-hand-holding-usd"></i> Loan Settings
+            </h3>
+            <div class="cu-cfg-grid">
+                <div class="cu-cfg-field">
+                    <label>{{ form.loan_interest_rate.label }}</label>
+                    {{ form.loan_interest_rate }}
+                    <span class="hint">Annual rate in percent</span>
+                    {% if form.loan_interest_rate.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.loan_interest_rate.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.max_loan_term.label }}</label>
+                    {{ form.max_loan_term }}
+                    <span class="hint">Months</span>
+                    {% if form.max_loan_term.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.max_loan_term.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.min_loan_amount.label }}</label>
+                    {{ form.min_loan_amount }}
+                    {% if form.min_loan_amount.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.min_loan_amount.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.moratorium_days.label }}</label>
+                    {{ form.moratorium_days }}
+                    <span class="hint">Grace period in days</span>
+                    {% if form.moratorium_days.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.moratorium_days.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- MEMBERSHIP -->
+        <div class="cu-cfg-card">
+            <h3 class="cu-cfg-section">
+                <i class="fas fa-user-plus"></i> Membership
+            </h3>
+            <div class="cu-cfg-grid">
+                <div class="cu-cfg-field">
+                    <label>{{ form.membership_fee.label }}</label>
+                    {{ form.membership_fee }}
+                    {% if form.membership_fee.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.membership_fee.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.min_shares.label }}</label>
+                    {{ form.min_shares }}
+                    <span class="hint">Minimum shares required to join</span>
+                    {% if form.min_shares.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.min_shares.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCOUNT MAPPINGS -->
+        <div class="cu-cfg-card">
+            <h3 class="cu-cfg-section">
+                <i class="fas fa-book"></i> Account Mappings
+            </h3>
+            <div class="cu-cfg-grid">
+                <div class="cu-cfg-field">
+                    <label>{{ form.loan_asset_account_code.label }}</label>
+                    {{ form.loan_asset_account_code }}
+                    <span class="hint">Loan Portfolio account code</span>
+                    {% if form.loan_asset_account_code.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.loan_asset_account_code.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.loan_interest_income_code.label }}</label>
+                    {{ form.loan_interest_income_code }}
+                    <span class="hint">Interest Income account code</span>
+                    {% if form.loan_interest_income_code.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.loan_interest_income_code.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.interest_expense_account_code.label }}</label>
+                    {{ form.interest_expense_account_code }}
+                    <span class="hint">Savings Interest Expense account code</span>
+                    {% if form.interest_expense_account_code.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.interest_expense_account_code.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.savings_interest_payable_account_code.label }}</label>
+                    {{ form.savings_interest_payable_account_code }}
+                    <span class="hint">Interest Payable account code</span>
+                    {% if form.savings_interest_payable_account_code.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.savings_interest_payable_account_code.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- REPORTING -->
+        <div class="cu-cfg-card">
+            <h3 class="cu-cfg-section">
+                <i class="fas fa-chart-line"></i> Reporting &amp; Tax
+            </h3>
+            <div class="cu-cfg-grid">
+                <div class="cu-cfg-field">
+                    <label>{{ form.currency.label }}</label>
+                    {{ form.currency }}
+                    <span class="hint">3-letter code, e.g. GHS</span>
+                    {% if form.currency.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.currency.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.fiscal_year_start.label }}</label>
+                    {{ form.fiscal_year_start }}
+                    {% if form.fiscal_year_start.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.fiscal_year_start.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.tax_rate.label }}</label>
+                    {{ form.tax_rate }}
+                    <span class="hint">Percent</span>
+                    {% if form.tax_rate.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.tax_rate.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="cu-cfg-field">
+                    <label>{{ form.tax_method.label }}</label>
+                    {{ form.tax_method }}
+                    {% if form.tax_method.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.tax_method.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="cu-cfg-actions">
+            <a href="{% url 'CreditUnion:credit_union_dashboard' entity.slug %}"
+               class="btn btn-outline-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Configuration
+            </button>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

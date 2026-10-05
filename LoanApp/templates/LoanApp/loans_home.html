@@ -188,15 +188,31 @@
 
         
             <!-- System Dashboard -->
-            <a href="{% url 'LoanApp:search_master' entity.slug %}" class="menu-btn">
+            <a href="{#}" class="menu-btn">
                 <div class="menu-icon">
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
-                    <h3>New Loans</h3>
-                    <p>Create New Loans For Applicants</p>
+                    <h3>Dashboard</h3>
+                    <p>Dashboard</p>
                 </div>
             </a>
+
+        
+
+            
+            <a href="{% url 'LoanApp:loan_application' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Loan Application</h3>
+                    <p>Book a New Loan</p>
+                </div>
+            </a>
+
+
+
 
             <a href="{% url 'LoanApp:loan_list' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
@@ -208,51 +224,18 @@
                 </div>
             </a>
 
-            <a href="{% url 'LoanApp:loan_list_financials' entity.slug %}" class="menu-btn">
+            <a href="{% url 'LoanApp:loan_repayment_create' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
-                    <i class="fas fa-sliders-h"></i>
+                    <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
-                    <h3>Financial Summary of All Loans</h3>
-                    <p>Financial List of All Loans</p>
+                    <h3>Loan Repayment</h3>
+                    <p>Loan Repayment</p>
                 </div>
             </a>
 
-            <a href="{% url 'LoanApp:loan_list_other' entity.slug %}" class="menu-btn">
-                <div class="menu-icon">
-                    <i class="fas fa-trash-alt"></i>
-                </div>
-                <div class="menu-text">
-                    <h3>Other Loan Details</h3>
-                    <p>Other Loan Details </p>
-                </div>
-            </a>
+           
 
-            <a href="{% url 'LoanApp:gua_list' entity.slug %}" class="menu-btn">
-                <div class="menu-icon">
-                    <i class="fas fa-history"></i>
-                </div>
-                <div class="menu-text">
-                    <h3>List of Guarantors for Loans</h3>
-                    <p>Guarantor List for Active Loans</p>
-                </div>
-            </a>
-
-            <a href="{% url 'LoanApp:loan_update' entity.slug %}" class="menu-btn">
-                <div class="menu-icon">
-                    <i class="fas fa-sign-in-alt"></i>
-                </div>
-                <div class="menu-text">
-                    <h3>Daily Update of Loans</h3>
-                    <p>Run this Daily to Update Loans </p>
-                </div>
-            </a>
-            
-            <a href="{% url 'LoanApp:loan_update_list' entity.slug %}" class="menu-btn">
-                <div class="menu-icon"><i class="fas fa-database"></i></div>
-                <div class="menu-text"><h3>Loan Update List</h3>
-                <p>Loan Details After Updating Loans Portfolio</p></div>
-            </a>
 
            
             
@@ -262,7 +245,7 @@
 
         <!-- Footer with Main Menu Button -->
         <div class="footer">
-            <a href="{% url 'CreditUnion:union_dashboard' entity.slug %}" class="btn-main-menu">
+            <a href="{% url 'CreditUnion:credit_union_dashboard' entity.slug %}" class="btn-main-menu">
                 <i class="fas fa-home me-2"></i> Back to Main Menu
             </a>
         </div>

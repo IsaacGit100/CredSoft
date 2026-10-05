@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+{% load humanize %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Loan Acceptance — {{ loan.loan_no }}</title>
+    <style>
+        @media print {
+            @page { size: portrait; margin: 0.5in; }
+            .no-print { display: none !important; }
+            body { margin: 0; padding: 0; }
+        }
+
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 11px;
+            line-height: 1.35;
+            color: #000;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 7.5in;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px 36px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        /* Screen-only controls */
+        .print-controls {
+            max-width: 7.5in;
+            margin: 0 auto 16px;
+            text-align: center;
+            padding: 12px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .print-controls a,
+        .print-controls button {
+            display: inline-block;
+            padding: 8px 18px;
+            margin: 0 4px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-primary { background: #1a56db; color: #fff; }
+        .btn-secondary { background: #e5e7eb; color: #374151; }
+        .btn-info { background: #0891b2; color: #fff; }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .header h1 { font-size: 16px; font-weight: bold; margin: 5px 0; text-transform: uppercase; }
+        .header p { font-size: 10px; margin: 2px 0; }
+        .header .doc-title {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 12px;
+            text-decoration: underline;
+        }
+
+        .section { margin-bottom: 15px; break-inside: avoid; }
+        .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            border-bottom: 1px solid #000;
+            padding-bottom: 3px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .two-column { display: flex; justify-content: space-between; gap: 20px; }
+        .column { flex: 1; }
+
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 4px; padding: 2px 0; }
+        .detail-label { font-weight: bold; min-width: 140px; }
+        .detail-value { text-align: right; flex: 1; margin-left: 10px; }
+
+        .table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 10px; }
+        .table th, .table td { border: 1px solid #000; padding: 4px 6px; text-align: left; }
+        .table th { background-color: #f0f0f0; font-weight: bold; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .text-bold { font-weight: bold; }
+
+        .coverage-status {
+            font-weight: bold;
+            text-align: center;
+            padding: 8px;
+            border: 2px solid #000;
+            margin: 10px 0;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .signature-area {
+            margin-top: 30px;
+            border-top: 1px solid #000;
+            padding-top: 15px;
+        }
+        .signature-block { text-align: center; padding: 0 20px; }
+        .signature-line {
+            border-bottom: 1px solid #000;
+            height: 40px;
+            margin-bottom: 6px;
+        }
+        .signature-label { font-size: 10px; font-weight: bold; }
+        .signature-sublabel { font-size: 9px; color: #333; }
+
+        .footer {
+            font-size: 9px;
+            text-align: center;
+            margin-top: 20px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Screen-only controls -->
+    <div class="print-controls no-print">
+        <button onclick="window.print()" class="btn-primary">
+            Print Now
+        </button>
+        <a href="{% url 'LoanApp:loan_detail' entity.slug loan.id %}" class="btn-info">
+            Back to Loan
+        </a>
+        <button onclick="window.close()" class="btn-secondary">
+            Close
+        </button>
+    </div>
+
+    <div class="container">
+
+        <!-- Header -->
+        <div class="header">
+            <h1>{{ entity_config.organization_name|default:"Credit Union" }}</h1>
+            {% if entity_config.address %}<p>{{ entity_config.address }}</p>{% endif %}
+            <p>
+                {% if entity_config.phone %}Tel: {{ entity_config.phone }}{% endif %}
+                {% if entity_config.email %} | Email: {{ entity_config.email }}{% endif %}
+            </p>
+            <p><strong>{{ entity.name }}</strong></p>
+            <div class="doc-title">LOAN ACCEPTANCE &amp; UNDERTAKING</div>
+        </div>
+
+        <!-- Loan Summary -->
+        <div class="section">
+            <div class="two-column">
+                <div class="column">
+                    <div class="detail-row">
+                        <span class="detail-label">Loan Number:</span>
+                        <span class="detail-value">{{ loan.loan_no }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Date Applied:</span>
+                        <span class="detail-value">{{ loan.date_applied|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Date Approved:</span>
+                        <span class="detail-value">{{ loan.date_approved|date:"d/m/Y"|default:"—" }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Approved By:</span>
+                        <span class="detail-value">{{ loan.approved_by|default:"—" }}</span>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="detail-row">
+                        <span class="detail-label">Date Printed:</span>
+                        <span class="detail-value">{% now "d/m/Y" %}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value">{{ loan.get_status_display|upper }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Disbursement:</span>
+                        <span class="detail-value">{{ loan.date_disbursed|date:"d/m/Y"|default:"Pending" }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Maturity:</span>
+                        <span class="detail-value">{{ loan.expiry_date|date:"d/m/Y"|default:"—" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Borrower Information -->
+        <div class="section">
+            <div class="section-title">Borrower Information</div>
+            <div class="two-column">
+                <div class="column">
+                    <div class="detail-row">
+                        <span class="detail-label">Name:</span>
+                        <span class="detail-value">{{ loan.member.full_name }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Member ID:</span>
+                        <span class="detail-value">#{{ loan.member.id }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Telephone:</span>
+                        <span class="detail-value">{{ loan.member.telephone1|default:"—" }}</span>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="detail-row">
+                        <span class="detail-label">Balance at Application:</span>
+                        <span class="detail-value">₵{{ loan.member_balance_at_application|floatformat:2|intcomma }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Current Available Balance:</span>
+                        <span class="detail-value">₵{{ loan.member.available_balance|floatformat:2|intcomma }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Ghana Card No.:</span>
+                        <span class="detail-value">{{ loan.member.ghana_card_no|default:"—" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loan Details -->
+        <div class="section">
+            <div class="section-title">Loan Details</div>
+            <div class="two-column">
+                <div class="column">
+                    <div class="detail-row">
+                        <span class="detail-label">Principal Amount:</span>
+                        <span class="detail-value">₵{{ loan.principal|floatformat:2|intcomma }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Interest Rate:</span>
+                        <span class="detail-value">{{ loan.interest_rate|floatformat:2 }}% per month</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Loan Term:</span>
+                        <span class="detail-value">{{ loan.term_months }} months</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Moratorium:</span>
+                        <span class="detail-value">{{ loan.moratorium_months }} months</span>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="detail-row">
+                        <span class="detail-label">Monthly Principal:</span>
+                        <span class="detail-value">₵{{ loan.monthly_principal|floatformat:2|intcomma }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Monthly Interest:</span>
+                        <span class="detail-value">₵{{ loan.monthly_interest|floatformat:2|intcomma }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Next Repayment:</span>
+                        <span class="detail-value">{{ loan.next_repayment_date|date:"d/m/Y"|default:"—" }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Monthly Total:</span>
+                        <span class="detail-value">
+                            ₵{{ loan.monthly_principal|add:loan.monthly_interest|floatformat:2|intcomma }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Purpose:</span>
+                <span class="detail-value">{{ loan.purpose|default:"Not specified" }}</span>
+            </div>
+        </div>
+
+        <!-- Coverage Analysis -->
+        <div class="section">
+            <div class="section-title">Coverage Analysis</div>
+            <div class="two-column">
+                <div class="column">
+                    <div class="detail-row">
+                        <span class="detail-label">Loan Amount:</span>
+                        <span class="detail-value">₵{{ loan.principal|floatformat:2|intcomma }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Borrower Balance:</span>
+                        <span class="detail-value">₵{{ loan.member_balance_at_application|floatformat:2|intcomma }}</span>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="detail-row">
+                        <span class="detail-label">Total Guaranteed:</span>
+                        <span class="detail-value">₵{{ loan.total_guaranteed|floatformat:2|intcomma }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Shortfall:</span>
+                        <span class="detail-value">₵{{ loan.shortfall|floatformat:2|intcomma }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if loan.shortfall <= 0 %}
+                <div class="coverage-status" style="color: #065f46; border-color: #065f46;">
+                    ✓ FULLY COVERED BY BORROWER'S OWN BALANCE
+                </div>
+            {% elif loan.total_guaranteed >= loan.shortfall %}
+                <div class="coverage-status" style="color: #065f46; border-color: #065f46;">
+                    ✓ FULLY COVERED — SHORTFALL GUARANTEED
+                </div>
+            {% else %}
+                <div class="coverage-status" style="color: #991b1b; border-color: #991b1b;">
+                    ⚠ INSUFFICIENT COVERAGE — TOP-UP REQUIRED
+                </div>
+            {% endif %}
+        </div>
+                <!-- Repayment Schedule -->
+        {% if schedule %}
+        <div class="section">
+            <div class="section-title">Repayment Schedule</div>
+            <table class="table" style="font-size: 9px;">
+                <thead>
+                    <tr>
+                        <th style="width:6%;" class="text-center">#</th>
+                        <th style="width:14%;">Date</th>
+                        <th style="width:18%;" class="text-right">Balance</th>
+                        <th style="width:18%;" class="text-right">Principal</th>
+                        <th style="width:18%;" class="text-right">Interest</th>
+                        <th style="width:18%;" class="text-right">Total Due</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in schedule %}
+                    <tr>
+                        <td class="text-center">{{ row.n }}</td>
+                        <td>
+                            {{ row.date|date:"d/m/Y" }}
+                            {% if row.is_moratorium %}
+                                <small style="color:#92400e;">(moratorium)</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-right">₵{{ row.balance|floatformat:2|intcomma }}</td>
+                        <td class="text-right">₵{{ row.principal|floatformat:2|intcomma }}</td>
+                        <td class="text-right">₵{{ row.interest|floatformat:2|intcomma }}</td>
+                        <td class="text-right"><strong>₵{{ row.total|floatformat:2|intcomma }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                    <tr style="background:#f0f0f0;">
+                        <td colspan="3" class="text-bold">TOTALS</td>
+                        <td class="text-right text-bold">₵{{ loan.principal|floatformat:2|intcomma }}</td>
+                        <td class="text-right text-bold">—</td>
+                        <td class="text-right text-bold">—</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+
+
+
+        <!-- Guarantors -->
+        {% with guarantors=loan.guarantors.all %}
+        {% if guarantors %}
+        <div class="section">
+            <div class="section-title">Guarantors ({{ guarantors|length }})</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Member ID</th>
+                        <th class="text-right">Guaranteed Amount</th>
+                        <th class="text-right">Balance Held</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for g in guarantors %}
+                    <tr>
+                        <td>{{ g.member.full_name }}</td>
+                        <td>#{{ g.member.id }}</td>
+                        <td class="text-right">₵{{ g.amount|floatformat:2|intcomma }}</td>
+                        <td class="text-right">₵{{ g.holding|floatformat:2|intcomma }}</td>
+                        <td>{{ g.date|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="text-bold">
+                        <td colspan="2">TOTAL GUARANTEED</td>
+                        <td class="text-right">₵{{ loan.total_guaranteed|floatformat:2|intcomma }}</td>
+                        <td class="text-right">₵{{ loan.total_holding|floatformat:2|intcomma }}</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Undertaking text -->
+        <div class="section">
+            <div class="section-title">Borrower's Undertaking</div>
+            <p style="font-size: 11px; line-height: 1.5; text-align: justify;">
+                I, <strong>{{ loan.member.full_name }}</strong>, hereby acknowledge that I have received
+                the sum of <strong>₵{{ loan.principal|floatformat:2|intcomma }}</strong> as a loan from
+                <strong>{{ entity.name }}</strong> on the terms stated above. I undertake to repay the loan
+                together with interest at the agreed rate of
+                <strong>{{ loan.interest_rate|floatformat:2 }}% per month</strong> in
+                <strong>{{ loan.term_months }} monthly instalments</strong>, beginning on
+                <strong>{{ loan.next_repayment_date|date:"d/m/Y" }}</strong>, or on such other date as may
+                be agreed in writing.
+            </p>
+            <p style="font-size: 11px; line-height: 1.5; text-align: justify;">
+                I further agree that in the event of default, any sums held in my savings, shares,
+                and deposits accounts with the Credit Union may be applied towards settlement of the
+                outstanding balance without further reference to me, and that the guarantors listed above
+                shall be called upon to honour their respective guarantees.
+            </p>
+        </div>
+
+        <!-- Signatures -->
+        <div class="signature-area">
+            <div class="two-column">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">{{ loan.member.full_name }}</div>
+                    <div class="signature-sublabel">Borrower</div>
+                    <div class="signature-sublabel">Date: ___________________</div>
+                </div>
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">{{ loan.approved_by|default:"_____________________" }}</div>
+                    <div class="signature-sublabel">For {{ entity.name }}</div>
+                    <div class="signature-sublabel">Date: ___________________</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guarantor signature block (only if guarantors exist) -->
+        {% with guarantors=loan.guarantors.all %}
+        {% if guarantors %}
+        <div class="signature-area">
+            <div class="section-title" style="margin-bottom:10px;">Guarantor Signatures</div>
+            {% for g in guarantors %}
+            <div class="two-column" style="margin-bottom:16px;">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">{{ g.member.full_name }}</div>
+                    <div class="signature-sublabel">Guarantor (₵{{ g.amount|floatformat:2|intcomma }})</div>
+                </div>
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="signature-sublabel">Date: ___________________</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Footer -->
+        <div class="footer">
+            Computer-generated document — {{ entity_config.organization_name|default:entity.name }}
+            | Generated: {% now "d/m/Y H:i" %}
+        </div>
+
+    </div>
+
+    <script>
+        // Auto-print when opened from the "Save & Print" flow
+        if (new URLSearchParams(window.location.search).get("print") === "1") {
+            window.print();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,756 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<style>
+    .la-page { padding: 20px; max-width: 1400px; margin: 0 auto; }
+    .la-header { display: flex; justify-content: space-between;
+                 align-items: center; margin-bottom: 16px; }
+    .la-header h2 { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .la-card { background: #fff; border-radius: 10px;
+               box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+               padding: 20px; margin-bottom: 16px; }
+    .la-section { font-size: 13px; color: #1a56db; font-weight: 700;
+                  text-transform: uppercase; letter-spacing: 0.5px;
+                  border-bottom: 2px solid #e5e7eb;
+                  padding-bottom: 8px; margin-bottom: 14px; }
+    .la-row { display: grid; gap: 12px; margin-bottom: 12px;
+              grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .la-field label { display: block; font-size: 12px; font-weight: 600;
+                      color: #374151; margin-bottom: 4px; }
+    .la-field input, .la-field select {
+        width: 100%; padding: 8px 12px; border: 1px solid #d1d5db;
+        border-radius: 6px; font-size: 14px; }
+
+    /* Financial summary */
+
+    .la-fin { display: grid;
+              grid-template-columns: repeat(5, 1fr);
+              gap: 10px; margin-bottom: 12px; }
+
+    
+    .la-fin-tile { padding: 12px 14px; border-radius: 8px; }
+    .la-fin-tile .lbl { font-size: 10px; text-transform: uppercase;
+                        font-weight: 700; letter-spacing: 0.4px; }
+    .la-fin-tile .val { font-size: 16px; font-weight: 700; margin-top: 3px;
+                        font-family: monospace; }
+    .la-fin-tile.credit { background: #ecfdf5; color: #065f46; }
+    .la-fin-tile.debit  { background: #fef2f2; color: #991b1b; }
+    .la-fin-tile.avail  { background: #eff6ff; color: #1e40af; }
+    .la-fin-tile.short  { background: #fef3c7; color: #92400e; }
+
+    /* Guarantor block */
+    .la-guarantor-row { display: grid;
+                        grid-template-columns: 1fr 1fr 100px;
+                        gap: 10px; align-items: end;
+                        padding: 10px; background: #f9fafb;
+                        border-radius: 6px; margin-bottom: 8px; }
+    .la-guarantor-row button {
+        padding: 8px; background: #fee2e2; color: #991b1b;
+        border: none; border-radius: 6px; cursor: pointer; }
+
+    .la-actions { display: flex; gap: 10px; justify-content: flex-end;
+                  padding-top: 16px; border-top: 1px solid #e5e7eb;
+                  margin-top: 16px; }
+
+    /* Schedule */
+    .la-sched-table { width: 100%; border-collapse: collapse;
+                      font-size: 12px; }
+    .la-sched-table th { background: #f3f4f6; padding: 8px;
+                         text-align: left; font-size: 11px;
+                         border-bottom: 2px solid #e5e7eb; }
+    .la-sched-table td { padding: 6px 8px;
+                         border-bottom: 1px solid #f3f4f6; }
+    .la-sched-table td.num { text-align: right; font-family: monospace; }
+    .la-sched-wrap { max-height: 300px; overflow-y: auto;
+                     border: 1px solid #e5e7eb; border-radius: 6px; }
+
+    /* Recent list */
+    .la-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .la-table th { text-align: left; padding: 8px 12px;
+                   background: #f3f4f6; font-size: 11px;
+                   border-bottom: 2px solid #e5e7eb; }
+    .la-table td { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; }
+    .la-table td.num { text-align: right; font-family: monospace; }
+</style>
+
+<div class="la-page">
+
+    <div class="la-header">
+        <div>
+            <h2><i class="fas fa-file-signature"></i> Loan Application</h2>
+            <div style="color:#6b7280; font-size:13px;">{{ entity.name }}</div>
+        </div>
+        <a href="{% url 'CreditUnion:credit_union_dashboard' entity.slug %}"
+           class="btn btn-secondary">
+            <i class="fas fa-times"></i> Close
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding:10px 14px; border-radius:6px; margin-bottom:14px;
+                        background:{% if message.tags == 'error' %}#fef2f2{% else %}#ecfdf5{% endif %};
+                        border:1px solid {% if message.tags == 'error' %}#fca5a5{% else %}#a7f3d0{% endif %};
+                        color:{% if message.tags == 'error' %}#991b1b{% else %}#065f46{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+
+    {% if form.non_field_errors %}
+        <div style="padding:12px 16px; border-radius:6px; margin-bottom:14px;
+                    background:#fef2f2; border:2px solid #dc2626;
+                    color:#991b1b; font-size:14px;">
+            <strong><i class="fas fa-exclamation-triangle"></i> Cannot submit:</strong>
+            <ul style="margin:8px 0 0 22px;">
+                {% for err in form.non_field_errors %}
+                    <li>{{ err }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% for field in form %}
+        {% if field.errors %}
+            <div style="padding:10px 14px; border-radius:6px; margin-bottom:10px;
+                        background:#fef2f2; border:1px solid #fca5a5;
+                        color:#991b1b; font-size:13px;">
+                <strong>{{ field.label }}:</strong>
+                {{ field.errors|join:", " }}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+
+    <form method="post" id="loanForm">
+        {% csrf_token %}
+
+        <!-- Member + Financials -->
+        <div class="la-card">
+            <div class="la-section">Member Information</div>
+
+            <div class="la-row">
+                <div class="la-field" style="grid-column: span 2;">
+                    <label>Member *</label>
+                    {{ form.member }}
+                </div>
+                <div class="la-field">
+                    <label>Date Applied *</label>
+                    {{ form.date_applied }}
+                </div>
+            </div>
+
+            <div class="la-fin" id="financialSummary" style="display:none;">
+                <div class="la-fin-tile credit">
+                    <div class="lbl">Credit</div>
+                    <div class="val" id="finCredit">₵0.00</div>
+                </div>
+                <div class="la-fin-tile debit">
+                    <div class="lbl">Debit</div>
+                    <div class="val" id="finDebit">₵0.00</div>
+                </div>
+                <div class="la-fin-tile avail">
+                    <div class="lbl">Available</div>
+                    <div class="val" id="finAvail">₵0.00</div>
+                </div>
+                <div class="la-fin-tile short">
+                    <div class="lbl">Shortfall</div>
+                    <div class="val" id="finShortfall">₵0.00</div>
+                </div>
+                <div class="la-fin-tile" id="remainingTile"
+                     style="background:#ede9fe; color:#5b21b6;">
+                    <div class="lbl">Still To Guarantee</div>
+                    <div class="val" id="finRemaining">₵0.00</div>
+                </div>
+                <input type="hidden" name="member_name" id="memberNameHidden">
+            </div>
+        </div>
+
+        <!-- Loan terms -->
+        <div class="la-card">
+            <div class="la-section">Loan Terms</div>
+            <div class="la-row">
+                <div class="la-field">
+                    <label>Principal (₵) *</label>
+                    {{ form.principal }}
+                </div>
+                <div class="la-field">
+                    <label>Interest Rate (%/month)</label>
+                    {{ form.interest_rate }}
+                </div>
+                <div class="la-field">
+                    <label>Term (months) *</label>
+                    {{ form.term_months }}
+                </div>
+                <div class="la-field" style="grid-column: span 2;">
+                    <label>Purpose</label>
+                    {{ form.purpose }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Guarantors (shown when needed) -->
+        <div class="la-card" id="guarantorCard" style="display:none;">
+            <div class="la-section">
+                Guarantors
+                <span style="font-weight:400; text-transform:none;
+                             color:#6b7280; font-size:12px; margin-left:8px;"
+                      id="guarantorHint"></span>
+            </div>
+            <div id="guarantorList"></div>
+            <button type="button" id="addGuarantorBtn"
+                    class="btn btn-outline-primary" style="margin-top:8px;">
+                <i class="fas fa-plus"></i> Add Guarantor
+            </button>
+        </div>
+
+        <!-- Schedule preview -->
+        <div class="la-card" id="scheduleCard" style="display:none;">
+            <div class="la-section">Repayment Schedule (preview)</div>
+            <div class="la-sched-wrap">
+                <table class="la-sched-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th style="text-align:right;">Balance</th>
+                            <th style="text-align:right;">Principal</th>
+                            <th style="text-align:right;">Interest</th>
+                            <th style="text-align:right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleBody"></tbody>
+                </table>
+            </div>
+            <label style="display:flex; align-items:center; gap:8px;
+                          margin-top:12px; font-size:13px; font-weight:600;">
+                <input type="checkbox" name="accept_schedule" id="acceptSchedule">
+                I have reviewed the repayment schedule and accept it.
+            </label>
+        </div>
+                <!-- Schedule preview -->
+        <div class="la-card" id="scheduleCard" style="display:none;
+            border:2px solid #1a56db;">
+            <div class="la-section" style="color:#1a56db;">
+                <i class="fas fa-calendar-check"></i> Repayment Schedule — Review Carefully
+            </div>
+
+        <!-- Quick totals -->
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr);
+                    gap:10px; margin-bottom:14px;">
+            <div style="padding:10px; background:#eff6ff; border-radius:6px;">
+                <div style="font-size:10px; font-weight:700; color:#1e40af;
+                            text-transform:uppercase;">Total Payable</div>
+                <div id="sumTotal" style="font-family:monospace; font-size:15px;
+                                        font-weight:700; color:#1e40af;">₵0.00</div>
+            </div>
+            <div style="padding:10px; background:#fef2f2; border-radius:6px;">
+                <div style="font-size:10px; font-weight:700; color:#991b1b;
+                            text-transform:uppercase;">Total Interest</div>
+                <div id="sumInterest" style="font-family:monospace; font-size:15px;
+                                            font-weight:700; color:#991b1b;">₵0.00</div>
+            </div>
+            <div style="padding:10px; background:#f0fdf4; border-radius:6px;">
+                <div style="font-size:10px; font-weight:700; color:#065f46;
+                            text-transform:uppercase;">Monthly Payment</div>
+                <div id="sumInstallment" style="font-family:monospace; font-size:15px;
+                                                font-weight:700; color:#065f46;">₵0.00</div>
+            </div>
+            <div style="padding:10px; background:#f3f4f6; border-radius:6px;">
+                <div style="font-size:10px; font-weight:700; color:#374151;
+                            text-transform:uppercase;">Installments</div>
+                <div id="sumCount" style="font-family:monospace; font-size:15px;
+                                        font-weight:700; color:#374151;">0</div>
+            </div>
+        </div>
+
+        <div class="la-sched-wrap">
+            <table class="la-sched-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Due Date</th>
+                        <th style="text-align:right;">Opening</th>
+                        <th style="text-align:right;">Principal</th>
+                        <th style="text-align:right;">Interest</th>
+                        <th style="text-align:right;">Installment</th>
+                        <th style="text-align:right;">Closing</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody"></tbody>
+            </table>
+        </div>
+
+            <label style="display:flex; align-items:flex-start; gap:10px;
+                        margin-top:14px; padding:12px 14px;
+                        background:#eff6ff; border:1px solid #bfdbfe;
+                        border-radius:6px; font-size:13px; font-weight:600;
+                        color:#1e3a5f; cursor:pointer;">
+                <input type="checkbox" name="accept_schedule" id="acceptSchedule"
+                    style="margin-top:2px; width:16px; height:16px;">
+                <span>I have read the repayment schedule above and I accept the terms.
+                    I understand the total payable is
+                    <span id="acceptTotal" style="color:#1a56db;">₵0.00</span>
+                    over <span id="acceptCount">0</span> installments.</span>
+            </label>
+        </div>
+        
+
+
+        <!-- Validation feedback: shows WHY submit is disabled -->
+        <div id="validationAlert"
+            style="display:none; padding:12px 16px; border-radius:6px;
+                    margin-top:16px; background:#fef3c7; border:1px solid #fbbf24;
+                    color:#92400e; font-size:13px;">
+            <strong><i class="fas fa-info-circle"></i> Before you can submit:</strong>
+            <ul id="validationList" style="margin:6px 0 0 22px;"></ul>
+        </div>
+
+        <div class="la-actions">
+            
+            <button type="button" id="previewPdfBtn" class="btn btn-outline-primary">
+                <i class="fas fa-file-pdf"></i> Preview PDF
+            </button>
+            <a href="{% url 'CreditUnion:credit_union_dashboard' entity.slug %}"
+                class="btn btn-secondary">Cancel
+            </a>
+
+            <button type="submit" id="submitBtn" class="btn btn-secondary" disabled
+                title="Complete all required fields first">
+                <i class="fas fa-save"></i> Submit Application
+            </button>
+        </div>
+    </form>
+
+    <!-- Recent loans -->
+    <div class="la-card" style="margin-top:20px; padding:0; overflow:hidden;">
+        <div style="padding:14px 18px; background:#f9fafb;
+                    border-bottom:1px solid #e5e7eb; font-weight:700;
+                    font-size:13px; color:#1e3a5f;">
+            <i class="fas fa-clock"></i> Recent Loan Applications
+        </div>
+        <table class="la-table">
+            <thead>
+                <tr>
+                    <th>Loan No.</th>
+                    <th>Date</th>
+                    <th>Member</th>
+                    <th style="text-align:right;">Principal</th>
+                    <th style="text-align:right;">Balance</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in recent %}
+                <tr>
+                    <td><code>{{ l.loan_no }}</code></td>
+                    <td>{{ l.date_applied|date:"d/m/Y" }}</td>
+                    <td>{{ l.member.full_name }}</td>
+                    <td class="num">₵{{ l.principal|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ l.balance|floatformat:2|intcomma }}</td>
+                    <td><span style="padding:2px 8px; border-radius:10px;
+                                     background:#f3f4f6; font-size:11px;
+                                     font-weight:700;">{{ l.status }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="padding:30px; text-align:center;
+                                           color:#9ca3af;">No loans yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const MEMBER_DATA    = {{ member_data_json|safe }};
+    const memberSelect   = document.getElementById("id_member");
+    const principalInput = document.getElementById("id_principal");
+    const rateInput      = document.getElementById("id_interest_rate");
+    const termInput      = document.getElementById("id_term_months");
+    const dateApplied    = document.getElementById("id_date_applied");
+
+    const finSummary     = document.getElementById("financialSummary");
+    const guarantorCard  = document.getElementById("guarantorCard");
+    const scheduleCard   = document.getElementById("scheduleCard");
+    const guarantorList  = document.getElementById("guarantorList");
+    const addGuarantorBtn= document.getElementById("addGuarantorBtn");
+    const scheduleBody   = document.getElementById("scheduleBody");
+    const guarantorHint  = document.getElementById("guarantorHint");
+    const submitBtn      = document.getElementById("submitBtn");
+    const validationAlert= document.getElementById("validationAlert");
+    const validationList = document.getElementById("validationList");
+
+    let currentShortfall = 0;
+    let currentAvail     = 0;
+    let currentRows      = [];
+
+    function fmt(n) {
+        return "₵" + Number(n).toLocaleString("en", {
+            minimumFractionDigits: 2, maximumFractionDigits: 2
+        });
+    }
+
+    /* ------------------------------------------------------------------
+       Schedule: reducing balance (annuity) — matches typical CU practice.
+       periodic_rate = monthly rate (%/month field / 100)
+       installment = P * r / (1 - (1+r)^-n)
+    ------------------------------------------------------------------ */
+
+    function previewPdf() {
+        if (!currentRows.length) {
+            alert("Complete the loan terms first so the schedule can be built.");
+            return;
+        }
+        const form = document.getElementById("loanForm");
+        const fd   = new FormData(form);
+        const btn  = document.getElementById("previewPdfBtn");
+        const old  = btn.innerHTML;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating…';
+
+        fetch("{% url 'LoanApp:loan_schedule_preview' entity.slug %}", {
+            method: "POST",
+            headers: { "X-CSRFToken": fd.get("csrfmiddlewaretoken") },
+            body: fd,
+        })
+        .then(r => { if (!r.ok) throw new Error("PDF generation failed"); return r.blob(); })
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank");
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+        })
+        .catch(err => alert("Could not generate PDF: " + err.message))
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = old;
+        });
+    }
+
+
+
+
+    function buildSchedule() {
+        const principal = parseFloat(principalInput.value) || 0;
+        const ratePct   = parseFloat(rateInput.value) || 0;
+        const term      = parseInt(termInput.value) || 0;
+        const startDate = dateApplied.value;
+
+        if (principal <= 0 || ratePct <= 0 || term <= 0 || !startDate) {
+            scheduleCard.style.display = "none";
+            currentRows = [];
+            return;
+        }
+
+        const r = ratePct / 100;                  // monthly rate as decimal
+        let installment;
+        if (r === 0) {
+            installment = principal / term;
+        } else {
+            installment = principal * r / (1 - Math.pow(1 + r, -term));
+        }
+
+        let balance = principal;
+        const rows  = [];
+        let d = new Date(startDate);
+
+        for (let i = 1; i <= term; i++) {
+            const opening = balance;
+            const interest = opening * r;
+            let principalPart = installment - interest;
+            if (i === term) principalPart = opening;   // absorb rounding
+            const closing = Math.max(opening - principalPart, 0);
+
+            d.setMonth(d.getMonth() + 1);
+            rows.push({
+                n: i,
+                date: d.toISOString().slice(0, 10),
+                opening,
+                principal: principalPart,
+                interest,
+                installment: principalPart + interest,
+                closing,
+            });
+            balance = closing;
+        }
+
+        currentRows = rows;
+        renderSchedule(rows);
+    }
+
+    function renderSchedule(rows) {
+        scheduleBody.innerHTML = rows.map(r => `
+            <tr>
+                <td>${r.n}</td>
+                <td>${r.date}</td>
+                <td class="num">${fmt(r.opening)}</td>
+                <td class="num">${fmt(r.principal)}</td>
+                <td class="num">${fmt(r.interest)}</td>
+                <td class="num" style="font-weight:700;">${fmt(r.installment)}</td>
+                <td class="num">${fmt(r.closing)}</td>
+            </tr>
+        `).join("");
+
+        const total      = rows.reduce((s, r) => s + r.installment, 0);
+        const totalInt   = rows.reduce((s, r) => s + r.interest, 0);
+        const monthly    = rows.length ? rows[0].installment : 0;
+
+        document.getElementById("sumTotal").textContent       = fmt(total);
+        document.getElementById("sumInterest").textContent    = fmt(totalInt);
+        document.getElementById("sumInstallment").textContent = fmt(monthly);
+        document.getElementById("sumCount").textContent       = rows.length;
+
+        document.getElementById("acceptTotal").textContent    = fmt(total);
+        document.getElementById("acceptCount").textContent    = rows.length;
+
+        scheduleCard.style.display = "block";
+    }
+
+    /* ------------------------------------------------------------------
+       Financials per member
+    ------------------------------------------------------------------ */
+    function refreshFinancials() {
+        const mid  = memberSelect.value;
+        const data = MEMBER_DATA[mid];
+        if (!data) { finSummary.style.display = "none"; return; }
+
+        const principal = parseFloat(principalInput.value) || 0;
+        const shortfall = Math.max(principal - data.available, 0);
+
+        document.getElementById("finCredit").textContent    = fmt(data.credit);
+        document.getElementById("finDebit").textContent     = fmt(data.debit);
+        document.getElementById("finAvail").textContent     = fmt(data.available);
+        document.getElementById("finShortfall").textContent = fmt(shortfall);
+        finSummary.style.display = "grid";
+
+        if (!rateInput.value && data.rate > 0) {
+            rateInput.value = data.rate.toFixed(2);
+        }
+
+        currentShortfall = shortfall;
+        currentAvail     = data.available;
+
+        if (shortfall > 0) {
+            guarantorCard.style.display = "block";
+            guarantorHint.textContent = `(need ${fmt(shortfall)} guaranteed)`;
+        } else {
+            guarantorCard.style.display = "none";
+            guarantorList.innerHTML = "";
+        }
+
+        updateRemaining();
+        buildSchedule();
+        validateForm();
+    }
+
+    function updateRemaining() {
+        let guaranteed = 0;
+        document.querySelectorAll('input[name="guarantor_amount"]').forEach(inp => {
+            guaranteed += parseFloat(inp.value) || 0;
+        });
+
+        const remaining = Math.max(currentShortfall - guaranteed, 0);
+        const remainingEl = document.getElementById("finRemaining");
+        const tile        = document.getElementById("remainingTile");
+
+        remainingEl.textContent = fmt(remaining);
+
+        if (remaining <= 0 && currentShortfall > 0) {
+            tile.style.background = "#ecfdf5";
+            tile.style.color = "#065f46";
+            remainingEl.textContent = "✓ Covered";
+        } else if (remaining > 0) {
+            tile.style.background = "#ede9fe";
+            tile.style.color = "#5b21b6";
+        } else {
+            tile.style.background = "#f3f4f6";
+            tile.style.color = "#6b7280";
+            remainingEl.textContent = "—";
+        }
+
+        if (currentShortfall > 0) {
+            if (remaining > 0) {
+                guarantorHint.textContent = `(still need ${fmt(remaining)})`;
+                guarantorHint.style.color = "#dc2626";
+            } else {
+                guarantorHint.textContent = `(fully covered)`;
+                guarantorHint.style.color = "#16a34a";
+            }
+        }
+    }
+
+    function renderGuarantorRow() {
+        const members = Object.values(MEMBER_DATA);
+        const options = members.map(m =>
+            `<option value="${m.id}" data-avail="${m.available}">
+                ${m.name} (avail ${fmt(m.available)})
+             </option>`
+        ).join("");
+
+        const row = document.createElement("div");
+        row.className = "la-guarantor-row";
+        row.innerHTML = `
+            <div>
+                <label style="font-size:12px; font-weight:600;">Guarantor</label>
+                <select name="guarantor_id" class="form-select">
+                    <option value="">-- Select --</option>
+                    ${options}
+                </select>
+            </div>
+            <div>
+                <label style="font-size:12px; font-weight:600;">Amount (₵)</label>
+                <input type="number" name="guarantor_amount" step="0.01" min="0"
+                       class="form-control" oninput="updateRemaining(); validateForm();">
+            </div>
+            <button type="button"
+                    onclick="this.parentElement.remove(); updateRemaining(); validateForm();">
+                
+            </button>
+        `;
+        guarantorList.appendChild(row);
+    }
+
+    /* ------------------------------------------------------------------
+       Validation + feedback
+    ------------------------------------------------------------------ */
+    function validateForm() {
+        const memberId    = memberSelect.value;
+        const principal   = parseFloat(principalInput.value) || 0;
+        const rate        = parseFloat(rateInput.value) || 0;
+        const term        = parseInt(termInput.value) || 0;
+        const dateVal     = dateApplied.value;
+        const accepted    = document.getElementById("acceptSchedule")?.checked;
+        const hasSchedule = currentRows.length > 0;
+
+        const problems = [];
+
+        if (!memberId)   problems.push("Select a member.");
+        if (principal <= 0) problems.push("Enter a principal greater than 0.");
+        if (rate <= 0)   problems.push("Enter the monthly interest rate.");
+        if (term <= 0)   problems.push("Enter the loan term (months).");
+        if (!dateVal)    problems.push("Choose the date applied.");
+
+        if (principal > 0 && rate > 0 && term > 0 && dateVal && !hasSchedule) {
+            problems.push("Repayment schedule could not be generated — check the terms.");
+        }
+
+        if (hasSchedule && !accepted) {
+            problems.push("Tick the box to accept the repayment schedule.");
+        }
+
+        if (currentShortfall > 0) {
+            let guaranteed = 0;
+            document.querySelectorAll('input[name="guarantor_amount"]').forEach(inp => {
+                guaranteed += parseFloat(inp.value) || 0;
+            });
+            if (guaranteed < currentShortfall) {
+                problems.push(
+                    "Guarantors must cover the shortfall of " +
+                    fmt(currentShortfall - guaranteed) + "."
+                );
+            }
+        }
+
+        const valid = problems.length === 0;
+
+        // Show/hide the alert
+        if (!valid && memberId) {   // only nag once they've started
+            validationList.innerHTML = problems.map(p => `<li>${p}</li>`).join("");
+            validationAlert.style.display = "block";
+        } else {
+            validationAlert.style.display = "none";
+        }
+
+        // Button state
+        submitBtn.disabled = !valid;
+        submitBtn.classList.toggle("btn-secondary", !valid);
+        submitBtn.classList.toggle("btn-primary",   valid);
+        submitBtn.title = valid ? "" : "Complete the items listed above";
+
+        return valid;
+    }
+
+    /* ------------------------------------------------------------------
+       Event wiring
+    ------------------------------------------------------------------ */
+    function syncMemberNameForPdf() {
+        const d = MEMBER_DATA[memberSelect.value];
+        const hidden = document.getElementById("memberNameHidden");
+        if (hidden) hidden.value = d ? d.name : "";
+    }
+    memberSelect.addEventListener("change", () => {
+        refreshFinancials();       // existing behaviour
+        syncMemberNameForPdf();    // new: keep hidden field in step
+    });
+
+
+
+    principalInput.addEventListener("input", refreshFinancials);
+    termInput.addEventListener("input", () => { buildSchedule(); validateForm(); });
+    rateInput.addEventListener("input", () => { buildSchedule(); validateForm(); });
+    dateApplied.addEventListener("change", () => { buildSchedule(); validateForm(); });
+    addGuarantorBtn.addEventListener("click", renderGuarantorRow);
+    document.getElementById("acceptSchedule")
+            .addEventListener("change", validateForm);
+
+    // Submit guard
+    document.getElementById("loanForm").addEventListener("submit", (e) => {
+        if (!validateForm()) {
+            e.preventDefault();
+            validationAlert.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    });
+
+    // Init
+    
+            // Init
+        if (memberSelect.value) {
+            refreshFinancials();
+            syncMemberNameForPdf();
+        }
+
+
+
+
+
+
+
+    validateForm();
+
+    document.getElementById("previewPdfBtn").addEventListener("click", () => {
+        if (!currentRows.length) {
+            alert("Please complete the loan terms first so the schedule can be built.");
+            return;
+        }
+        // Optionally enforce the "accepted" checkbox before previewing — your call
+        const form = document.getElementById("loanForm");
+        const fd   = new FormData(form);
+
+        const btn = document.getElementById("previewPdfBtn");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating…';
+
+        fetch("{% url 'LoanApp:loan_schedule_preview' entity.slug %}", {
+            method: "POST",
+            headers: { "X-CSRFToken": fd.get("csrfmiddlewaretoken") },
+            body: fd,
+        })
+        .then(r => {
+            if (!r.ok) throw new Error("PDF generation failed");
+            return r.blob();
+        })
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank");
+            setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        })
+        .catch(err => alert("Could not generate PDF: " + err.message))
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-file-pdf"></i> Preview PDF';
+        });
+    });
+</script>
+{% endblock %}

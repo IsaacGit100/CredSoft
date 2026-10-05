@@ -1,142 +1,448 @@
-<!-- loans/templates/loans/loan_repayment.html -->
-{% extends "base.html" %}
-
-{% block title %}Loan Repayment - {{ loan.loan_id }}{% endblock %}
+{% extends 'base.html' %}
+{% load humanize %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4>Loan Repayment</h4>
+<style>
+    .lrp-page { padding:20px; max-width:1100px; margin:0 auto; }
+    .lrp-header { display:flex; justify-content:space-between; align-items:center;
+                  margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+    .lrp-header h2 { margin:0; color:#1e3a5f; font-size:20px; }
+    .lrp-card { background:#fff; border-radius:10px;
+                box-shadow:0 1px 3px rgba(0,0,0,0.08);
+                padding:20px; margin-bottom:16px; }
+    .lrp-section { font-size:13px; color:#1a56db; font-weight:700;
+                   text-transform:uppercase; letter-spacing:0.5px;
+                   border-bottom:2px solid #e5e7eb;
+                   padding-bottom:8px; margin-bottom:14px; }
+    .lrp-row { display:grid; gap:12px; margin-bottom:12px;
+               grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); }
+    .lrp-field label { display:block; font-size:12px; font-weight:600;
+                       color:#374151; margin-bottom:4px; }
+    .lrp-field input, .lrp-field select {
+        width:100%; padding:8px 12px; border:1px solid #d1d5db;
+        border-radius:6px; font-size:14px; }
+
+    .lrp-readonly { background:#f0f9ff; border-left:4px solid #1a56db;
+                    padding:14px 18px; border-radius:6px; margin-bottom:14px; }
+    .lrp-readonly .lbl { font-size:11px; color:#1e40af; font-weight:700;
+                         text-transform:uppercase; letter-spacing:0.4px; }
+    .lrp-readonly .val { font-size:18px; font-weight:800; color:#1e3a5f;
+                         margin-top:2px; font-family:monospace; }
+
+    .lrp-split { background:#ecfdf5; border-left:4px solid #16a34a;
+                 padding:16px 20px; border-radius:6px; margin-bottom:14px;
+                 display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .lrp-split .lbl { font-size:11px; font-weight:700;
+                      text-transform:uppercase; letter-spacing:0.4px; }
+    .lrp-split .val { font-size:24px; font-weight:800; margin-top:2px;
+                      font-family:monospace; }
+    .lrp-split .interest { color:#991b1b; }
+    .lrp-split .principal { color:#1e40af; }
+
+    .lrp-g-row { display:grid; grid-template-columns:2fr 1fr 160px;
+                 gap:12px; align-items:center;
+                 padding:12px 14px; background:#f9fafb;
+                 border-radius:6px; margin-bottom:8px; }
+    .lrp-g-name { font-weight:600; color:#1e3a5f; }
+    .lrp-g-meta { font-size:12px; color:#6b7280; }
+    .lrp-g-holding { text-align:right; font-family:monospace; font-weight:700; }
+    .lrp-g-input input {
+        width:100%; padding:8px 10px; border:1px solid #d1d5db;
+        border-radius:6px; text-align:right; font-family:monospace;
+        font-weight:600; font-size:14px;
+    }
+    .lrp-g-total {
+        margin-top:12px; padding:14px 18px;
+        background:#eff6ff; border-radius:6px;
+        display:flex; justify-content:space-between; align-items:center;
+        border:2px solid #1a56db;
+    }
+    .lrp-g-total .label { font-weight:700; color:#1e40af; font-size:13px; }
+    .lrp-g-total .amount { font-size:20px; font-weight:800;
+                           font-family:monospace; color:#1e3a5f; }
+    .lrp-g-total.matched { background:#ecfdf5; border-color:#16a34a; }
+    .lrp-g-total.matched .label { color:#065f46; }
+    .lrp-g-total.matched .amount { color:#065f46; }
+    .lrp-g-total.over { background:#fef2f2; border-color:#dc2626; }
+    .lrp-g-total.over .label { color:#991b1b; }
+    .lrp-g-total.over .amount { color:#991b1b; }
+
+    .lrp-actions { display:flex; gap:10px; justify-content:flex-end;
+                   padding-top:14px; border-top:1px solid #e5e7eb;
+                   margin-top:16px; }
+
+    .lrp-table { width:100%; border-collapse:collapse; font-size:12px;
+                 margin-top:8px; }
+    .lrp-table th { text-align:left; padding:9px 12px; background:#f3f4f6;
+                    font-size:11px; font-weight:700;
+                    text-transform:uppercase; border-bottom:2px solid #e5e7eb; }
+    .lrp-table td { padding:8px 12px; border-bottom:1px solid #f3f4f6; }
+    .lrp-table td.num { text-align:right; font-family:monospace; }
+</style>
+
+<div class="lrp-page">
+
+    <div class="lrp-header">
+        <div>
+            <h2><i class="fas fa-money-bill"></i> Loan Repayment</h2>
+            <div style="color:#6b7280; font-size:13px;">{{ entity.name }}</div>
+        </div>
+        <a href="{% url 'LoanApp:loan_list' entity.slug %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Loan Register
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding:10px 14px; border-radius:6px; margin-bottom:14px;
+                        background:{% if message.tags == 'error' %}#fef2f2{% else %}#ecfdf5{% endif %};
+                        border:1px solid {% if message.tags == 'error' %}#fca5a5{% else %}#a7f3d0{% endif %};
+                        color:{% if message.tags == 'error' %}#991b1b{% else %}#065f46{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if form.errors %}
+        <div style="padding:12px 16px; border-radius:6px; margin-bottom:14px;
+                    background:#fef2f2; border:2px solid #dc2626;
+                    color:#991b1b; font-size:13px;">
+            <strong>Cannot submit:</strong>
+            <ul style="margin:6px 0 0 20px;">
+                {% for field, errs in form.errors.items %}
+                    <li><strong>{{ field }}:</strong> {{ errs|join:", " }}</li>
+                {% endfor %}
+                {% for err in form.non_field_errors %}
+                    <li>{{ err }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" id="repaymentForm">
+        {% csrf_token %}
+
+        <!-- STEP 1 — Pick loan + read-only loan info -->
+        <div class="lrp-card">
+            <div class="lrp-section">Step 1  Select Loan</div>
+
+            <div class="lrp-row">
+                <div class="lrp-field" style="grid-column: span 2;">
+                    <label>Loan *</label>
+                    {{ form.loan }}
                 </div>
-                <div class="card-body">
-                    <h5>Loan: {{ loan.loan_id }}</h5>
-                    <table class="table table-sm">
-                        <tr>
-                            <th>Borrower:</th>
-                            <td>{{ loan.master.name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Principal:</th>
-                            <td>₵{{ loan.principal|floatformat:2 }}</td>
-                        </tr>
-                        <tr>
-                            <th>Current Balance:</th>
-                            <td><strong class="text-danger">₵{{ loan.balance|floatformat:2 }}</strong></td>
-                        </tr>
-                        <tr>
-                            <th>Monthly Interest:</th>
-                            <td>₵{{ monthly_interest|floatformat:2 }}</td>
-                        </tr>
-                        <tr>
-                            <th>Total Due (Balance + Interest):</th>
-                            <td><strong class="text-warning">₵{{ total_due|floatformat:2 }}</strong></td>
-                        </tr>
-                    </table>
-                    
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label class="form-label">Payment Amount (₵)</label>
-                            <input type="number" name="amount" class="form-control" 
-                                   step="0.01" min="0.01" max="{{ total_due }}" required>
-                            <div class="form-text">Maximum: ₵{{ total_due|floatformat:2 }}</div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Payment Date</label>
-                            <input type="date" name="payment_date" class="form-control" 
-                                   value="{{ today|date:'Y-m-d' }}" required>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'loan_detail' loan.id %}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-success">Process Repayment</button>
-                        </div>
-                    </form>
+            </div>
+
+            <div id="loanInfo" class="lrp-readonly" style="display:none;">
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+                    <div>
+                        <div class="lbl">Principal</div>
+                        <div class="val" id="loPrincipal">₵0.00</div>
+                    </div>
+                    <div>
+                        <div class="lbl">Due Interest</div>
+                        <div class="val" id="loDueInterest" style="color:#991b1b;">₵0.00</div>
+                    </div>
+                    <div>
+                        <div class="lbl">Due Date</div>
+                        <div class="val" id="loDueDate" style="font-size:16px;">—</div>
+                    </div>
+                </div>
+                <div style="margin-top:12px; padding-top:12px; border-top:1px dashed #cbd5e1;
+                            display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div>
+                        <div class="lbl">Current Balance</div>
+                        <div class="val" id="loBalance" style="font-size:15px;">₵0.00</div>
+                    </div>
+                    <div>
+                        <div class="lbl">Member</div>
+                        <div class="val" id="loMember" style="font-size:15px;">—</div>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-6">
-            <!-- Guarantors Section -->
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h5>Guarantors</h5>
+
+        <!-- STEP 2 — Payment entry -->
+        <div class="lrp-card" id="paymentCard" style="display:none;">
+            <div class="lrp-section">Step 2  Enter Payment</div>
+
+            <div class="lrp-row">
+                <div class="lrp-field">
+                    <label>Date *</label>
+                    {{ form.date }}
                 </div>
-                <div class="card-body">
-                    {% if guarantors %}
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Guaranteed</th>
-                                <th>Redeemed</th>
-                                <th>Remaining</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for g in guarantors %}
-                            <tr>
-                                <td>{{ g.master.name }}</td>
-                                <td>₵{{ g.guaranteed_amount|floatformat:2 }}</td>
-                                <td>₵{{ g.redeemed_amount|default:"0"|floatformat:2 }}</td>
-                                <td>₵{{ g.guaranteed_diff|floatformat:2 }}</td>
-                                <td>
-                                    {% if g.redeemed_status == 'FULLY_REDEEMED' %}
-                                    <span class="badge bg-success">Fully Redeemed</span>
-                                    {% elif g.redeemed_amount > 0 %}
-                                    <span class="badge bg-warning">Partially Redeemed</span>
-                                    {% else %}
-                                    <span class="badge bg-info">Active</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% else %}
-                    <p class="text-muted">No guarantors for this loan</p>
-                    {% endif %}
+                <div class="lrp-field">
+                    <label>Reference</label>
+                    {{ form.reference }}
+                </div>
+                <div class="lrp-field">
+                    <label>Amount Paid (₵) *</label>
+                    {{ form.amount }}
+                </div>
+                <div class="lrp-field" style="grid-column: span 2;">
+                    <label>Notes</label>
+                    {{ form.notes }}
                 </div>
             </div>
-            
-            <!-- Recent Repayments -->
-            <div class="card">
-                <div class="card-header">
-                    <h5>Recent Repayments</h5>
+
+            <!-- Computed split -->
+            <div id="splitPreview" class="lrp-split" style="display:none;">
+                <div>
+                    <div class="lbl" style="color:#991b1b;">→ Applied to Interest</div>
+                    <div class="val interest" id="spInterest">₵0.00</div>
                 </div>
-                <div class="card-body">
-                    {% if recent_repayments %}
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Amount</th>
-                                <th>Principal</th>
-                                <th>Interest</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for r in recent_repayments %}
-                            <tr>
-                                <td>{{ r.payment_date }}</td>
-                                <td>₵{{ r.amount|floatformat:2 }}</td>
-                                <td>₵{{ r.principal_paid|floatformat:2 }}</td>
-                                <td>₵{{ r.interest_paid|floatformat:2 }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% else %}
-                    <p class="text-muted">No repayments yet</p>
-                    {% endif %}
+                <div>
+                    <div class="lbl" style="color:#1e40af;">→ Applied to Loan (Principal)</div>
+                    <div class="val principal" id="spPrincipal">₵0.00</div>
                 </div>
             </div>
         </div>
+
+        <!-- STEP 3 — Guarantor releases -->
+        <div class="lrp-card" id="guarantorCard" style="display:none;">
+            <div class="lrp-section">Step 3  Release Guarantors</div>
+            <p style="color:#6b7280; font-size:13px; margin-bottom:12px;">
+                Enter the amount to release back to each guarantor. The total must
+                equal the <strong>Loan Repayment (Principal)</strong> portion shown above.
+            </p>
+
+            <div id="guarantorList"></div>
+
+            <div class="lrp-g-total" id="guarantorTotal">
+                <span class="label">Total Released</span>
+                <span class="amount">
+                    <span id="gtRunning">₵0.00</span>
+                    <span style="font-size:14px; color:#6b7280;">
+                        / ₵<span id="gtTarget">0.00</span>
+                    </span>
+                </span>
+            </div>
+            <div id="guarantorStatusMsg"
+                 style="font-size:13px; font-weight:600; margin-top:6px; text-align:right;"></div>
+        </div>
+
+        <div class="lrp-actions">
+            <a href="{% url 'LoanApp:loan_list' entity.slug %}"
+               class="btn btn-secondary">Cancel</a>
+            <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
+                <i class="fas fa-save"></i> Save Repayment
+            </button>
+        </div>
+    </form>
+
+    <!-- Recent repayments -->
+    <div class="lrp-card" style="margin-top:20px; padding:0; overflow:hidden;">
+        <div style="padding:14px 18px; background:#f9fafb;
+                    border-bottom:1px solid #e5e7eb; font-weight:700;
+                    font-size:13px; color:#1e3a5f;">
+            <i class="fas fa-clock"></i> Recent Repayments
+        </div>
+        <table class="lrp-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Loan</th>
+                    <th>Member</th>
+                    <th style="text-align:right;">Amount</th>
+                    <th style="text-align:right;">Interest Paid</th>
+                    <th style="text-align:right;">Principal Paid</th>
+                    <th>Status</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in recent %}
+                <tr>
+                    <td>{{ r.date|date:"d/m/Y" }}</td>
+                    <td><code>{{ r.loan.loan_no }}</code></td>
+                    <td>{{ r.member.full_name }}</td>
+                    <td class="num">₵{{ r.amount|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ r.interest_paid|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ r.principal_paid|floatformat:2|intcomma }}</td>
+                    <td>
+                        {% if r.posted %}
+                            <span style="background:#d1fae5; color:#065f46; padding:2px 8px;
+                                         border-radius:10px; font-size:10px; font-weight:700;">POSTED</span>
+                        {% else %}
+                            <span style="background:#fef3c7; color:#92400e; padding:2px 8px;
+                                         border-radius:10px; font-size:10px; font-weight:700;">PENDING</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:center; white-space:nowrap;">
+                        <a href="{% url 'LoanApp:loan_repayment_view' entity.slug r.id %}"
+                           class="btn btn-sm btn-outline-primary" title="View">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        {% if not r.posted %}
+                        <a href="{% url 'LoanApp:loan_repayment_delete' entity.slug r.id %}"
+                           class="btn btn-sm btn-outline-danger" title="Reverse">
+                            <i class="fas fa-undo"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" style="padding:30px; text-align:center; color:#9ca3af;">
+                    No repayments yet.
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
+
+<script>
+    const loanSelect = document.getElementById("id_loan");
+    const amountInput = document.getElementById("id_amount");
+    const loanInfo = document.getElementById("loanInfo");
+    const paymentCard = document.getElementById("paymentCard");
+    const splitPreview = document.getElementById("splitPreview");
+    const guarantorCard = document.getElementById("guarantorCard");
+    const guarantorList = document.getElementById("guarantorList");
+    const submitBtn = document.getElementById("submitBtn");
+
+    const LOAN_DATA = {{ loan_data_json|safe }};
+    const GUARANTOR_DATA = {{ guarantor_data_json|safe }};
+
+    let currentPrincipalPortion = 0;
+
+    function fmt(n) {
+        return "₵" + Number(n).toLocaleString("en", {
+            minimumFractionDigits: 2, maximumFractionDigits: 2
+        });
+    }
+
+    // ---- Step 1: show loan info ----
+    function showLoanInfo() {
+        const id = loanSelect.value;
+        const data = LOAN_DATA[id];
+
+        if (!data) {
+            loanInfo.style.display = "none";
+            paymentCard.style.display = "none";
+            guarantorCard.style.display = "none";
+            splitPreview.style.display = "none";
+            submitBtn.disabled = true;
+            return;
+        }
+
+        document.getElementById("loPrincipal").textContent = fmt(data.principal);
+        document.getElementById("loDueInterest").textContent = fmt(data.due_interest);
+        document.getElementById("loDueDate").textContent = data.due_date || "—";
+        document.getElementById("loBalance").textContent = fmt(data.balance);
+        document.getElementById("loMember").textContent = data.member_name;
+
+        loanInfo.style.display = "block";
+        paymentCard.style.display = "block";
+
+        computeSplit();
+        renderGuarantors();
+    }
+
+    // ---- Step 2: compute interest + principal split ----
+    function computeSplit() {
+        const id = loanSelect.value;
+        const data = LOAN_DATA[id];
+        if (!data) return;
+
+        const amount = parseFloat(amountInput.value) || 0;
+        const dueInterest = data.due_interest || 0;
+
+        const interest = Math.min(dueInterest, amount);
+        const principal = amount - interest;
+        currentPrincipalPortion = principal;
+
+        document.getElementById("spInterest").textContent = fmt(interest);
+        document.getElementById("spPrincipal").textContent = fmt(principal);
+        splitPreview.style.display = amount > 0 ? "grid" : "none";
+
+        document.getElementById("gtTarget").textContent = principal.toFixed(2);
+        updateGuarantorTotal();
+    }
+
+    // ---- Step 3: render guarantor rows ----
+    function renderGuarantors() {
+        const id = loanSelect.value;
+        const gs = GUARANTOR_DATA[id] || [];
+
+        if (gs.length === 0) {
+            guarantorCard.style.display = "none";
+            guarantorList.innerHTML = "";
+            updateGuarantorTotal();
+            return;
+        }
+
+        guarantorCard.style.display = "block";
+        guarantorList.innerHTML = gs.map(g => `
+            <div class="lrp-g-row">
+                <div>
+                    <div class="lrp-g-name">${g.member_name}</div>
+                    <div class="lrp-g-meta">Pledged ${fmt(g.amount)} 
+                        Already released ${fmt(g.released_amount)}</div>
+                </div>
+                <div class="lrp-g-holding">
+                    ${fmt(g.holding)}
+                    <div style="font-size:11px; color:#6b7280; font-weight:400;">holding</div>
+                </div>
+                <div class="lrp-g-input">
+                    <input type="hidden" name="guarantor_id" value="${g.id}">
+                    <input type="number" name="release_amount"
+                           step="0.01" min="0" max="${g.holding}"
+                           placeholder="0.00"
+                           oninput="updateGuarantorTotal()">
+                </div>
+            </div>
+        `).join("");
+
+        updateGuarantorTotal();
+    }
+
+    // ---- Validate total releases ----
+    function updateGuarantorTotal() {
+        let total = 0;
+        document.querySelectorAll('input[name="release_amount"]').forEach(inp => {
+            total += parseFloat(inp.value) || 0;
+        });
+
+        document.getElementById("gtRunning").textContent = fmt(total);
+
+        const target = currentPrincipalPortion;
+        const tile = document.getElementById("guarantorTotal");
+        const msg = document.getElementById("guarantorStatusMsg");
+
+        tile.classList.remove("matched", "over");
+        msg.textContent = "";
+        msg.style.color = "";
+
+        if (target === 0) {
+            submitBtn.disabled = false;
+            return;
+        }
+
+        if (Math.abs(total - target) < 0.01) {
+            tile.classList.add("matched");
+            msg.textContent = "✓ Matches principal portion";
+            msg.style.color = "#065f46";
+            submitBtn.disabled = false;
+        } else if (total > target) {
+            tile.classList.add("over");
+            msg.textContent = `⚠ Over by ${fmt(total - target)}`;
+            msg.style.color = "#991b1b";
+            submitBtn.disabled = true;
+        } else {
+            msg.textContent = `Still need ${fmt(target - total)}`;
+            msg.style.color = "#92400e";
+            submitBtn.disabled = true;
+        }
+    }
+
+    // ---- Event handlers ----
+    loanSelect.addEventListener("change", showLoanInfo);
+    amountInput.addEventListener("input", computeSplit);
+
+    // Init
+    if (loanSelect.value) {
+        showLoanInfo();
+    }
+</script>
 {% endblock %}

@@ -101,9 +101,9 @@
             <hr>
             <h5>Total Liabilities + Equity = <span class="text-primary">{{ total_liabilities|add:total_equity|floatformat:2|intcomma }}</span></h5>
             {% if is_balanced %}
-                <span class="text-success">✅ BALANCED</span>
+                <span class="text-success"> BALANCED</span>
             {% else %}
-                <span class="text-danger">❌ OUT OF BALANCE</span>
+                <span class="text-danger"> OUT OF BALANCE</span>
             {% endif %}
         </div>
     </div>

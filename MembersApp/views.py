@@ -6,7 +6,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from .models import Master
-from datetime import datetime
+from datetime import datetime, date, timedelta
 # import datetime
 import openpyxl
 from reportlab.lib import colors
@@ -23,6 +23,17 @@ from UserAuth.models import User
 from django.utils import timezone
 
 from django_ledger.models import EntityModel
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django_ledger.models import EntityModel
+from .models import Master
+
+# MembersApp/views.py
+from django.contrib import messages
+from .forms import MemberSettingsForm
+from decimal import Decimal
+
+
 
 @login_required
 def members_home(request):
@@ -82,6 +93,40 @@ def member_list_manage(request, slug):
         'query': query,
     }
     return render(request, 'MembersApp/member_list_manage.html', context)
+
+
+@login_required
+def member_params_settings(request, slug):
+
+    entity = get_object_or_404(EntityModel, slug=slug)
+    # Filter members by this entity (you'll need an 'entity' field on Member)
+    members = Master.objects.filter(entity=entity)
+
+    """List all active members (exclude deleted)"""
+    query = request.GET.get("q", "")
+    # Only get members where del_rec is NOT 'Yes' (active members)
+    members = Master.objects.all()
+
+    if query:
+        members = members.filter(
+            Q(full_name__icontains=query)
+            | Q(last_name__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(telephone1__icontains=query)
+            | Q(email_address__icontains=query)
+        )
+
+    # Pagination
+    paginator = Paginator(members, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "members": page_obj,
+        "record_count": members.count(),
+        "query": query,
+    }
+    return render(request, "MembersApp/member_params_settings.html", context)
 
 
 @login_required
@@ -659,6 +704,8 @@ def member_excel(request, slug, pk):
     wb.save(response)
     return response
 
+
+@login_required
 def report_modal(request):
     return render(request, 'MembersApp/modal_test.html')
 
@@ -689,7 +736,7 @@ def member_delete(request, slug, pk):
             messages.success(request, f" Member {member.full_name} (ID: {member.id}) has been deleted successfully.")
 
         except Exception as e:
-            messages.error(request, f"❌ Error deleting member: {str(e)}")
+            messages.error(request, f" Error deleting member: {str(e)}")
 
         # Redirect to list page
         
@@ -698,23 +745,9 @@ def member_delete(request, slug, pk):
     # GET request - show confirmation page
     return render(request, 'MembersApp/member_delete_confirm.html', {'member': member})
 
-# ###################################################################
-# ##       MEMBER SETTINGS                                         #
-# ###################################################################
-# MembersApp/views.py
-
-# MembersApp/views.py
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.utils import timezone
-from django.db.models import Q
-from .models import Master
-from .forms import MemberSettingsForm
-
 
 def members_sav_int_list(request, slug):
-    members = Master.objects.filter(is_deleted=False).order_by('full_name')
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by('full_name')
     
     context = {
         'members': members,
@@ -724,9 +757,9 @@ def members_sav_int_list(request, slug):
 
 
 @login_required
-def member_single_setting(request, slug, pk):
+def member_single_settings(request, slug, pk):
     entity = get_object_or_404(EntityModel, slug=slug)
-   # member = get_object_or_404(Master, id=member_id)
+    # member = get_object_or_404(Master, id=member_id)
     member = get_object_or_404(Master, pk=pk)
     if request.method == 'POST':
         # Update member fields from POST data
@@ -749,11 +782,157 @@ def member_single_setting(request, slug, pk):
 
         member.save()
         messages.success(request, f"Settings updated for {member.full_name}")
-        return redirect('MembersApp:member_list_manage', slug=entity.slug)
+        return redirect('MembersApp:member_params_settings', slug=entity.slug)
 
     context = {
         'member': member,
         'today': timezone.now(),
         'user': request.user,
     }
-    return render(request, 'MembersApp/member_single_setting.html', context)
+    return render(request, 'MembersApp/member_single_settings.html', context)
+
+## ====================Savings Interest Calculations ==============================================
+
+
+@login_required
+def member_savings_rates(request, slug):
+    entity = get_object_or_404(EntityModel, slug=slug)
+    cu = getattr(entity, "cu_config", None)
+
+    rows = []
+    for m in Master.objects.filter(entity=entity):
+        rows.append(
+            {
+                "id": m.pk,
+                "full_name": getattr(m, "full_name", str(m)),
+                "balance": m.balance,
+                "member_rate": m.sav_int_rate,
+                "global_rate": cu.savings_interest_rate if cu else None,
+                "effective": m.effective_sav_int_rate,
+                "sav_interest": m.sav_interest,
+            }
+        )
+
+    totals = {
+        "balance": sum(r["balance"] for r in rows),
+        "daily_interest": sum(r["sav_interest"] for r in rows),
+    }
+
+    return render(
+        request,
+        "MembersApp/member_savings_rates.html",
+        {
+            "entity": entity,
+            "cu": cu,
+            "rows": rows,
+            "totals": totals,
+        },
+    )
+
+
+@login_required
+def sav_interest_trace(request, slug):
+    """
+    Trace how a member's savings interest was calculated day by day.
+
+    GET params:
+        q         : search term (id | member_no | name)
+        start     : YYYY-MM-DD  (default: first day of current month)
+        end       : YYYY-MM-DD  (default: today)
+        master_id : direct selection (skips search)
+    """
+    entity = get_object_or_404(EntityModel, slug=slug)
+
+    # --- period (default: this month so far) ---
+    today = timezone.localdate()
+    default_start = today.replace(day=1)
+
+    start_str = request.GET.get("start")
+    end_str = request.GET.get("end")
+    try:
+        start_date = (
+            datetime.strptime(start_str, "%Y-%m-%d").date()
+            if start_str
+            else default_start
+        )
+    except ValueError:
+        start_date = default_start
+    try:
+        end_date = datetime.strptime(end_str, "%Y-%m-%d").date() if end_str else today
+    except ValueError:
+        end_date = today
+
+    if start_date > end_date:
+        start_date, end_date = end_date, start_date
+
+    # --- member selection ---
+    master_id = request.GET.get("master_id")
+    q = (request.GET.get("q") or "").strip()
+    selected_master = None
+    candidates = []
+
+    if master_id:
+        selected_master = Master.objects.filter(pk=master_id, entity=entity).first()
+    elif q:
+        # search by id, member_no, or name
+        qs = Master.objects.filter(entity=entity)
+        if q.isdigit():
+            qs = qs.filter(Q(pk=int(q)) | Q(member_no__icontains=q))
+        else:
+            qs = qs.filter(Q(full_name__icontains=q) | Q(member_no__icontains=q))
+        candidates = list(qs.select_related("entity")[:30])
+        if len(candidates) == 1:
+            selected_master = candidates[0]
+            candidates = []
+
+    # --- fetch daily logs if a member is selected ---
+    rows = []
+    totals = {
+        "days": 0,
+        "interest": Decimal("0.00"),
+        "start_balance": None,
+        "end_balance": None,
+    }
+
+    if selected_master:
+        logs = SavingsDailyLog.objects.filter(
+            master=selected_master, date__gte=start_date, date__lte=end_date
+        ).order_by("date")
+
+        cumulative = Decimal("0.00")
+        for log in logs:
+            cumulative += log.daily_interest or Decimal("0.00")
+            rows.append(
+                {
+                    "date": log.date,
+                    "balance": log.old_balance,
+                    "rate": log.effective_rate,
+                    "days": 1,
+                    "days_in_cycle": log.mnth_days_after,
+                    "interest": log.daily_interest,
+                    "cumulative": cumulative,
+                    "month_end": log.was_month_end,
+                    "applied": log.applied_amount,
+                }
+            )
+            totals["days"] += 1
+
+        totals["interest"] = cumulative
+        if rows:
+            totals["start_balance"] = rows[0]["balance"]
+            totals["end_balance"] = rows[-1]["balance"]
+
+    return render(
+        request,
+        "MembersApp/sav_interest_trace.html",
+        {
+            "entity": entity,
+            "q": q,
+            "start_date": start_date,
+            "end_date": end_date,
+            "candidates": candidates,
+            "selected_master": selected_master,
+            "rows": rows,
+            "totals": totals,
+        },
+    )

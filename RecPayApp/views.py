@@ -90,54 +90,6 @@ def back_to_home(request, slug):
     return redirect('/')  # This takes user back to dashboard
 
 
-@login_required
-def api_member_loans(request, slug, member_id):
-    """AJAX endpoint to get member's active loans"""
-    
-    try:
-        member = Master.objects.get(id=member_id)
-        
-        # Get active loans (status = 'New Loan' or 'Active')
-        loans = Loan.objects.filter(
-            master=member,
-            status__in=['New Loan', 'Active']
-        )
-        
-        loan_list = []
-        for loan in loans:
-            loan_list.append({
-                'id': loan.id,  # ← Use 'id' as the identifier
-                'loan_display': f"Loan #{loan.id}",  # ← Display text
-                'principal': float(loan.principal),
-                'balance': float(loan.loan_balance),  # ← Use loan_balance
-                'interest_rate': float(loan.interest_rate) if loan.interest_rate else 0,
-                'disbursement_date': loan.disbursement_date.strftime('%Y-%m-%d') if loan.disbursement_date else None,
-            })
-        
-        return JsonResponse({
-            'success': True,
-            'loans': loan_list
-        })
-    except Master.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Member not found'}, status=404)
-
-@login_required 
-def api_member_info(request, slug, member_id):
-    """AJAX endpoint to get member information"""
-    
-    try:
-        member = Master.objects.get(id=member_id)
-        return JsonResponse({
-            'success': True,
-            'id': member.id,
-            'name': member.full_name,
-            'balance': float(member.available_balance),
-            'phone': member.telephone1 or '',
-            'email': member.email_address or '',
-        })
-    except Master.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Member not found'}, status=404)
-
 # ## ============================================ Trans Create =============================
 @login_required
 def trans_create(request, slug):
@@ -155,11 +107,11 @@ def trans_create(request, slug):
     if not coa:
         messages.error(request, "No Chart of Accounts found for this entity. Please autofill first.")
         return redirect('chart_of_accounts', slug=entity.slug)
-    accounts = AccountModel.objects.filter(coa_model=coa, active=True, depth__gt=1).order_by('code')
+    accounts = AccountModel.objects.filter(coa_model=coa).order_by('code')
 
     # accounts = AccountModel.objects.filter(coa_model=coa, active=True).exclude(role='root').order_by('code')
 
-    members = Master.objects.filter(is_deleted=False).order_by('last_name', 'first_name')
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by('last_name', 'first_name')
 
     selected_member_id = request.GET.get('member_id') or request.POST.get('member_id')
     selected_member = None
@@ -445,7 +397,7 @@ def trans_create(request, slug):
                 return redirect('RecPayApp:trans_create', entity.slug)
 
             except Exception as e:
-                messages.error(request, f"❌ Error: {str(e)}")
+                messages.error(request, f" Error: {str(e)}")
                 import traceback
                 traceback.print_exc()
 
@@ -482,7 +434,7 @@ def trans_list_manage(request, slug):
             Q(non_member_name__icontains=query) |
             Q(details__icontains=query) |
             Q(ledger_name__icontains=query)
-        ).order_by('-date', '-id')
+        ).filter(entity=entity, is_deleted=False).order_by('-date', '-id')
     else:
         transactions = Trans.objects.all().order_by('-id')
 
@@ -540,7 +492,7 @@ def trans_list(request, slug):
             Q(non_member_name__icontains=query) |
             Q(details__icontains=query) |
             Q(ledger_name__icontains=query)
-        ).order_by('-date', '-id')
+        ).filter(entity=entity, is_deleted=False).order_by('-date', '-id')
     else:
         transactions = Trans.objects.all().order_by('-id')
     
@@ -591,7 +543,7 @@ def trans_edit(request, slug, pk):
         messages.error(request, "Posted transactions cannot be edited!")
         return redirect('RecPayApp:trans_view', entity.slug, pk=transaction.pk)
 
-    members = Master.objects.filter(is_deleted=False).order_by('last_name', 'first_name')
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by('last_name', 'first_name')
     accounts = ChartOfAccounts.objects.filter(
         is_active=True,
         is_data_entry=True,
@@ -768,8 +720,6 @@ def trans_all_delete(request, slug):
     return render(request, 'RecPayApp/trans_delete_all_confirm.html', context)
 
 # ## ============================= Trans List Manage =================================
-
-
 @login_required
 def trans_list_manage1(request, slug):
     entity = get_object_or_404(EntityModel, slug=slug)
@@ -2149,7 +2099,13 @@ def trans_jour_bal_view(request, pk):
 @login_required
 def church_trans_create(request, slug):
     entity = get_object_or_404(EntityModel, slug=slug)
-    members = Master.objects.filter(is_deleted=False).order_by('last_name', 'first_name')
+    
+    from ChurchApp.models import Member as ChurchMember
+    members = ChurchMember.objects.filter(entity=entity, is_deleted=False).order_by("full_name")
+    
+    
+    
+    
     form = BaseTransForm()
 
     if request.method == 'POST':
@@ -2202,53 +2158,6 @@ def school_trans_create(request, slug):
     return render(request, 'RecPayApp/school_trans_create.html', context)
 
 
-@login_required
-
-def finance_trans_create1(request, slug):
-    entity = get_object_or_404(EntityModel, slug=slug)
-    
-    # Get the list of accounts from the entity's Chart of Accounts
-    coa = entity.get_default_coa()
-    accounts = AccountModel.objects.filter(coa_model=coa).exclude(role='root').order_by('code')
-    
-    # For finance, we don't need member/loan selection.
-    # We'll just use a plain transaction form.
-    
-    if request.method == 'POST':
-        # Process the form
-        try:
-            # Parse date
-            date_str = request.POST.get('date', '').strip()
-            # ... similar parsing as in trans_create
-            # We'll reuse the same logic but without member/loan fields
-            
-            # Create Trans record with module='finance'
-            trans = Trans.objects.create(
-                date=date,
-                trans_no=request.POST.get('trans_no', ''),
-                trans_type=request.POST.get('trans_type', ''),
-                amount=amount,
-                pay_mode=request.POST.get('pay_mode', ''),
-                details=request.POST.get('details', ''),
-                ledger_code=request.POST.get('ledger_code', ''),
-                ledger_name=request.POST.get('ledger_name', ''),
-                module='finance',
-                entity=entity,
-                created_by=request.user,
-                # other fields as needed
-            )
-            messages.success(request, "Finance transaction saved.")
-            return redirect('finance_trans_create', slug=slug)
-        except Exception as e:
-            messages.error(request, f"Error: {e}")
-    
-    # GET request – show form
-    context = {
-        'entity': entity,
-        'accounts': accounts,
-        'today': timezone.now().date(),
-    }
-    return render(request, 'RecPayApp/finance_trans_create.html', context)
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
@@ -2319,11 +2228,11 @@ def finance_trans_create(request, slug):
                 created_by=request.user,
             )
 
-            messages.success(request, "✅ Finance transaction saved successfully.")
+            messages.success(request, " Finance transaction saved successfully.")
             return redirect('RecPayApp:finance_trans_create', slug=entity.slug)
 
         except Exception as e:
-            messages.error(request, f"❌ Error: {str(e)}")
+            messages.error(request, f" Error: {str(e)}")
  
     context = {
         'entity': entity,
@@ -2492,3 +2401,141 @@ def trans_post_selected(request, slug):
             messages.warning(request, "No valid action selected.")
 
     return redirect('RecPayApp:trans_approval_list', slug=slug)
+
+
+## =============================== Supervisor =========================================
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db import models
+from django_ledger.models import EntityModel
+from .models import Trans
+from services.transaction_posting_service import process_transaction
+
+
+@staff_member_required
+def supervisor_queue(request, slug):
+    """
+    List all PENDING transactions for this entity with checkboxes.
+    """
+    entity = get_object_or_404(EntityModel, slug=slug)
+
+    # Filters
+    module_filter = request.GET.get('module', '')
+    type_filter = request.GET.get('type', '')
+    purpose_filter = request.GET.get('purpose', '')
+    search = request.GET.get('search', '').strip()
+
+    qs = Trans.objects.filter(entity=entity, journal_status='PENDING').order_by('-date', '-created_at')
+
+    if module_filter:
+        qs = qs.filter(module=module_filter)
+    if type_filter:
+        qs = qs.filter(trans_type=type_filter)
+    if purpose_filter:
+        qs = qs.filter(purpose__icontains=purpose_filter)
+    if search:
+        qs = qs.filter(
+            models.Q(rec_vou_no__icontains=search) |
+            models.Q(member_name__icontains=search) |
+            models.Q(church_member__full_name__icontains=search) |
+            models.Q(non_member_name__icontains=search) |
+            models.Q(details__icontains=search)
+        )
+
+    # Totals
+    total_receipts = qs.filter(trans_type='Receipts').aggregate(
+        t=models.Sum('amount'))['t'] or 0
+    total_payments = qs.filter(trans_type='Payments').aggregate(
+        t=models.Sum('amount'))['t'] or 0
+
+    context = {
+        'entity': entity,
+        'transactions': qs,
+        'total_count': qs.count(),
+        'total_receipts': total_receipts,
+        'total_payments': total_payments,
+        'net': total_receipts - total_payments,
+        'module_filter': module_filter,
+        'type_filter': type_filter,
+        'purpose_filter': purpose_filter,
+        'search': search,
+        'module_choices': Trans.MODULE_CHOICES,
+        'type_choices': Trans.TRANS_TYPE,
+    }
+    return render(request, 'RecPayApp/supervisor_queue.html', context)
+
+import logging
+from django.db import transaction
+from django.contrib import messages
+
+log = logging.getLogger("Supervisor")
+
+
+@staff_member_required
+def supervisor_post_selected(request, slug):
+    """Post selected PENDING Trans to the journal."""
+    if request.method != "POST":
+        return redirect("RecPayApp:supervisor_queue", slug=slug)
+
+    entity = get_object_or_404(EntityModel, slug=slug)
+    selected_ids = request.POST.getlist("selected_transactions")
+
+    if not selected_ids:
+        messages.warning(request, "No transactions selected.")
+        return redirect("RecPayApp:supervisor_queue", slug=entity.slug)
+
+    posted = []
+    failed = []
+
+    for trans_id in selected_ids:
+        try:
+            with transaction.atomic():
+                # Lock the row so a concurrent click can't post it twice
+                trans = (Trans.objects
+                         .select_for_update()
+                         .filter(entity=entity, pk=trans_id,
+                                 journal_status="PENDING")
+                         .first())
+                if not trans:
+                    continue  # already posted by another session — skip silently
+
+                result = process_transaction(trans, request.user)
+
+                if result.get("success"):
+                    posted.append(trans.rec_vou_no)
+                else:
+                    errs = result.get("errors", ["Unknown error"])
+                    failed.append((trans.rec_vou_no, errs))
+                    log.error(f"Post failed for {trans.rec_vou_no}: {errs}")
+        except Exception as e:
+            failed.append((trans_id, [str(e)]))
+            log.exception(f"Post raised for Trans #{trans_id}")
+
+    if posted:
+        messages.success(request, f"{len(posted)} transaction(s) posted to journal.")
+    for rec, errs in failed:
+        for e in errs:
+            messages.error(request, f"{rec}: {e}")
+
+    return redirect("RecPayApp:supervisor_queue", slug=entity.slug)
+
+@staff_member_required
+def supervisor_reject_selected(request, slug):
+    """Reject selected PENDING Trans."""
+    if request.method != 'POST':
+        return redirect('RecPayApp:supervisor_queue', slug=slug)
+
+    entity = get_object_or_404(EntityModel, slug=slug)
+    selected_ids = request.POST.getlist('selected_transactions')
+
+    if not selected_ids:
+        messages.warning(request, "No transactions selected.")
+        return redirect('RecPayApp:supervisor_queue', slug=entity.slug)
+
+    updated = Trans.objects.filter(
+        entity=entity, pk__in=selected_ids, journal_status='PENDING'
+    ).update(journal_status='REJECTED')
+
+    messages.warning(request, f"{updated} transaction(s) rejected.")
+    return redirect('RecPayApp:supervisor_queue', slug=entity.slug)

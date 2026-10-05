@@ -1,0 +1,139 @@
+{% extends 'Consolidated/base_consolidated.html' %}
+{% load humanize %}
+
+{% block consolidated_content %}
+<div class="ad-page">
+
+    <div class="ad-header">
+        <h2>Fixed Asset</h2>
+        <h3>{{ asset.name }}</h3>
+        <div class="ad-sub">{{ asset.entity.name }}  {{ asset.asset_id|default:"" }}</div>
+    </div>
+
+    <div class="ad-actions">
+        <a href="{% url 'Consolidated:asset_pdf' asset.id %}"
+           class="btn btn-outline-danger" target="_blank">
+            <i class="fas fa-file-pdf"></i> PDF
+        </a>
+        <a href="{% url 'Consolidated:asset_excel' asset.id %}"
+           class="btn btn-outline-success">
+            <i class="fas fa-file-excel"></i> Excel
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <a href="{% url 'Consolidated:report_assets' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- Identification -->
+    <div class="ad-card">
+        <h4 class="ad-section">Identification</h4>
+        <table class="ad-table">
+            <tbody>
+                <tr><th>Parish</th><td>{{ asset.entity.name }}</td></tr>
+                <tr><th>Category</th><td>{{ asset.category.name|default:"—" }}</td></tr>
+                <tr><th>Asset ID / Tag</th><td>{{ asset.asset_id|default:"—" }}</td></tr>
+                <tr><th>Name</th><td>{{ asset.name }}</td></tr>
+                <tr><th>Description</th><td>{{ asset.description|default:"—"|linebreaksbr }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Acquisition -->
+    <div class="ad-card">
+        <h4 class="ad-section">Acquisition</h4>
+        <table class="ad-table">
+            <tbody>
+                <tr><th>Acquisition Date</th><td>{{ asset.acquisition_date|date:"d/m/Y"|default:"—" }}</td></tr>
+                <tr><th>Cost</th><td class="num">₵{{ asset.cost|floatformat:2|intcomma }}</td></tr>
+                <tr><th>Salvage Value</th><td class="num">₵{{ asset.salvage_value|floatformat:2|intcomma }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Depreciation -->
+    <div class="ad-card">
+        <h4 class="ad-section">Depreciation</h4>
+        <table class="ad-table">
+            <tbody>
+                <tr><th>Method</th><td>{{ asset.depreciation_method|default:"—" }}</td></tr>
+                <tr><th>Useful Life</th><td>{{ asset.useful_life_years }} year{{ asset.useful_life_years|pluralize }}</td></tr>
+                <tr><th>Override Rate</th><td class="num">{{ asset.override_depreciation_rate|floatformat:2 }}%</td></tr>
+                <tr><th>Accumulated Depreciation</th><td class="num">₵{{ asset.accumulated_depreciation|floatformat:2|intcomma }}</td></tr>
+                <tr class="ad-total"><th>Net Book Value</th>
+                    <td class="num">₵{{ asset.book_value|floatformat:2|intcomma }}</td></tr>
+                <tr><th>Last Depreciation Date</th><td>{{ asset.last_depreciation_date|date:"d/m/Y"|default:"—" }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Status -->
+    <div class="ad-card">
+        <h4 class="ad-section">Status</h4>
+        <table class="ad-table">
+            <tbody>
+                <tr>
+                    <th>Current Status</th>
+                    <td>
+                        {% if asset.is_active %}
+                            <span style="color:#065f46; font-weight:600;">Active</span>
+                        {% else %}
+                            <span style="color:#991b1b; font-weight:600;">Inactive / Disposed</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr><th>Disposal Date</th><td>{{ asset.disposal_date|date:"d/m/Y"|default:"—" }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Audit -->
+    <div class="ad-card">
+        <h4 class="ad-section">Audit</h4>
+        <table class="ad-table">
+            <tbody>
+                <tr><th>Created By</th><td>{{ asset.created_by|default:"—" }}</td></tr>
+                <tr><th>Created At</th><td>{{ asset.created_at|date:"d/m/Y H:i"|default:"—" }}</td></tr>
+                <tr><th>Updated At</th><td>{{ asset.updated_at|date:"d/m/Y H:i"|default:"—" }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<style>
+    .ad-page       { padding: 20px; max-width: 900px; margin: 0 auto; }
+    .ad-header     { background: #fff; padding: 20px; border-radius: 10px;
+                     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                     text-align: center; margin-bottom: 16px; }
+    .ad-header h2  { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .ad-header h3  { margin: 12px 0 4px; color: #1a56db; font-size: 16px; }
+    .ad-sub        { color: #6b7280; font-size: 13px; }
+
+    .ad-actions    { display: flex; gap: 8px; justify-content: flex-end;
+                     margin-bottom: 14px; flex-wrap: wrap; }
+
+    .ad-card       { background: #fff; border-radius: 8px;
+                     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                     margin-bottom: 14px; overflow: hidden; }
+    .ad-section    { margin: 0; padding: 12px 18px; background: #1a56db;
+                     color: #fff; font-size: 13px; font-weight: 700;
+                     letter-spacing: 0.4px; text-transform: uppercase; }
+    .ad-table      { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .ad-table th   { text-align: left; padding: 10px 18px;
+                     background: #f9fafb; color: #374151;
+                     font-weight: 600; width: 240px;
+                     border-bottom: 1px solid #f3f4f6; }
+    .ad-table td   { padding: 10px 18px; color: #1f2937;
+                     border-bottom: 1px solid #f3f4f6; }
+    .ad-table td.num { text-align: right; font-family: monospace; }
+    .ad-table tr:last-child th,
+    .ad-table tr:last-child td { border-bottom: none; }
+    .ad-total th,
+    .ad-total td   { font-weight: 700; color: #1e3a5f;
+                     background: #f0f9ff;
+                     border-top: 2px solid #1a56db; }
+</style>
+{% endblock %}

@@ -14,5 +14,5 @@ def patch_account_model(app_configs, **kwargs):
                 return f"{self.code} - {self.name}"
         AccountModel.__str__ = safe_str
         AccountModel._str_patched = True
-        print("✅ Permanently patched AccountModel.__str__ via system check")
+        print(" Permanently patched AccountModel.__str__ via system check")
     return []

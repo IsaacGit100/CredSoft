@@ -1,25 +1,29 @@
 from django.urls import reverse_lazy
 from django.contrib.auth.views import PasswordChangeView
 from django.shortcuts import render
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 
-# Create your views here.
-
-# views.py
+# UserAuth/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
-from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
+from django.contrib.auth.hashers import make_password
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.utils import timezone
+from django.conf import settings
+import random
+import string
 from .models import UserProfile
+from django.contrib.auth.forms import PasswordChangeForm
+from .forms import CustomPasswordChangeForm
+from django.urls import reverse
 
 def access_home(request):
     return render(request, 'access_home.html')
-
-# UserAuth/views.py - Add this view
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 
 
 @login_required
@@ -69,7 +73,7 @@ def user_profile(request):
     return render(request, 'userauth/profile.html', {'user': user})
 
 @login_required
-def change_password(request):
+def change_password1(request):
     """Change user's own password"""
     if request.method == 'POST':
         old_password = request.POST.get('old_password')
@@ -79,17 +83,17 @@ def change_password(request):
         # Check old password
         if not request.user.check_password(old_password):
             messages.error(request, "Current password is incorrect.")
-            return redirect('userauth:change_password')
+            return redirect('UserAuth:change_password')
         
         # Check new passwords match
         if new_password1 != new_password2:
             messages.error(request, "New passwords do not match.")
-            return redirect('userauth:change_password')
+            return redirect('UserAuth:change_password')
         
         # Check password length
         if len(new_password1) < 6:
             messages.error(request, "Password must be at least 6 characters.")
-            return redirect('userauth:change_password')
+            return redirect('UserAuth:change_password')
         
         # Set new password
         request.user.set_password(new_password1)
@@ -99,9 +103,9 @@ def change_password(request):
         update_session_auth_hash(request, request.user)
         
         messages.success(request, "Password changed successfully!")
-        return redirect('userauth:user_profile')
+        return redirect('UserAuth:user_profile')
     
-    return render(request, 'userauth/change_password.html')
+    return render(request, 'UserAuth/change_password.html')
 
 @login_required
 @permission_required('auth.can_manage_users', raise_exception=True)
@@ -290,22 +294,6 @@ def user_reset_password(request, pk):
     return render(request, 'userauth/user_reset_password.html', {'user': user})
 
 
-# UserAuth/views.py
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import User
-from django.contrib.auth import update_session_auth_hash
-from django.contrib import messages
-from django.contrib.auth.hashers import make_password
-from django.db.models import Q
-from django.core.mail import send_mail
-from django.utils import timezone
-from django.conf import settings
-import random
-import string
-from .models import UserProfile
-
-
 def is_superuser(user):
     return user.is_superuser
 
@@ -334,42 +322,6 @@ def user_profile(request):
         return redirect('userauth:user_profile')
     
     return render(request, 'users/profile.html', {'user': user})
-
-
-@login_required
-def change_password(request):
-    """Change user's own password"""
-    if request.method == 'POST':
-        old_password = request.POST.get('old_password')
-        new_password1 = request.POST.get('new_password1')
-        new_password2 = request.POST.get('new_password2')
-        
-        # Check old password
-        if not request.user.check_password(old_password):
-            messages.error(request, "Current password is incorrect.")
-            return redirect('userauth:change_password')
-        
-        # Check new passwords match
-        if new_password1 != new_password2:
-            messages.error(request, "New passwords do not match.")
-            return redirect('userauth:change_password')
-        
-        # Check password length
-        if len(new_password1) < 6:
-            messages.error(request, "Password must be at least 6 characters.")
-            return redirect('userauth:change_password')
-        
-        # Set new password
-        request.user.set_password(new_password1)
-        request.user.save()
-        
-        # Keep user logged in
-        update_session_auth_hash(request, request.user)
-        
-        messages.success(request, "Password changed successfully!")
-        return redirect('userauth:user_profile')
-    
-    return render(request, 'userauth/change_password.html')
 
 
 # ============= PASSWORD RESET VIEWS =============
@@ -687,18 +639,8 @@ class CustomPasswordChangeView(PasswordChangeView):
     success_url = reverse_lazy('userauth:password_change_done')
 
 
-# UserAuth/views.py
-
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
-from .forms import CustomPasswordChangeForm
-
-
 @login_required
-def change_password(request):
+def change_password3(request):       # ****************************
     """
     Allow users to change their password.
     """
@@ -709,7 +651,7 @@ def change_password(request):
             # Update session so user doesn't get logged out
             update_session_auth_hash(request, user)
             messages.success(request, " Your password has been changed successfully!")
-            return redirect("userauth:change_password")
+            return redirect("UserAuth:change_password")
         else:
             messages.error(request, " Please correct the errors below.")
     else:
@@ -720,15 +662,6 @@ def change_password(request):
         "title": "Change Password",
     }
     return render(request, "users/change_password.html", context)
-
-
-# UserAuth/views.py (or any app you prefer)
-
-from django.shortcuts import redirect
-from django.contrib import messages
-from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
-from django.urls import reverse
 
 
 @login_required
@@ -743,11 +676,6 @@ def logout_view(request):
 
 # UserAuth/views.py
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
-
 
 @login_required
 def logout_confirm(request):
@@ -760,3 +688,27 @@ def logout_confirm(request):
         return redirect("userauth:login")
 
     return render(request, "userauth/logout_confirm.html")
+
+
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+
+
+@login_required
+def change_password(request):
+   # Shared password change view for every module.
+    next_url = request.GET.get("next") or request.POST.get("next") or "/"
+
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, request.user)
+            messages.success(request, "Your password has been changed successfully.")
+            return redirect(next_url)
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = PasswordChangeForm(request.user)
+
+    return render(request, "UserAuth/change_password.html", {"form": form, "next": next_url})

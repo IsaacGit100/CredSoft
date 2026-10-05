@@ -3,6 +3,67 @@ from django.utils.text import slugify
 from decimal import Decimal
 from django_ledger.models import EntityModel, AccountModel
 
+from django import forms
+from .models import EntityConfig
+
+
+from django import forms
+
+from .models import EntityConfig
+
+
+class EntityConfigForm(forms.ModelForm):
+    class Meta:
+        model = EntityConfig
+        fields = [
+            "organization_name",
+            "report_subtitle",
+            "logo",
+            "address",
+            "city",
+            "region",
+            "country",
+            "phone",
+            "email",
+            "entity_type",
+            "currency",
+            "fiscal_year_start",
+        ]
+        widgets = {
+            "organization_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "e.g. Anglican Diocese of Accra - ADOA-Hub",
+                }
+            ),
+            "report_subtitle": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "e.g. Parish Financial Reports",
+                }
+            ),
+            "logo": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "address": forms.TextInput(attrs={"class": "form-control"}),
+            "city": forms.TextInput(attrs={"class": "form-control"}),
+            "region": forms.TextInput(attrs={"class": "form-control"}),
+            "country": forms.TextInput(attrs={"class": "form-control"}),
+            "phone": forms.TextInput(attrs={"class": "form-control"}),
+            "email": forms.EmailInput(attrs={"class": "form-control"}),
+            "entity_type": forms.Select(attrs={"class": "form-select"}),
+            "currency": forms.TextInput(attrs={"class": "form-control"}),
+            "fiscal_year_start": forms.DateInput(
+                attrs={"class": "form-control", "type": "date"}
+            ),
+        }
+        labels = {
+            "organization_name": "Organisation Name",
+            "report_subtitle": "Report Subtitle",
+            "logo": "Logo (shown on reports)",
+            "fiscal_year_start": "Fiscal Year Start",
+        }
+
+
+
 class CreateParishForm(forms.Form):
     from django_ledger.models import EntityModel, AccountModel
     name = forms.CharField(

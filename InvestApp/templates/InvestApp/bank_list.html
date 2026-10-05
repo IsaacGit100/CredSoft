@@ -13,8 +13,8 @@
         <h1>Bank List</h1>
         
         <!-- Add New Bank Button -->
-        <a href="{% url 'InvestApp:bank_create' %}" class="btn btn-primary mb-3">Add New Bank</a>
-        <a href="{% url 'InvestApp:investment_list' %}" class="btn btn-primary mb-3">Back</a>
+        <a href="{% url 'InvestApp:bank_create' entity.slug  %}" class="btn btn-primary mb-3">Add New Bank</a>
+        <a href="{% url 'InvestApp:investment_list' entity.slug %}" class="btn btn-primary mb-3">Back</a>
         
         <!-- Banks Table -->
         <table class="table table-striped">

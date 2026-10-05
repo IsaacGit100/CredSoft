@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Confirm Posting Opening Balances</h2>
+
+  <p>
+    You are about to post <strong>{{ pending_count }}</strong> opening balance line(s)
+    for <strong>{{ entity.name }}</strong>.
+  </p>
+
+  <p>
+    This will create journal entries and cannot be undone automatically.
+  </p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">
+      Yes, post all
+    </button>
+    <a href="{% url 'OpenBals:open_bal_list' slug=entity.slug %}" class="btn btn-secondary">
+      Cancel
+    </a>
+  </form>
+{% endblock %}

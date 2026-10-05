@@ -169,12 +169,12 @@
                    
 
                     <td>
-                        <a href="{% url 'RecPayApp:trans_view' entity.slug t.pk %}" class="btn btn-info btn-sm" title="View">👁️</a>
-                        <a href="{% url 'RecPayApp:trans_edit' entity.slug t.pk %}" class="btn btn-warning btn-sm" title="Edit">✏️</a>
+                        <a href="{% url 'RecPayApp:trans_view' entity.slug t.pk %}" class="btn btn-info btn-sm" title="View"></a>
+                        <a href="{% url 'RecPayApp:trans_edit' entity.slug t.pk %}" class="btn btn-warning btn-sm" title="Edit"></a>
                         <a href="{% url 'RecPayApp:trans_delete' entity.slug t.pk %}" class="btn btn-danger btn-sm" title="Delete" 
-                           onclick="return confirm('Delete this transaction?')">🗑️</a>
-                        <a href="{% url 'RecPayApp:trans_pdf' entity.slug t.pk %}" class="btn btn-secondary btn-sm" title="PDF" target="_blank">📄</a>
-                        <a href="{% url 'RecPayApp:trans_excel' entity.slug t.pk %}" class="btn btn-success btn-sm" title="Excel">📊</a>
+                           onclick="return confirm('Delete this transaction?')"></a>
+                        <a href="{% url 'RecPayApp:trans_pdf' entity.slug t.pk %}" class="btn btn-secondary btn-sm" title="PDF" target="_blank"></a>
+                        <a href="{% url 'RecPayApp:trans_excel' entity.slug t.pk %}" class="btn btn-success btn-sm" title="Excel"></a>
                     </td>
                 </tr>
                 {% empty %}

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Menu – {{ entity.name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a3a6c 0%, #2c5282 50%, #4a7ba7 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 20px;
+        }
+
+        /* Main Container */
+        .supervisor-container {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header .church-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 10px 24px;
+            margin-bottom: 18px;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.25);
+            letter-spacing: 0.5px;
+        }
+
+        .header h3 {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Menu Grid */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        /* When only 2 items – bigger cards */
+        .menu-grid.two-items {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .menu-grid.two-items .menu-btn {
+            min-height: 220px;
+            padding: 40px 32px;
+            flex-direction: column;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .menu-grid.two-items .menu-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2.4rem;
+            margin-bottom: 20px;
+        }
+
+        .menu-grid.two-items .menu-text h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .menu-grid.two-items .menu-text p {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Menu Button */
+        .menu-btn {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px 26px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, #2c5282, #4a7ba7);
+            transition: width 0.3s ease;
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+            background: #f8fafc;
+        }
+
+        .menu-btn:hover::before {
+            width: 8px;
+        }
+
+        /* Icon Section */
+        .menu-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2c5282, #4a7ba7);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(44, 82, 130, 0.3);
+        }
+
+        /* Different icon colors */
+        .menu-btn:nth-child(1) .menu-icon {
+            background: linear-gradient(135deg, #2c5282, #1a3a6c);
+        }
+        .menu-btn:nth-child(2) .menu-icon {
+            background: linear-gradient(135deg, #2f855a, #276749);
+        }
+        .menu-btn:nth-child(3) .menu-icon {
+            background: linear-gradient(135deg, #b7791f, #975a16);
+        }
+        .menu-btn:nth-child(4) .menu-icon {
+            background: linear-gradient(135deg, #9b2c2c, #742a2a);
+        }
+        .menu-btn:nth-child(5) .menu-icon {
+            background: linear-gradient(135deg, #553c9a, #44337a);
+        }
+
+        /* Text Section */
+        .menu-text {
+            flex: 1;
+        }
+
+        .menu-text h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .menu-text p {
+            font-size: 0.9rem;
+            color: #718096;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn-main-menu {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-main-menu:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.6rem;
+            }
+
+            .header h3 {
+                font-size: 1.1rem;
+            }
+
+            .menu-grid,
+            .menu-grid.two-items {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .menu-grid.two-items .menu-btn {
+                min-height: 180px;
+                padding: 30px 24px;
+            }
+
+            .menu-grid.two-items .menu-icon {
+                width: 65px;
+                height: 65px;
+                font-size: 2rem;
+            }
+
+            .menu-grid.two-items .menu-text h3 {
+                font-size: 1.2rem;
+            }
+
+            .menu-grid.two-items .menu-text p {
+                font-size: 0.9rem;
+            }
+
+            .menu-btn {
+                padding: 20px 20px;
+            }
+
+            .menu-icon {
+                width: 52px;
+                height: 52px;
+                font-size: 1.35rem;
+            }
+
+            .menu-text h3 {
+                font-size: 1.05rem;
+            }
+
+            .menu-text p {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.35rem;
+            }
+
+            .header .church-badge {
+                font-size: 0.75rem;
+                padding: 8px 16px;
+            }
+
+            .menu-text h3 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="supervisor-container">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="church-badge">
+                <i class="fas fa-church"></i> Church Accounting
+            </div>
+            <h1>Service Menu</h1>
+            <h3>{{ entity.name }}</h3>
+            <p>Sunday Service Management</p>
+        </div>
+
+        <!-- Menu Grid -->
+        <div class="menu-grid">
+
+            <!-- Manage Church Services -->
+            <a href="{% url 'ChurchApp:service_list_manage' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Manage Church Services</h3>
+                    <p>Add, view, display and post church service activities and offerings.</p>
+                </div>
+            </a>
+
+            <!-- Church Services Report -->
+            <a href="{% url 'ChurchApp:service_list_report' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Church Services Report</h3>
+                    <p>List and generate reports on church service activities with totals.</p>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <a href="{% url 'ChurchApp:church_dashboard' entity.slug %}" class="btn-main-menu">
+                <i class="fas fa-arrow-left"></i> Back to Main Menu
+            </a>
+        </div>
+
+    </div>
+</body>
+</html>

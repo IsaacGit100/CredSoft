@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="sel-page">
+
+    <div class="sel-header">
+        <h2>{{ entity_config.organization_name|default:"Organization" }}</h2>
+        {% if entity_config.report_subtitle %}
+            <div class="sel-sub">{{ entity_config.report_subtitle }}</div>
+        {% endif %}
+        <h3>Choose a Parish</h3>
+        <p class="sel-hint">
+            Select a parish to work in, or Consolidated to see all parishes combined.
+        </p>
+    </div>
+
+    <!-- Consolidated tile — first, prominent -->
+    <a href="{% url 'Consolidated:set_context' 'consolidated' %}" class="sel-tile sel-tile-all">
+        <div class="sel-icon"><i class="fas fa-layer-group"></i></div>
+        <div class="sel-name">All Parishes (Consolidated)</div>
+        <div class="sel-desc">View figures across all parishes combined.</div>
+    </a>
+
+    <h4 class="sel-group-title">Individual Parishes</h4>
+
+    <div class="sel-grid">
+        {% for entity in entities %}
+            <a href="{% url 'Consolidated:set_context' entity.slug %}" class="sel-tile">
+                <div class="sel-icon"><i class="fas fa-church"></i></div>
+                <div class="sel-name">{{ entity.name }}</div>
+                {% if entity.city %}
+                    <div class="sel-desc">{{ entity.city }}</div>
+                {% endif %}
+            </a>
+        {% empty %}
+            <div class="sel-empty">No parishes configured yet.</div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<style>
+    .sel-page         { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+    .sel-header       { text-align: center; margin-bottom: 30px;
+                        background: #fff; padding: 24px;
+                        border-radius: 10px;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .sel-header h2    { margin: 0; color: #1e3a5f; font-size: 22px; }
+    .sel-header h3    { margin-top: 14px; color: #1a56db; font-size: 17px;
+                        font-weight: 600; }
+    .sel-sub          { color: #6b7280; font-size: 13px; margin-top: 4px; }
+    .sel-hint         { color: #6b7280; font-size: 13px; margin: 6px 0 0; }
+    .sel-group-title  { margin: 30px 0 12px; color: #374151; font-size: 14px;
+                        font-weight: 700; }
+
+    .sel-tile         { display: block; background: #fff; padding: 20px;
+                        border-radius: 10px; text-decoration: none;
+                        color: inherit;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                        border-left: 4px solid #1a56db;
+                        transition: transform 0.12s, box-shadow 0.12s; }
+    .sel-tile:hover   { transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+                        text-decoration: none; color: inherit; }
+    .sel-tile-all     { border-left-color: #7c3aed;
+                        background: linear-gradient(135deg, #f5f3ff, #fff); }
+    .sel-icon         { font-size: 24px; color: #1a56db; margin-bottom: 8px; }
+    .sel-tile-all .sel-icon { color: #7c3aed; }
+    .sel-name         { font-size: 15px; font-weight: 700; color: #1e3a5f; }
+    .sel-desc         { color: #6b7280; font-size: 12px; margin-top: 4px; }
+
+    .sel-grid         { display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                        gap: 14px; }
+    .sel-empty        { text-align: center; color: #9ca3af; padding: 30px;
+                        grid-column: 1 / -1; }
+</style>
+{% endblock %}

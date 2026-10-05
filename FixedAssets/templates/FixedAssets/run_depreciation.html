@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calculator"></i> Run Depreciation
+                    </h4>
+                    <small>{{ entity.name }}</small>
+                     <a href="{% url 'FixedAssets:fixed_asset_home' entity.slug %}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Close
+                    </a>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Enter the period for which to calculate depreciation.
+                        This will create depreciation entries and stage them
+                        for supervisor approval.
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Period Start</label>
+                            <input type="date" name="period_start" class="form-control"
+                                   value="{{ default_period_start }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Period End</label>
+                            <input type="date" name="period_end" class="form-control"
+                                   value="{{ default_period_end }}" required>
+                        </div>
+
+                        <div class="alert alert-info small">
+                            <i class="fas fa-info-circle"></i>
+                            Depreciation will be calculated for all active assets.
+                            Entries that overlap with previously recorded periods will be skipped.
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'RecPayApp:supervisor_queue' entity.slug %}"
+                               class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary"
+                                    onclick="return confirm('Run depreciation for this period?')">
+                                <i class="fas fa-play"></i> Run Depreciation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

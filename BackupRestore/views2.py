@@ -206,7 +206,7 @@ def _run_restore_job(job_id, filepath, table_name, user):
     try:
         print(f"[RESTORE] Job {job_id} started")
 
-        # Pre‑restore backup (optional)
+        # Pre-restore backup (optional)
         pre_backup = create_pre_restore_backup(table_name)
         print(f"[RESTORE] Pre-restore backup: {pre_backup}")
 
@@ -237,7 +237,7 @@ def _run_restore_job(job_id, filepath, table_name, user):
 
 def _run_restore_job14(job_id, filepath, table_name, user_id):
     try:
-        # Optionally create a pre‑restore backup
+        # Optionally create a pre-restore backup
         pre_backup = create_pre_restore_backup(table_name)
         print(f"[RESTORE] Pre-restore backup: {pre_backup}")
 
@@ -259,7 +259,7 @@ def _run_restore_job14(job_id, filepath, table_name, user_id):
         
 def _run_restore_job9(job_id, filepath, table_name, user_id):
     try:
-        # Optionally create a pre‑restore backup
+        # Optionally create a pre-restore backup
         pre_backup = create_pre_restore_backup(table_name)
         print(f"[RESTORE] Pre-restore backup: {pre_backup}")
 

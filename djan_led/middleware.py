@@ -20,6 +20,6 @@ class AccountModelPatchMiddleware(MiddlewareMixin):
 
             AccountModel.__str__ = safe_str
             AccountModel._str_patched = True
-            print("✅ Permanently patched AccountModel.__str__")
+            print(" Permanently patched AccountModel.__str__")
 
         return None

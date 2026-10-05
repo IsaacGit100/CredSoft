@@ -1,6 +1,30 @@
 {% extends "base.html" %}
-
+{% load humanize %}
 {% block content %}
+
+<style>
+    .cu-tiles { display:grid; grid-template-columns:repeat(4, 1fr);
+                gap:14px; margin-bottom:20px; }
+    .cu-tile { background:#fff; border-radius:10px; padding:16px 18px;
+               box-shadow:0 1px 3px rgba(0,0,0,0.08);
+               border-left:4px solid #1a56db; }
+    .cu-tile .lbl { font-size:11px; text-transform:uppercase;
+                    font-weight:700; letter-spacing:0.5px;
+                    color:#6b7280; margin-bottom:6px; }
+    .cu-tile .val { font-size:26px; font-weight:700; color:#111827;
+                    font-family:monospace; line-height:1.1; }
+    .cu-tile .sub { font-size:11px; color:#9ca3af; margin-top:4px; }
+    .cu-tile.members  { border-left-color:#1a56db; }
+    .cu-tile.loans    { border-left-color:#7c3aed; }
+    .cu-tile.update   { border-left-color:#10b981; }
+    .cu-tile.pending  { border-left-color:#f59e0b; }
+    .cu-tile.pending.has-pending { background:#fffbeb; }
+    .cu-tile.pending.has-pending .val { color:#92400e; }
+    @media (max-width: 800px) {
+        .cu-tiles { grid-template-columns:repeat(2, 1fr); }
+    }
+</style>
+
 <div class="container-fluid p-0">
     <div class="row g-0">
         <!-- Sidebar (fixed width) -->
@@ -10,54 +34,172 @@
 
         <!-- Main Content -->
         <div class="col" style="background: #f4f6f9; min-height: 100vh; padding: 20px;">
-            <h1 class="mb-4"> Anglican Diocese Of Accra </h1>
-            <h2 class="mb-3">ADOA - Hub</h2>
-            <p><strong>Entity:</strong> {{ entity.name }}</p>
-            <p><small>Generated: {{ today|date:"Y-m-d" }}</small></p>
+            <h1 class="mb-4"> {{ entity_config.organization_name }} </h1>
+            <div style="display:flex; justify-content:space-between;
+            align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#1e3a5f; font-size:20px;">
+                        {{ entity.name }}
+                    </h2>
+                    <div style="color:#6b7280; font-size:13px;">
+                        Credit Union Dashboard
+                    </div>
+                </div>
 
-            <!-- Statistics Cards -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-3">
-                    <div class="card text-white bg-primary h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Members</h5>
-                            <h2>{{ total_members }}</h2>
-                            <small>Active: {{ active_members }}</small>
-                        </div>
+                <div style="text-align:right; color:#4b5563;">
+                    <div style="font-size:14px; font-weight:600;">
+                        <i class="fas fa-calendar-day"></i>
+                        {{ now|date:"l, d F Y" }}
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-success h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Loans</h5>
-                            <h2>{{ total_loans }}</h2>
-                            <small>Active: {{ active_loans }}</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-warning h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Outstanding Loan Balance</h5>
-                            <h2>{{ total_loan_balance|floatformat:2 }}</h2>
-                            <small>Total Disbursed: {{ total_disbursed|floatformat:2 }}</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-info h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Savings</h5>
-                            <h2>{{ total_savings|floatformat:2 }}</h2>
-                        </div>
+                    <div style="font-size:12px; font-family:monospace; color:#6b7280;">
+                        <i class="fas fa-clock"></i>
+                        {{ now|date:"H:i:s" }}
                     </div>
                 </div>
             </div>
+            <div class="cu-tiles">
+
+                <!-- a. Total Members -->
+                <div class="cu-tile members">
+                    <div class="lbl"><i class="fas fa-users"></i> Total Members</div>
+                    <div class="val">{{ total_members|intcomma }}</div>
+                    <div class="sub">Registered in this entity</div>
+                </div>
+
+                <!-- b. Total Active Loans -->
+                <div class="cu-tile loans">
+                    <div class="lbl"><i class="fas fa-hand-holding-usd"></i> Active Loans</div>
+                    <div class="val">{{ total_active_loans|intcomma }}</div>
+                    <div class="sub">Currently running</div>
+                </div>
+
+                <!-- c. Last Auto Update Date -->
+                <div class="cu-tile update">
+                    <div class="lbl"><i class="fas fa-sync"></i> Last Auto Update</div>
+                    <div class="val" style="font-size:20px;">
+                        {% if last_auto_update %}
+                            {{ last_auto_update|date:"d M Y" }}
+                        {% else %}
+                            <span style="color:#9ca3af; font-size:14px;">Never</span>
+                        {% endif %}
+                    </div>
+                    <div class="sub">
+                        {% if last_auto_update %}
+                            {{ last_auto_update|date:"l" }}
+                        {% else %}
+                            Nightly services have not run
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- d. Pending Transactions -->
+                <div class="cu-tile pending {% if pending_trans_count %}has-pending{% endif %}">
+                    <div class="lbl"><i class="fas fa-inbox"></i> Awaiting Posting</div>
+                    <div class="val">{{ pending_trans_count|intcomma }}</div>
+                    <div class="sub">
+                        {% if pending_trans_count %}
+                            <a href="{% url 'RecPayApp:supervisor_queue' entity.slug %}"
+                            style="color:#92400e; font-weight:600; text-decoration:none;">
+                                Review now <i class="fas fa-arrow-right"></i>
+                            </a>
+                        {% else %}
+                            Nothing pending
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            {% if nightly.status == "UNKNOWN" and nightly_prev.status == "UNKNOWN" %}
+                <div style="margin:0 0 16px 0; padding:14px 18px;
+                            background:#fee2e2; border:1px solid #fca5a5;
+                            border-radius:10px;">
+                    <div style="font-weight:700; color:#991b1b; font-size:14px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Nightly services have not run in the last 2 days
+                    </div>
+                    <div style="color:#7f1d1d; font-size:12px; margin-top:2px;">
+                        Check the scheduled task or run <code>python manage.py run_nightly_services</code>.
+                    </div>
+                </div>
+            {% else %}
+                {% with run=nightly|default_if_none:nightly_prev %}
+                <div style="margin:0 0 16px 0; padding:14px 18px;
+                            background:{% if run.status == 'SUCCESS' %}#ecfdf5{% elif run.status == 'PARTIAL' %}#fef3c7{% else %}#fee2e2{% endif %};
+                            border:1px solid {% if run.status == 'SUCCESS' %}#a7f3d0{% elif run.status == 'PARTIAL' %}#fbbf24{% else %}#fca5a5{% endif %};
+                            border-radius:10px;">
+                    <div style="display:flex; align-items:center; gap:14px;">
+                        <div style="flex-shrink:0; width:42px; height:42px;
+                                    background:{% if run.status == 'SUCCESS' %}#10b981{% elif run.status == 'PARTIAL' %}#f59e0b{% else %}#ef4444{% endif %};
+                                    color:#fff; border-radius:10px;
+                                    display:flex; align-items:center; justify-content:center;
+                                    font-size:1.3rem;">
+                            {% if run.status == 'SUCCESS' %}<i class="fas fa-check"></i>
+                            {% elif run.status == 'PARTIAL' %}<i class="fas fa-exclamation"></i>
+                            {% else %}<i class="fas fa-times"></i>{% endif %}
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-weight:700; font-size:14px;
+                                        color:{% if run.status == 'SUCCESS' %}#065f46{% elif run.status == 'PARTIAL' %}#92400e{% else %}#991b1b{% endif %};">
+                                Nightly Services — {{ run.run_date|date:"d M Y" }}
+                                {% if run.kind == "preflight" %}<span style="font-weight:400; font-size:12px;">(preflight)</span>{% endif %}
+                            </div>
+                            <div style="font-size:12px; color:#4b5563; margin-top:3px;">
+                                {{ run.total_written }} record{{ run.total_written|pluralize }} processed
+                                {% if run.total_errors %} <b>{{ run.total_errors }} error{{ run.total_errors|pluralize }}</b>{% endif %}
+                                {% if run.ran_at %} ran {{ run.ran_at|date:"H:i" }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if run.services %}
+                    <table style="width:100%; margin-top:12px; font-size:12px;
+                                border-collapse:collapse;">
+                        <thead>
+                            <tr style="border-top:1px solid rgba(0,0,0,0.08);">
+                                <th style="text-align:left; padding:8px 6px;
+                                        font-weight:600; color:#374151;">Service</th>
+                                <th style="text-align:right; padding:8px 6px;
+                                        font-weight:600; color:#374151;">Processed</th>
+                                <th style="text-align:right; padding:8px 6px;
+                                        font-weight:600; color:#374151;">Skipped</th>
+                                <th style="text-align:right; padding:8px 6px;
+                                        font-weight:600; color:#374151;">Errors</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in run.services %}
+                            <tr style="border-top:1px solid rgba(0,0,0,0.05);">
+                                <td style="padding:6px;">
+                                    {% if s.status == "SUCCESS" %}✓{% else %}⚠{% endif %}
+                                    {{ s.name }}
+                                </td>
+                                <td style="text-align:right; padding:6px;
+                                        font-family:monospace;">
+                                    {{ s.written }}
+                                </td>
+                                <td style="text-align:right; padding:6px;
+                                        font-family:monospace; color:#6b7280;">
+                                    {{ s.skipped }}
+                                </td>
+                                <td style="text-align:right; padding:6px;
+                                        font-family:monospace;
+                                        color:{% if s.errors %}#991b1b{% else %}#6b7280{% endif %};">
+                                    {{ s.errors }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+                {% endwith %}
+            {% endif %}
 
             <!-- Recent Transactions -->
             <div class="card shadow-sm">
                 <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">📋 Recent Transactions</h5>
+                    <h5 class="mb-0"> Recent Transactions</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -79,7 +221,7 @@
                                     <td>{{ trans.rec_vou_no }}</td>
                                     <td>{{ trans.trans_type }}</td>
                                     <td>{{ trans.amount|floatformat:2 }}</td>
-                                    <td>{{ trans.member.full_name|default:"Non‑member" }}</td>
+                                    <td>{{ trans.member.full_name|default:"Non-member" }}</td>
                                     <td>{{ trans.details|truncatechars:20 }}</td>
                                 </tr>
                                 {% empty %}
@@ -92,11 +234,7 @@
             </div>
 
             <!-- Quick Actions -->
-            <div class="mt-4">
-                <a href="{% url 'LoanApp:create_loan' entity.slug %}" class="btn btn-primary">➕ New Loan</a>
-                <a href="{% url 'RecPayApp:trans_create' entity.slug %}" class="btn btn-success">💰 New Transaction</a>
-                <a href="{% url 'MembersApp:member_list_manage' entity.slug %}" class="btn btn-info">👥 View Members</a>
-            </div>
+            
         </div>
     </div>
 </div>

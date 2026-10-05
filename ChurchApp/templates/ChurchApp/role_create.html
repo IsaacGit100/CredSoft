@@ -1,38 +1,179 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h3>Create New Role</h3>
+<style>
+    .rl-wrap  { padding: 20px; max-width: 1400px; margin: 0 auto; }
+    .rl-head  { display: flex; justify-content: space-between; align-items: center;
+                margin-bottom: 16px; }
+    .rl-head h3 { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .rl-head .sub { color: #6b7280; font-size: 13px; }
+    .rl-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) {
+        .rl-grid { grid-template-columns: 1fr; }
+    }
+    .rl-card  { background: #fff; border-radius: 10px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                overflow: hidden; }
+    .rl-card-head { padding: 12px 18px; background: #f9fafb;
+                    border-bottom: 1px solid #e5e7eb;
+                    display: flex; justify-content: space-between;
+                    align-items: center; }
+    .rl-card-head strong { color: #1e3a5f; font-size: 14px; }
+    .rl-card-head .count { background: #eff6ff; color: #1e40af;
+                           padding: 2px 10px; border-radius: 10px;
+                           font-size: 11px; font-weight: 700; }
+    .rl-card-body { padding: 18px; }
+
+    .rl-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .rl-table th { text-align: left; padding: 10px 14px;
+                   background: #f3f4f6; font-size: 11px;
+                   text-transform: uppercase; letter-spacing: 0.5px;
+                   color: #374151; border-bottom: 2px solid #e5e7eb; }
+    .rl-table td { padding: 10px 14px;
+                   border-bottom: 1px solid #f3f4f6;
+                   vertical-align: top; }
+    .rl-table tr:last-child td { border-bottom: none; }
+    .rl-table tr:hover td { background: #f9fafb; }
+
+    .slug-pill { font-family: monospace; font-size: 11px;
+                 background: #f3f4f6; color: #4b5563;
+                 padding: 2px 6px; border-radius: 4px; }
+    .badge-system { background: #ede9fe; color: #5b21b6;
+                    padding: 2px 8px; border-radius: 10px;
+                    font-size: 10px; font-weight: 700; }
+</style>
+
+<div class="rl-wrap">
+
+    <!-- header -->
+    <div class="rl-head">
+        <div>
+            <h3><i class="fas fa-user-tag"></i> Create New Role</h3>
+            <div class="sub">{{ entity.name }}</div>
         </div>
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                
-                <div class="mb-3">
-                    <label for="name" class="form-label">Role Name (slug)</label>
-                    <input type="text" class="form-control" id="name" name="name" required>
-                    <small class="form-text text-muted">e.g., choir, server, officiant, usher, verger, clergy</small>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="display_name" class="form-label">Display Name</label>
-                    <input type="text" class="form-control" id="display_name" name="display_name" required>
-                    <small class="form-text text-muted">e.g., Church Choir, Server, Officiant</small>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-                </div>
-                
-                <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">Create Role</button>
-                    <a href="{% url 'ChurchApp:role_management' entity.slug %}" class="btn btn-secondary">Cancel</a>
-                </div>
-            </form>
+        <a href="{% url 'ChurchApp:role_management' entity.slug %}"
+           class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div class="rl-grid">
+
+        <div class="rl-card">
+            <div class="rl-card-head">
+                <strong><i class="fas fa-pen"></i> Add a new role</strong>
+            </div>
+            <div class="rl-card-body">
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Role name (slug) -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            Role Name (slug) <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control"
+                               id="name" name="name" required
+                               placeholder="e.g. choir">
+                        <small class="form-text text-muted">
+                            Internal identifier — lowercase, no spaces.
+                            e.g. choir, server, officiant, usher, verger, clergy
+                        </small>
+                    </div>
+
+                    <!-- Display name -->
+                    <div class="mb-3">
+                        <label for="display_name" class="form-label">
+                            Display Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control"
+                               id="display_name" name="display_name" required
+                               placeholder="e.g. Church Choir">
+                        <small class="form-text text-muted">
+                            Shown to users. e.g. Church Choir, Server, Officiant
+                        </small>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            Description
+                        </label>
+                        <textarea class="form-control" id="description"
+                                  name="description" rows="3"
+                                  placeholder="Optional — what this role does"></textarea>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Role
+                        </button>
+                        <a href="{% url 'ChurchApp:role_management' entity.slug %}"
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+
+            </div>
         </div>
+
+        <div class="rl-card">
+            <div class="rl-card-head">
+                <strong><i class="fas fa-list"></i> Existing roles</strong>
+                <span class="count">{{ roles|length }}</span>
+            </div>
+
+            {% if roles %}
+            <div style="max-height: 600px; overflow-y: auto;">
+                <table class="rl-table">
+                    <thead>
+                        <tr>
+                            <th>Display Name</th>
+                            <th>Slug</th>
+                            <th>Description</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in roles %}
+                        <tr>
+                            <td><b>{{ r.display_name }}</b></td>
+                            <td><span class="slug-pill">{{ r.name }}</span></td>
+                            <td style="color:#6b7280; font-size:12px;">
+                                {{ r.description|default:"—"|truncatechars:60 }}
+                            </td>
+                            <td style="text-align:right; white-space:nowrap;">
+                                <a href="{% url 'ChurchApp:role_update' entity.slug r.pk %}"
+                                   class="btn btn-sm btn-outline-primary"
+                                   title="Edit">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <a href="{% url 'ChurchApp:role_delete' entity.slug r.pk %}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <div style="padding: 60px 20px; text-align: center; color: #9ca3af;">
+                    <i class="fas fa-user-tag" style="font-size:36px; opacity:0.4;"></i>
+                    <div style="margin-top:10px; font-size:14px;">
+                        No roles yet.
+                    </div>
+                    <div style="font-size:12px; color:#b0b5bc; margin-top:4px;">
+                        Use the form on the left to add the first one.
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
     </div>
 </div>
 {% endblock %}

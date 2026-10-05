@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div style="max-width:520px; margin:60px auto; padding:20px;">
+    <div style="background:#fff; border-radius:12px; padding:32px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.08); text-align:center;">
+
+        <div style="width:72px; height:72px; margin:0 auto 18px;
+                    background:#fee2e2; border-radius:50%;
+                    display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-trash" style="font-size:30px; color:#dc2626;"></i>
+        </div>
+
+        <h2 style="margin:0 0 8px; color:#1e3a5f; font-size:20px;">
+            Delete this transaction?
+        </h2>
+        <p style="color:#6b7280; font-size:14px; margin:0 0 24px;">
+            This cannot be undone.
+        </p>
+
+        <div style="background:#f9fafb; border-radius:8px; padding:16px;
+                    text-align:left; margin-bottom:20px; font-size:13px;">
+            <div style="text-align:center; margin-bottom:12px;">
+                <div style="font-size:26px; font-weight:800;
+                            color:{% if trans.trans_type == 'Receipts' %}#16a34a{% else %}#dc2626{% endif %};">
+                    ₵{{ trans.amount|floatformat:2|intcomma }}
+                </div>
+                <div style="font-size:11px; text-transform:uppercase; color:#9ca3af; font-weight:700;">
+                    {{ trans.trans_type }}
+                </div>
+            </div>
+            <div style="margin-bottom:6px;"><strong>Ref:</strong> {{ trans.rec_vou_no }}</div>
+            <div style="margin-bottom:6px;"><strong>Party:</strong> {{ trans.member_name|default:trans.non_member_name|default:"—" }}</div>
+            <div style="margin-bottom:6px;"><strong>Date:</strong> {{ trans.date|date:"d/m/Y" }}</div>
+            <div><strong>Ledger:</strong> {{ trans.ledger_code }} {{ trans.ledger_name }}</div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <a href="{% url 'CreditUnion:trans_view' entity.slug trans.id %}"
+                   class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Yes, Delete
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

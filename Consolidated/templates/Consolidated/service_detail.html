@@ -1,0 +1,170 @@
+{% extends 'Consolidated/base_consolidated.html' %}
+{% load humanize %}
+
+{% block consolidated_content %}
+<div class="sd-page">
+
+    <div class="sd-header">
+        <h2>Service Details</h2>
+        <h3>{{ service.name_of_service|default:"Service" }} — {{ service.date|date:"d/m/Y" }}</h3>
+        <div class="sd-sub">{{ service.entity.name }}</div>
+    </div>
+
+    <div class="sd-actions">
+        <a href="{% url 'Consolidated:service_pdf' service.id %}"
+           class="btn btn-outline-danger" target="_blank">
+            <i class="fas fa-file-pdf"></i> PDF
+        </a>
+        <a href="{% url 'Consolidated:service_excel' service.id %}"
+           class="btn btn-outline-success">
+            <i class="fas fa-file-excel"></i> Excel
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <a href="{% url 'Consolidated:report_services' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- BASIC -->
+    <div class="sd-card">
+        <h4 class="sd-section">Basic Information</h4>
+        <table class="sd-table">
+            <tbody>
+                <tr><th>Parish</th><td>{{ service.entity.name }}</td></tr>
+                <tr><th>Date</th><td>{{ service.date|date:"d/m/Y" }}</td></tr>
+                <tr><th>Name of Service</th><td>{{ service.name_of_service|default:"—" }}</td></tr>
+                <tr><th>Officiant</th><td>{{ service.officiant|default:"—" }}</td></tr>
+                <tr><th>Priest's Warden</th><td>{{ service.priest_warden|default:"—" }}</td></tr>
+                <tr><th>People's Warden</th><td>{{ service.peoples_warden|default:"—" }}</td></tr>
+                <tr><th>Verger</th><td>{{ service.verger|default:"—" }}</td></tr>
+                <tr><th>Parish Clerk</th><td>{{ service.parish_clerk|default:"—" }}</td></tr>
+                <tr><th>Accounts Clerk</th><td>{{ service.accounts_clerk|default:"—" }}</td></tr>
+                <tr><th>Attendance</th><td class="num">{{ service.attendance|default:0|intcomma }}</td></tr>
+                <tr><th>Communicants</th><td class="num">{{ service.communicants|default:0|intcomma }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- CLERGY & GUILDS -->
+    <div class="sd-card">
+        <h4 class="sd-section">Clergy &amp; Assistants</h4>
+        <table class="sd-table">
+            <tbody>
+                <tr>
+                    <th>Clergy</th>
+                    <td>
+                        {% for c in service.clergy.all %}
+                            {{ c.title|default:"" }} {{ c.full_name }}{% if not forloop.last %}<br>{% endif %}
+                        {% empty %}—{% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Ushers</th>
+                    <td>
+                        {% for u in service.ushers.all %}
+                            {{ u }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}—{% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Chalice Assistants</th>
+                    <td>
+                        {% for c in service.chalice_assistants.all %}
+                            {{ c }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}—{% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>PCC Members</th>
+                    <td>
+                        {% if service.pcc_members %}
+                            {{ service.pcc_members|join:", " }}
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- COLLECTIONS -->
+    <div class="sd-card">
+        <h4 class="sd-section">Collections</h4>
+        <table class="sd-table">
+            <tbody>
+                <tr><th>General Offertory</th><td class="num">₵{{ amounts.general|floatformat:2|intcomma }}</td></tr>
+                <tr><th>Dues</th><td class="num">₵{{ amounts.dues|floatformat:2|intcomma }}</td></tr>
+                <tr><th>Tithes</th><td class="num">₵{{ amounts.tithes|floatformat:2|intcomma }}</td></tr>
+                <tr><th>Day Born</th><td class="num">₵{{ amounts.day_born|floatformat:2|intcomma }}</td></tr>
+                <tr><th>Guild</th><td class="num">₵{{ amounts.guild|floatformat:2|intcomma }}</td></tr>
+                <tr><th>Special Thank Offering</th><td class="num">₵{{ amounts.special|floatformat:2|intcomma }}</td></tr>
+                <tr><th>Easter</th><td class="num">₵{{ amounts.easter|floatformat:2|intcomma }}</td></tr>
+                <tr><th>Christmas</th><td class="num">₵{{ amounts.christmas|floatformat:2|intcomma }}</td></tr>
+                <tr><th>Harvest</th><td class="num">₵{{ amounts.harvest|floatformat:2|intcomma }}</td></tr>
+                <tr><th>Other Collections</th><td class="num">₵{{ amounts.other|floatformat:2|intcomma }}</td></tr>
+                <tr class="sd-total"><th>GRAND TOTAL</th>
+                    <td class="num">₵{{ amounts.total|floatformat:2|intcomma }}</td></tr>
+                <tr>
+                    <th>Posted to Ledger</th>
+                    <td>
+                        {% if service.posted_to_ledger %}
+                            <span style="color:#16a34a; font-weight:600;">Yes</span>
+                        {% else %}
+                            <span style="color:#9ca3af;">No</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- AUDIT -->
+    <div class="sd-card">
+        <h4 class="sd-section">Audit</h4>
+        <table class="sd-table">
+            <tbody>
+                <tr><th>Created By</th><td>{{ service.created_by|default:"—" }}</td></tr>
+                <tr><th>Created At</th><td>{{ service.created_at|date:"d/m/Y H:i"|default:"—" }}</td></tr>
+                <tr><th>Updated At</th><td>{{ service.updated_at|date:"d/m/Y H:i"|default:"—" }}</td></tr>
+                <tr><th>Journal Entry ID</th><td>{{ service.journal_entry_id|default:"—" }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<style>
+    .sd-page       { padding: 20px; max-width: 900px; margin: 0 auto; }
+    .sd-header     { background: #fff; padding: 20px; border-radius: 10px;
+                     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                     text-align: center; margin-bottom: 16px; }
+    .sd-header h2  { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .sd-header h3  { margin: 12px 0 4px; color: #1a56db; font-size: 16px; }
+    .sd-sub        { color: #6b7280; font-size: 13px; }
+
+    .sd-actions    { display: flex; gap: 8px; justify-content: flex-end;
+                     margin-bottom: 14px; flex-wrap: wrap; }
+
+    .sd-card       { background: #fff; border-radius: 8px;
+                     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                     margin-bottom: 14px; overflow: hidden; }
+    .sd-section    { margin: 0; padding: 12px 18px; background: #1a56db;
+                     color: #fff; font-size: 13px; font-weight: 700;
+                     letter-spacing: 0.4px; text-transform: uppercase; }
+    .sd-table      { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .sd-table th   { text-align: left; padding: 10px 18px;
+                     background: #f9fafb; color: #374151;
+                     font-weight: 600; width: 240px;
+                     border-bottom: 1px solid #f3f4f6; }
+    .sd-table td   { padding: 10px 18px; color: #1f2937;
+                     border-bottom: 1px solid #f3f4f6; }
+    .sd-table td.num { text-align: right; font-family: monospace; }
+    .sd-table tr:last-child th,
+    .sd-table tr:last-child td { border-bottom: none; }
+    .sd-total th,
+    .sd-total td   { font-weight: 700; color: #1e3a5f;
+                     background: #f0f9ff;
+                     border-top: 2px solid #1a56db; }
+</style>
+{% endblock %}

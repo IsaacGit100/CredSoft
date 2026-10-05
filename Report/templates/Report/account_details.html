@@ -1,0 +1,122 @@
+{% extends "Report/base_report.html" %}
+{% load humanize %}
+
+{% block report_title %}{{ account.code }} — {{ account.name }}{% endblock %}
+{% block report_period %}{{ period_label }}{% endblock %}
+
+{% block report_body %}
+
+<form method="get" class="no-print"
+      style="background:#f9fafb; padding:12px 16px; border-radius:8px;
+             margin-bottom:14px; display:flex; gap:12px; align-items:end; flex-wrap:wrap;">
+    <input type="hidden" name="format" value="html">
+    <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#374151;">From</label>
+        <input type="text" name="start" value="{{ start }}" placeholder="dd/mm/yyyy"
+               style="padding:6px 10px; border:1px solid #d1d5db; border-radius:6px;">
+    </div>
+    <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#374151;">To</label>
+        <input type="text" name="end" value="{{ end }}" placeholder="dd/mm/yyyy"
+               style="padding:6px 10px; border:1px solid #d1d5db; border-radius:6px;">
+    </div>
+    <button type="submit" class="btn btn-primary">Apply</button>
+    <a href="?" class="btn btn-secondary">Reset</a>
+    <a href="{% url 'Report:trial_balance' entity.slug %}" class="btn btn-secondary"
+       style="margin-left:auto;">
+        <i class="fas fa-arrow-left"></i> Back to Trial Balance
+    </a>
+</form>
+
+<!-- Account summary -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+            gap:12px; margin-bottom:18px;">
+    <div style="background:#fff; border-left:4px solid #1a56db; padding:14px 18px;
+                border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        <div style="font-size:11px; text-transform:uppercase; color:#6b7280; font-weight:700;">
+            Account Code
+        </div>
+        <div style="font-size:20px; font-weight:700; color:#1e3a5f; margin-top:4px;">
+            {{ account.code }}
+        </div>
+    </div>
+    <div style="background:#fff; border-left:4px solid #1a56db; padding:14px 18px;
+                border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        <div style="font-size:11px; text-transform:uppercase; color:#6b7280; font-weight:700;">
+            Account Name
+        </div>
+        <div style="font-size:15px; font-weight:700; color:#1e3a5f; margin-top:4px;">
+            {{ account.name }}
+        </div>
+    </div>
+    <div style="background:#fff; border-left:4px solid #16a34a; padding:14px 18px;
+                border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        <div style="font-size:11px; text-transform:uppercase; color:#6b7280; font-weight:700;">
+            Total Debits
+        </div>
+        <div style="font-size:18px; font-weight:700; color:#16a34a; margin-top:4px;">
+            ₵{{ total_dr|floatformat:2|intcomma }}
+        </div>
+    </div>
+    <div style="background:#fff; border-left:4px solid #dc2626; padding:14px 18px;
+                border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        <div style="font-size:11px; text-transform:uppercase; color:#6b7280; font-weight:700;">
+            Total Credits
+        </div>
+        <div style="font-size:18px; font-weight:700; color:#dc2626; margin-top:4px;">
+            ₵{{ total_cr|floatformat:2|intcomma }}
+        </div>
+    </div>
+    <div style="background:linear-gradient(135deg,#1e3a5f,#1a56db); color:#fff;
+                padding:14px 18px; border-radius:8px;
+                box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+        <div style="font-size:11px; text-transform:uppercase; font-weight:700; opacity:0.9;">
+            Balance ({{ account.balance_type }})
+        </div>
+        <div style="font-size:20px; font-weight:800; margin-top:4px;">
+            ₵{{ balance|floatformat:2|intcomma }}
+        </div>
+    </div>
+</div>
+
+<!-- Journal lines -->
+<table style="width:100%; border-collapse:collapse; font-size:13px; background:white;
+              box-shadow:0 1px 3px rgba(0,0,0,0.08); border-radius:8px; overflow:hidden;">
+    <thead>
+        <tr style="background:#f3f4f6;">
+            <th style="text-align:left; padding:10px 12px; border-bottom:2px solid #e5e7eb; width:11%;">Date</th>
+            <th style="text-align:left; padding:10px 12px; border-bottom:2px solid #e5e7eb; width:15%;">JE No.</th>
+            <th style="text-align:left; padding:10px 12px; border-bottom:2px solid #e5e7eb;">Description</th>
+            <th style="text-align:right; padding:10px 12px; border-bottom:2px solid #e5e7eb; width:15%;">Debit</th>
+            <th style="text-align:right; padding:10px 12px; border-bottom:2px solid #e5e7eb; width:15%;">Credit</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ln in lines %}
+        <tr>
+            <td style="padding:6px 12px;">{{ ln.date|date:"d/m/Y" }}</td>
+            <td style="padding:6px 12px;"><code style="font-size:11px;">{{ ln.je_number }}</code></td>
+            <td style="padding:6px 12px;">{{ ln.description|truncatechars:80 }}</td>
+            <td style="padding:6px 12px; text-align:right;">
+                {% if ln.dr %}₵{{ ln.dr|floatformat:2|intcomma }}{% endif %}
+            </td>
+            <td style="padding:6px 12px; text-align:right;">
+                {% if ln.cr %}₵{{ ln.cr|floatformat:2|intcomma }}{% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="padding:30px; text-align:center; color:#9ca3af;">
+            No postings for this account in this period.
+        </td></tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr style="background:#f9fafb; font-weight:700; border-top:2px solid #e5e7eb;">
+            <td colspan="3" style="padding:10px 12px;">Totals</td>
+            <td style="padding:10px 12px; text-align:right;">₵{{ total_dr|floatformat:2|intcomma }}</td>
+            <td style="padding:10px 12px; text-align:right;">₵{{ total_cr|floatformat:2|intcomma }}</td>
+        </tr>
+    </tfoot>
+</table>
+
+{% endblock %}

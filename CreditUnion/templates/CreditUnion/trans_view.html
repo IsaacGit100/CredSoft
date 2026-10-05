@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div style="max-width:760px; margin:30px auto; padding:20px;">
+
+    <div style="background:#fff; border-radius:10px; padding:24px;
+                box-shadow:0 1px 3px rgba(0,0,0,0.08); margin-bottom:16px;">
+
+        <div style="display:flex; justify-content:space-between;
+                    align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+                <h2 style="margin:0; color:#1e3a5f; font-size:20px;">
+                    {% if trans.trans_type == 'Receipts' %}
+                        <i class="fas fa-arrow-down" style="color:#16a34a;"></i> Receipt
+                    {% else %}
+                        <i class="fas fa-arrow-up" style="color:#dc2626;"></i> Payment
+                    {% endif %}
+                </h2>
+                <div style="color:#6b7280; font-size:13px; margin-top:4px;">
+                    {{ entity.name }} {{ trans.rec_vou_no }}
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:26px; font-weight:800;
+                            color:{% if trans.trans_type == 'Receipts' %}#16a34a{% else %}#dc2626{% endif %};">
+                    ₵{{ trans.amount|floatformat:2|intcomma }}
+                </div>
+                {% if trans.journal_status == 'POSTED' %}
+                    <span style="background:#d1fae5; color:#065f46; padding:3px 10px;
+                                 border-radius:10px; font-size:11px; font-weight:700;">
+                        POSTED
+                    </span>
+                {% else %}
+                    <span style="background:#fef3c7; color:#92400e; padding:3px 10px;
+                                 border-radius:10px; font-size:11px; font-weight:700;">
+                        PENDING
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; font-size:14px;">
+            <tbody>
+                <tr><th style="text-align:left; padding:9px 0; color:#6b7280; width:180px; border-bottom:1px solid #f3f4f6;">Date</th>
+                    <td style="padding:9px 0; border-bottom:1px solid #f3f4f6;">{{ trans.date|date:"d/m/Y" }}</td></tr>
+                <tr><th style="text-align:left; padding:9px 0; color:#6b7280; border-bottom:1px solid #f3f4f6;">Party</th>
+                    <td style="padding:9px 0; border-bottom:1px solid #f3f4f6;">{{ trans.member_name|default:trans.non_member_name|default:"—" }}</td></tr>
+                <tr><th style="text-align:left; padding:9px 0; color:#6b7280; border-bottom:1px solid #f3f4f6;">Payment Mode</th>
+                    <td style="padding:9px 0; border-bottom:1px solid #f3f4f6;">{{ trans.pay_mode }}</td></tr>
+                <tr><th style="text-align:left; padding:9px 0; color:#6b7280; border-bottom:1px solid #f3f4f6;">Ledger</th>
+                    <td style="padding:9px 0; border-bottom:1px solid #f3f4f6;">{{ trans.ledger_code }} — {{ trans.ledger_name }}</td></tr>
+                <tr><th style="text-align:left; padding:9px 0; color:#6b7280; border-bottom:1px solid #f3f4f6;">Details</th>
+                    <td style="padding:9px 0; border-bottom:1px solid #f3f4f6;">{{ trans.details|default:"—" }}</td></tr>
+
+                {% if trans.bank or trans.cheque_no %}
+                <tr><th style="text-align:left; padding:9px 0; color:#6b7280; border-bottom:1px solid #f3f4f6;">Bank</th>
+                    <td style="padding:9px 0; border-bottom:1px solid #f3f4f6;">{{ trans.bank }} {{ trans.bank_branch }}</td></tr>
+                <tr><th style="text-align:left; padding:9px 0; color:#6b7280; border-bottom:1px solid #f3f4f6;">Cheque No</th>
+                    <td style="padding:9px 0; border-bottom:1px solid #f3f4f6;">{{ trans.cheque_no|default:"—" }}</td></tr>
+                {% endif %}
+
+                {% if trans.momo_no %}
+                <tr><th style="text-align:left; padding:9px 0; color:#6b7280; border-bottom:1px solid #f3f4f6;">MoMo No</th>
+                    <td style="padding:9px 0; border-bottom:1px solid #f3f4f6;">{{ trans.momo_no }} ({{ trans.momo_name }})</td></tr>
+                {% endif %}
+
+                <tr><th style="text-align:left; padding:9px 0; color:#6b7280;">Recorded By</th>
+                    <td style="padding:9px 0;">{{ trans.created_by_name|default:"—" }} on {{ trans.created_at|date:"d/m/Y H:i" }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:space-between; flex-wrap:wrap;">
+        <a href="{% url 'CreditUnion:trans_create' entity.slug %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+        <div style="display:flex; gap:8px;">
+            <a href="{% url 'CreditUnion:trans_pdf' entity.slug trans.id %}"
+               class="btn btn-outline-danger" target="_blank">
+                <i class="fas fa-file-pdf"></i> PDF
+            </a>
+            <a href="{% url 'CreditUnion:trans_excel' entity.slug trans.id %}"
+               class="btn btn-outline-success">
+                <i class="fas fa-file-excel"></i> Excel
+            </a>
+            {% if trans.journal_status != 'POSTED' %}
+                <a href="{% url 'CreditUnion:trans_edit' entity.slug trans.id %}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'CreditUnion:trans_delete' entity.slug trans.id %}" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Delete
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

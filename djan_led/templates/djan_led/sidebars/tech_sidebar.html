@@ -5,6 +5,11 @@
             <a href="{% url 'Tech:tech_dashboard' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'technical_dashboard' %}active{% endif %}">
                 <i class="fas fa-home"></i> Dashboard
             </a>
+            <a href="{% url 'Tech:system_readiness' %}"
+               class="list-group-item list-group-item-action
+                      {% if request.resolver_match.url_name == 'system_readiness' %}active{% endif %}">
+                <i class="fas fa-clipboard-check"></i> System Readiness
+            </a>
             <a href="{% url 'Tech:coa_management' %}" class="list-group-item list-group-item-action">
                 <i class="fas fa-book"></i> COA Management
             </a>
@@ -17,9 +22,19 @@
             <a href="{% url 'Tech:user_management' %}" class="list-group-item list-group-item-action">
                 <i class="fas fa-users-cog"></i> User Management
             </a>
-            <a class="nav-link" href="{% url 'userauth:change_password' %}" class="list-group-item list-group-item-action">
+            <a href="{% url 'Tech:reset_entity_select' %}"
+                class="list-group-item list-group-item-action
+                        {% if 'reset_entity' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-broom"></i> Reset Entity Data
+            </a>
+            <a href="{% url 'Tech:reset_entity_select' %}"
+                class="list-group-item list-group-item-action">
+                    <i class="fas fa-broom"></i> Reset Entity Data
+            </a>
+
+            <a href="{% url 'userauth:change_password' %}" class="list-group-item list-group-item-action">
                 <i class="fas fa-key"></i> Change Password
-            </a>    
+            </a>   
         </div>
         <hr>
             <a href="{% url 'userauth:logout' %}" class="btn btn-danger w-100">

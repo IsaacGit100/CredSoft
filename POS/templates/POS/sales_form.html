@@ -5,14 +5,14 @@
 <div class="d-flex">
     {% include "pos/sidebar.html" %}
     <div class="flex-grow-1 p-3" style="margin-left: 250px; background: #f4f7fa; min-height: 100vh;">
-        <h2 class="mb-3">💵 Sales & Payments</h2>
+        <h2 class="mb-3"> Sales & Payments</h2>
        
         <div class="row">
             <!-- Left: Sale Panel -->
             <div class="col-md-6">
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">🛒 Sale</h5>
+                        <h5 class="mb-0"> Sale</h5>
                     </div>
                     <div class="card-body">
                         <form method="post" action="{% url 'pos:save_sale' entity.slug %}">
@@ -25,7 +25,7 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Customer</label>
                                     <select name="customer" class="form-select">
-                                        <option value="">Walk‑in</option>
+                                        <option value="">Walk - in</option>
                                         {% for c in customers %}
                                         <option value="{{ c.id }}">{{ c.name }}</option>
                                         {% endfor %}
@@ -58,7 +58,7 @@
                                     </div>
                                     <div class="col-1">
                                         <label class="form-label">&nbsp;</label>
-                                        <button type="button" class="btn btn-danger btn-sm remove-line">✕</button>
+                                        <button type="button" class="btn btn-danger btn-sm remove-line"></button>
                                     </div>
                                 </div>
                             </div>
@@ -67,7 +67,7 @@
                             <div class="mt-2">
                                 <strong>Total: </strong><span id="sale-total">0.00</span>
                             </div>
-                            <button type="submit" class="btn btn-success mt-2">💾 Save Sale</button>
+                            <button type="submit" class="btn btn-success mt-2"> Save Sale</button>
                         </form>
                     </div>
                 </div>
@@ -77,7 +77,7 @@
             <div class="col-md-6">
                 <div class="card shadow-sm">
                     <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">💰 Payment</h5>
+                        <h5 class="mb-0"> Payment</h5>
                     </div>
                     <div class="card-body">
                         <form method="post" action="{% url 'pos:save_payment' entity.slug %}">
@@ -93,7 +93,7 @@
                                 <select name="sale_id" class="form-select">
                                     <option value="">-- Select Sale --</option>
                                     {% for s in sales %}
-                                    <option value="{{ s.id }}">#{{ s.id }} - {{ s.customer.name|default:"Walk‑in" }} - {{ s.total_amount }}</option>
+                                    <option value="{{ s.id }}">#{{ s.id }} - {{ s.customer.name|default:"Walk - in" }} - {{ s.total_amount }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -123,7 +123,7 @@
                                 <div class="mb-2"><label class="form-label">Bank Name</label><input type="text" name="bank_name" class="form-control"></div>
                                 <div class="mb-2"><label class="form-label">Branch</label><input type="text" name="bank_branch" class="form-control"></div>
                             </div>
-                            <button type="submit" class="btn btn-success mt-2">💾 Save Payment</button>
+                            <button type="submit" class="btn btn-success mt-2"> Save Payment</button>
                         </form>
                     </div>
                 </div>
@@ -135,7 +135,7 @@
             <div class="col-12">
                 <div class="card shadow-sm">
                     <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">📋 Transactions</h5>
+                        <h5 class="mb-0"> Transactions</h5>
                     </div>
                     <div class="card-body">
                         <table class="table table-striped">

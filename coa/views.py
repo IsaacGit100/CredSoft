@@ -1,21 +1,25 @@
 # coa/views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.db import IntegrityError
+from django.db import connection
+from django.http import JsonResponse
 
+
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.management import call_command
+from io import StringIO
+
+from django.contrib import messages
+from django.db import models
 from .models import ChartOfAccounts
-
 
 
 @login_required
 def coa_home(request, slug):
     return render(request, 'coa/coa_home.html')
 
-@login_required
-def back_to_home(request):
-    return redirect('/')
-    
 
 @login_required
 def main_menu(request):
@@ -82,19 +86,6 @@ def coa_create(request, slug):
     return render(request, 'coa/coa_create.html', context)
 
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.db import models
-
-
-# coa/views.py - Debug version
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.db import models
-from .models import ChartOfAccounts
-
 @login_required
 def coa_list(request):
     """List all accounts in hierarchical view."""
@@ -144,8 +135,6 @@ def coa_list(request):
         'expense_count': expense_count,
     }
     return render(request, 'coa/coa_list.html', context)
-
-
 
 
 @login_required
@@ -203,15 +192,6 @@ def coa_delete(request, pk):
     return render(request, 'coa/coa_confirm_delete.html', context)
 
 
-# coa/views.py - Add these functions
-
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib import messages
-from django.db import connection
-from django.http import JsonResponse
-from .models import ChartOfAccounts
-
 @login_required
 @permission_required('coa.delete_chartofaccounts', raise_exception=True)
 def coa_reset(request):
@@ -238,7 +218,7 @@ def coa_reset(request):
                     # Re-enable foreign key checks
                     cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
                 
-                messages.success(request, f'✅ Chart of Accounts reset successfully! Deleted {count} account(s).')
+                messages.success(request, f' Chart of Accounts reset successfully! Deleted {count} account(s).')
                 
                 # Check if we should initialize default accounts
                 if request.POST.get('initialize') == 'on':
@@ -419,16 +399,7 @@ def initialize_default_accounts(request):
         parent_account=savings,
         is_data_entry=True,
     )
-    
-    return True
 
-
-# coa/views.py - Add this view
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib import messages
-from django.core.management import call_command
-from io import StringIO
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
@@ -453,12 +424,6 @@ def init_coa_from_web(request):
     
     return render(request, 'coa/init_coa_confirm.html')
 
-# coa/views.py - Add this function
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.core.management import call_command
-from io import StringIO
 
 @login_required
 def coa_init_standalone(request):
@@ -474,11 +439,11 @@ def coa_init_standalone(request):
                 call_command('init_full_coa', force=True, stdout=out)
                 output = out.getvalue()
                 
-                messages.success(request, "✅ Chart of Accounts initialized successfully!")
+                messages.success(request, " Chart of Accounts initialized successfully!")
                 return redirect('coa:coa_list')
                 
             except Exception as e:
-                messages.error(request, f"❌ Error: {str(e)}")
+                messages.error(request, f" Error: {str(e)}")
                 return redirect('coa:coa_init_standalone')
         else:
             messages.error(request, "Please type 'YES' to confirm")
@@ -486,8 +451,6 @@ def coa_init_standalone(request):
     
     # GET request - show the standalone page
     return render(request, 'coa/coa_init_standalone.html')
-
-
 
 
 # coa/views.py - Add this function
@@ -1032,4 +995,3 @@ def coa_excel(request):
     
     wb.save(response)
     return response
-

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+
+            <div class="card border-warning shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Confirm Posting to Trans
+                    </h4>
+                </div>
+
+                <div class="card-body">
+
+                    <!-- Warning -->
+                    <div class="alert alert-warning">
+                        <strong>Please review carefully.</strong>
+                        You are about to post
+                        <strong>{{ pending_count }}</strong>
+                        pending opening balance line(s) to the
+                        <strong>Trans</strong> table.
+                        <br>
+                        <span class="text-danger">
+                            <i class="fas fa-lock"></i>
+                            Once posted, these lines <strong>cannot be edited or deleted</strong>.
+                        </span>
+                    </div>
+
+                    <!-- Balance status -->
+                    <div class="alert {% if is_balanced %}alert-success{% else %}alert-danger{% endif %}">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>Total Debit:</strong> ₵{{ total_debit|floatformat:2 }}
+                            </div>
+                            <div>
+                                <strong>Total Credit:</strong> ₵{{ total_credit|floatformat:2 }}
+                            </div>
+                            <div>
+                                {% if is_balanced %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Balanced
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times-circle"></i> Not Balanced
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lines preview -->
+                    <h6 class="fw-bold mt-3">Lines to be Posted</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Date</th>
+                                    <th>Code</th>
+                                    <th>Account</th>
+                                    <th class="text-end">Debit (₵)</th>
+                                    <th class="text-end">Credit (₵)</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for line in lines %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ line.date|date:"Y-m-d" }}</td>
+                                    <td><code>{{ line.account_code.code }}</code></td>
+                                    <td>{{ line.account_name }}</td>
+                                    <td class="text-end">
+                                        {% if line.debit_amount > 0 %}
+                                            <strong class="text-primary">₵{{ line.debit_amount|floatformat:2 }}</strong>
+                                        {% else %}—{% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if line.credit_amount > 0 %}
+                                            <strong class="text-success">₵{{ line.credit_amount|floatformat:2 }}</strong>
+                                        {% else %}—{% endif %}
+                                    </td>
+                                    <td>{{ line.description|default:"—" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td colspan="4" class="text-end">TOTALS:</td>
+                                    <td class="text-end text-primary">₵{{ total_debit|floatformat:2 }}</td>
+                                    <td class="text-end text-success">₵{{ total_credit|floatformat:2 }}</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- What will happen next -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>What happens next:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>One <code>Trans</code> record will be created for each line</li>
+                            <li>They will appear in the <strong>Supervisor Queue</strong>
+                                as <span class="badge bg-warning text-dark">Pending</span></li>
+                            <li>These lines here will be marked
+                                <span class="badge bg-success">Posted</span> and locked</li>
+                        </ul>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'OpenBals:open_bal_list' entity.slug %}"
+                               class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            {% if is_balanced %}
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-paper-plane"></i>
+                                Yes, Post to Trans
+                            </button>
+                            {% else %}
+                            <button type="button" class="btn btn-success" disabled>
+                                <i class="fas fa-ban"></i>
+                                Cannot Post (Not Balanced)
+                            </button>
+                            {% endif %}
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

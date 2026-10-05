@@ -26,8 +26,18 @@ from MembersApp.models import Master
 from LoanApp.models import Loan
 from MembersApp.models import Master, Sav_Int_Table
 from SysSetup.models import SystemSettings
+
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib import messages
+
 # from services.loan_daily_service import update_loans_daily
-#from services.sav_int_service import InterestAccrualService
+
+# services/views.py
+import json
+from django.http import JsonResponse
+
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 
 # from services.services_trans_posting import process_transaction
@@ -45,11 +55,6 @@ def post_transaction(request, trans_id):
     
     return redirect('RecPayApp:transaction_list')
 
-## ======================= Daily Loan Processing ===========================
-from django.shortcuts import render
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib import messages
-# from services.loan_daily_service import update_loans_daily
 
 @staff_member_required
 def run_loan_daily_update(request):
@@ -144,7 +149,7 @@ def transaction_list(request):
     # Get members for filter dropdown
     # ============================================
     
-    members = Master.objects.filter(is_deleted=False).order_by('first_name', 'last_name')[:100]
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by('first_name', 'last_name')[:100]
     
     # ============================================
     # Context for template
@@ -269,28 +274,12 @@ from services.transaction_posting_service import process_transaction
 
 def post_selected_transaction(request, slug):
     trans = get_object_or_404(Trans, id=...)
-    result = process_transaction(trans, request.user, slug)
+    result = process_transaction(trans, request.user)
     if result["success"]:
         messages.success(request, "Transaction posted successfully.")
     else:
         messages.error(request, f"Error: {result['errors']}")
     return redirect(...)
-
-
-# services/views.py
-import json
-from django.http import JsonResponse
-from django.contrib.admin.views.decorators import staff_member_required
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from .interest_accrual_service import InterestAccrualService
-
-
-# services/views.py
-from django.http import JsonResponse
-from django.contrib.admin.views.decorators import staff_member_required
-from django.views.decorators.http import require_http_methods
-from .interest_accrual_service import InterestAccrualService
 
 
 @staff_member_required
@@ -363,7 +352,7 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from django.shortcuts import get_object_or_404
 from MembersApp.models import Master
-from LoanApp.models import Loan, LoanInterestAudit
+from LoanApp.models import Loan
 from djan_led.models import EntityConfig
 from django_ledger.models import EntityModel
 from .journal_engine import JournalEngine

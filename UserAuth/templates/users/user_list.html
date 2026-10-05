@@ -13,7 +13,7 @@
 <body>
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-              <h2>👥 User Management - {{ system_settings.company_short_name }}</h2>
+              <h2> User Management - {{ system_settings.company_short_name }}</h2>
             
             <div>
                 <a href="{% url 'userauth:user_create' %}" class="btn btn-primary">
@@ -121,7 +121,7 @@
                                 {% endif %}
                                 {% if user != request.user %}
                                 <a href="{% url 'userauth:user_delete' user.id %}" class="btn btn-danger" title="Delete"
-                                   onclick="return confirm('Delete user {{ user.username }}? This cannot be undone.')">🗑️</a>
+                                   onclick="return confirm('Delete user {{ user.username }}? This cannot be undone.')"></a>
                                 {% endif %}
                             </div>
                         </td>

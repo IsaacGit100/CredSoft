@@ -14,6 +14,7 @@
             <thead class="table-dark">
                 <tr>
                     <th>Name</th>
+                    <th>Type</th>
                     <th>Slug</th>
                     <th>Admin</th>
                     <th>Created</th>
@@ -24,6 +25,13 @@
                 {% for entity in entities %}
                 <tr>
                     <td>{{ entity.name }}</td>
+                    <td>
+                        {% if entity.config and entity.config.entity_type %}
+                            <span class="badge bg-info">{{ entity.config.get_entity_type_display }}</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Not Set</span>
+                        {% endif %}
+                    </td>
                     <td><code>{{ entity.slug }}</code></td>
                     <td>{{ entity.admin.username|default:"—" }}</td>
                     <td>{{ entity.created|date:"Y-m-d" }}</td>

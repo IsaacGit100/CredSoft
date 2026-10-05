@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .miv-page        { padding: 20px; max-width: 700px; margin: 0 auto; }
+    .miv-header      { display: flex; justify-content: space-between;
+                       align-items: center; margin-bottom: 20px;
+                       flex-wrap: wrap; gap: 10px; }
+    .miv-header h2   { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .miv-header .sub { color: #6b7280; font-size: 13px; margin-top: 4px; }
+
+    .miv-card        { background: #fff; border-radius: 8px; padding: 24px;
+                       box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center; }
+
+    .miv-photo       { max-width: 260px; max-height: 320px;
+                       border-radius: 8px; border: 1px solid #e5e7eb;
+                       object-fit: cover; }
+
+    .miv-placeholder { width: 260px; height: 320px; margin: 0 auto;
+                       border: 2px dashed #d1d5db; border-radius: 8px;
+                       display: flex; align-items: center; justify-content: center;
+                       color: #9ca3af; font-size: 13px; }
+
+    .miv-meta        { margin-top: 16px; color: #6b7280; font-size: 13px; }
+
+    .miv-actions     { display: flex; gap: 8px; justify-content: center;
+                       margin-top: 20px; flex-wrap: wrap; }
+</style>
+
+<div class="miv-page">
+
+    <div class="miv-header">
+        <div>
+            <h2><i class="fas fa-id-card"></i> Passport Picture</h2>
+            <div class="sub">{{ member.full_name }}</div>
+        </div>
+        <a href="{% url 'ChurchApp:member_list_manage' entity.slug %}"
+           class="btn btn-outline-secondary">
+            <i class="fas fa-times"></i> Close
+        </a>
+    </div>
+
+    <div class="miv-card">
+
+        {% if member.passport_picture %}
+            <img src="{{ member.passport_picture.url }}"
+                 alt="{{ member.full_name }}"
+                 class="miv-photo">
+            <div class="miv-meta">
+                Member ID: {{ member.pk }}
+                {% if member.telephone1 %}  {{ member.telephone1 }}{% endif %}
+            </div>
+        {% else %}
+            <div class="miv-placeholder">No passport picture yet</div>
+            <div class="miv-meta">Upload one to attach a photo to this member.</div>
+        {% endif %}
+
+        <div class="miv-actions">
+            <a href="{% url 'ChurchApp:member_detail' entity.slug member.pk %}"
+               class="btn btn-outline-secondary">
+                <i class="fas fa-user"></i> Member Details
+            </a>
+            <a href="{% url 'ChurchApp:member_images' entity.slug member.pk %}"
+               class="btn btn-outline-primary">
+                <i class="fas fa-camera"></i>
+                {% if member.passport_picture %}Manage / Replace{% else %}Upload Picture{% endif %}
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

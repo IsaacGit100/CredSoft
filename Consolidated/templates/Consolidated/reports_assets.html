@@ -1,0 +1,175 @@
+{% extends 'Consolidated/base_consolidated.html' %}
+{% load humanize %}
+
+{% block consolidated_content %}
+<div class="fa-page">
+
+    <div class="fa-header">
+        <h2>{{ entity_config.organization_name|default:"Consolidated Fixed Assets" }}</h2>
+        <h3>Consolidated Fixed Assets</h3>
+        <div class="fa-sub">
+            {{ asset_count }} asset{{ asset_count|pluralize }}
+            across {{ entity_count }} parish{{ entity_count|pluralize:"es" }}
+        </div>
+    </div>
+
+    <div class="fa-actions">
+        <a href="?{{ request.GET.urlencode }}&format=pdf"
+           class="btn btn-outline-danger" target="_blank">
+            <i class="fas fa-file-pdf"></i> PDF (whole list)
+        </a>
+        <a href="?{{ request.GET.urlencode }}&format=excel"
+           class="btn btn-outline-success">
+            <i class="fas fa-file-excel"></i> Excel (all fields)
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <a href="{% url 'Consolidated:reports_home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <form method="get" class="fa-search">
+        <input type="text" name="q" value="{{ search }}"
+               placeholder="Search by name, code, category..." class="fa-search-input">
+        <select name="status" class="fa-select">
+            <option value=""       {% if not status %}selected{% endif %}>All statuses</option>
+            <option value="active" {% if status == 'active' %}selected{% endif %}>Active only</option>
+            <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive only</option>
+        </select>
+        <input type="text" name="start" value="{{ start }}" placeholder="Acq. from" class="fa-date">
+        <input type="text" name="end" value="{{ end }}" placeholder="Acq. to" class="fa-date">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> Apply
+        </button>
+        {% if search or status or start or end %}
+            <a href="{% url 'Consolidated:report_assets' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Clear
+            </a>
+        {% endif %}
+    </form>
+
+    <div class="fa-card">
+        <table class="fa-table">
+            <thead>
+                <tr>
+                    <th style="width:4%;">No</th>
+                    <th style="width:11%;">Category</th>
+                    <th style="width:18%;">Asset</th>
+                    <th style="width:8%;">Code</th>
+                    <th style="width:13%;">Parish</th>
+                    <th style="width:9%;">Acquired</th>
+                    <th style="width:9%; text-align:right;">Cost</th>
+                    <th style="width:9%; text-align:right;">Acc. Dep</th>
+                    <th style="width:9%; text-align:right;">NBV</th>
+                    <th style="width:6%;">Status</th>
+                    <th style="width:9%; text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in assets %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ a.category.name|default:"—" }}</td>
+                    <td>{{ a.name|default:"—" }}</td>
+                    <td><code style="font-size:11px;">{{ a.asset_id|default:"—" }}</code></td>
+                    <td>{{ a.entity.name }}</td>
+                    <td>{{ a.acquisition_date|date:"d/m/Y"|default:"—" }}</td>
+                    <td class="num">₵{{ a.cost|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ a.accumulated_depreciation|floatformat:2|intcomma }}</td>
+                    <td class="num" style="font-weight:700;">₵{{ a.book_value|floatformat:2|intcomma }}</td>
+                    <td>
+                        {% if a.is_active %}
+                            <span class="fa-badge fa-badge-active">Active</span>
+                        {% else %}
+                            <span class="fa-badge fa-badge-inactive">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="fa-actions-cell">
+                        <a href="{% url 'Consolidated:asset_detail' a.id %}"
+                           class="fa-btn fa-btn-view" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="{% url 'Consolidated:asset_pdf' a.id %}"
+                           class="fa-btn fa-btn-pdf" target="_blank" title="PDF">
+                            <i class="fas fa-file-pdf"></i>
+                        </a>
+                        <a href="{% url 'Consolidated:asset_excel' a.id %}"
+                           class="fa-btn fa-btn-excel" title="Excel">
+                            <i class="fas fa-file-excel"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="11" class="fa-empty">
+                    {% if search or status or start or end %}No assets match your filters.{% else %}No fixed assets found.{% endif %}
+                </td></tr>
+                {% endfor %}
+            </tbody>
+            {% if assets %}
+            <tfoot>
+                <tr>
+                    <td colspan="6" style="text-align:right;">TOTAL</td>
+                    <td class="num">₵{{ total_cost|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ total_accum|floatformat:2|intcomma }}</td>
+                    <td class="num" style="color:#1e3a5f;">₵{{ total_nbv|floatformat:2|intcomma }}</td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+
+</div>
+
+<style>
+    .fa-page        { padding: 20px; max-width: 1500px; margin: 0 auto; }
+    .fa-header      { background: #fff; padding: 20px; border-radius: 10px;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                      margin-bottom: 16px; text-align: center; }
+    .fa-header h2   { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .fa-header h3   { margin: 12px 0 4px; color: #1a56db; font-size: 16px; }
+    .fa-sub         { color: #6b7280; font-size: 13px; }
+
+    .fa-actions     { display: flex; gap: 8px; justify-content: flex-end;
+                      margin-bottom: 14px; flex-wrap: wrap; }
+    .fa-search      { display: flex; gap: 8px; margin-bottom: 14px;
+                      background: #fff; padding: 14px; border-radius: 8px;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+                      flex-wrap: wrap; }
+    .fa-search-input{ flex: 2; min-width: 180px; padding: 8px 12px;
+                      border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+    .fa-select      { padding: 8px 12px; border: 1px solid #d1d5db;
+                      border-radius: 6px; font-size: 14px; }
+    .fa-date        { width: 130px; padding: 8px 12px;
+                      border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+
+    .fa-card        { background: #fff; border-radius: 8px;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; }
+    .fa-table       { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .fa-table th    { text-align: left; padding: 9px 10px;
+                      background: #f3f4f6; color: #374151;
+                      font-weight: 700; font-size: 11px;
+                      border-bottom: 2px solid #e5e7eb; }
+    .fa-table td    { padding: 7px 10px; border-bottom: 1px solid #f3f4f6;
+                      vertical-align: middle; }
+    .fa-table td.num { text-align: right; font-family: monospace; }
+    .fa-table tfoot td { padding: 10px; border-top: 2px solid #1a56db;
+                         background: #f3f4f6; font-weight: 700; }
+    .fa-table tr:hover td { background: #f9fafb; }
+    .fa-empty       { text-align: center; padding: 40px; color: #9ca3af; }
+
+    .fa-badge       { padding: 2px 8px; border-radius: 10px;
+                      font-size: 10px; font-weight: 700; }
+    .fa-badge-active   { background: #d1fae5; color: #065f46; }
+    .fa-badge-inactive { background: #f3f4f6; color: #6b7280; }
+
+    .fa-actions-cell{ text-align: center; white-space: nowrap; }
+    .fa-btn         { display: inline-block; padding: 3px 7px;
+                      border-radius: 4px; text-decoration: none;
+                      margin: 0 1px; font-size: 11px; }
+    .fa-btn-view    { background: #17a2b8; color: #fff; }
+    .fa-btn-pdf     { background: #dc2626; color: #fff; }
+    .fa-btn-excel   { background: #16a34a; color: #fff; }
+    .fa-btn:hover   { opacity: 0.85; color: #fff; }
+</style>
+{% endblock %}

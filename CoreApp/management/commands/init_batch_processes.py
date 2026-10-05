@@ -42,7 +42,7 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f"✓ Created: {name}"))
             else:
                 existing_count += 1
-                self.stdout.write(f"○ Already exists: {name}")
+                self.stdout.write(f" Already exists: {name}")
         
         self.stdout.write("=" * 50)
         self.stdout.write(self.style.SUCCESS(f"Initialization complete!"))

@@ -103,7 +103,7 @@ button { background-color: #007BFF; color: white; border: none; padding: 6px 10p
     <th>State Code</th>
     <th>Amount</th>
     <th>Balance</th>
-    <th>Actions</th> <!-- 🟩 NEW COLUMN FOR EDIT BUTTON -->
+    <th>Actions</th> <!--  NEW COLUMN FOR EDIT BUTTON -->
   </tr>
   {% for s in statements %}
     <tr>
@@ -114,7 +114,7 @@ button { background-color: #007BFF; color: white; border: none; padding: 6px 10p
       <td style="text-align:right;">{{ s.amount|intcomma:2 }}</td>
       <td style="text-align:right;">{{ s.balance|intcomma:2 }}</td>
       <td>
-        <!-- 🟩 EDIT BUTTON FOR EACH RECORD -->
+        <!--  EDIT BUTTON FOR EACH RECORD -->
         <a href="{% url 'StateApp:edit_statement' s.id %}" class="edit-btn">
           Edit
         </a>

@@ -3,8 +3,8 @@
 {% block content %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>📋 Transactions – {{ entity.name }}</h1>
-        <a href="{% url 'RecPayApp:finance_trans_create' entity.slug %}" class="btn btn-primary">➕ New Transaction</a>
+        <h1> Transactions - {{ entity.name }}</h1>
+        <a href="{% url 'RecPayApp:finance_trans_create' entity.slug %}" class="btn btn-primary"> New Transaction</a>
     </div>
 
     <form method="post" action="{% url 'RecPayApp:trans_post_selected' entity.slug %}">
@@ -59,7 +59,7 @@
             <label class="me-2">Action:</label>
             <select name="action" class="form-select w-auto me-2">
                 <option value="">-- Select --</option>
-                <option value="post">📤 Post Selected</option>
+                <option value="post"> Post Selected</option>
             </select>
             <button type="submit" class="btn btn-success">Apply</button>
         </div>

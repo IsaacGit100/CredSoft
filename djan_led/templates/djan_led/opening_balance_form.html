@@ -118,7 +118,6 @@
             this.value = this.value.replace(/,/g, '');
         });
 
-        // Auto‑clear the other field when one is filled
         input.addEventListener('input', function() {
             const row = this.closest('tr');
             const debit = row.querySelector('.debit-input');

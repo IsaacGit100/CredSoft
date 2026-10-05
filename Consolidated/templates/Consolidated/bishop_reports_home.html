@@ -1,0 +1,74 @@
+{% extends 'Consolidated/base_consolidated.html' %}
+
+{% block consolidated_content %}
+<div style="padding:24px; max-width:900px; margin:0 auto;">
+    <div style="text-align:center; background:#fff; padding:20px;
+                border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08);
+                margin-bottom:24px;">
+        <h2 style="margin:0; color:#1e3a5f; font-size:20px;">
+            {{ entity_config.organization_name|default:"Bishop's Reports" }}
+        </h2>
+        <h3 style="margin:12px 0 4px; color:#1a56db; font-size:16px;">
+            Bishop's Reports — Diocese Total
+        </h3>
+        <div style="color:#6b7280; font-size:13px;">
+            All parishes combined, no selection required
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px;">
+        <a href="{% url 'Consolidated:bishop_trial_balance' %}" class="rh-tile"
+           style="display:block; background:#fff; padding:20px; border-radius:10px;
+                  text-decoration:none; color:inherit;
+                  box-shadow:0 1px 3px rgba(0,0,0,0.08);
+                  border-left:4px solid #1a56db;">
+            <div style="font-size:22px; color:#1a56db; margin-bottom:8px;">
+                <i class="fas fa-balance-scale"></i>
+            </div>
+            <div style="font-size:14px; font-weight:700; color:#1e3a5f;">Bishop's Trial Balance</div>
+            <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                DR = CR across all parishes
+            </div>
+        </a>
+        <a href="{% url 'Consolidated:bishop_income_statement' %}"
+           style="display:block; background:#fff; padding:20px; border-radius:10px;
+                  text-decoration:none; color:inherit;
+                  box-shadow:0 1px 3px rgba(0,0,0,0.08);
+                  border-left:4px solid #16a34a;">
+            <div style="font-size:22px; color:#16a34a; margin-bottom:8px;">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div style="font-size:14px; font-weight:700; color:#1e3a5f;">Bishop's Income Statement</div>
+            <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                Diocese-wide revenue and expenses
+            </div>
+        </a>
+        <a href="{% url 'Consolidated:bishop_balance_sheet' %}"
+           style="display:block; background:#fff; padding:20px; border-radius:10px;
+                  text-decoration:none; color:inherit;
+                  box-shadow:0 1px 3px rgba(0,0,0,0.08);
+                  border-left:4px solid #0891b2;">
+            <div style="font-size:22px; color:#0891b2; margin-bottom:8px;">
+                <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div style="font-size:14px; font-weight:700; color:#1e3a5f;">Bishop's Balance Sheet</div>
+            <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                Diocese assets, liabilities, equity
+            </div>
+        </a>
+        <a href="{% url 'Consolidated:bishop_cash_flow' %}"
+           style="display:block; background:#fff; padding:20px; border-radius:10px;
+                  text-decoration:none; color:inherit;
+                  box-shadow:0 1px 3px rgba(0,0,0,0.08);
+                  border-left:4px solid #f59e0b;">
+            <div style="font-size:22px; color:#f59e0b; margin-bottom:8px;">
+                <i class="fas fa-water"></i>
+            </div>
+            <div style="font-size:14px; font-weight:700; color:#1e3a5f;">Bishop's Cash Flow</div>
+            <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                Diocese cash movements
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

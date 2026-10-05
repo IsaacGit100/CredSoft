@@ -10,15 +10,11 @@
         <i class="fas fa-plus-circle"></i>Receipts And Payments
     </a>
 
-    <a href="{% url 'FixedAssets:fixed_assets_home' entity.slug %}" class="list-group-item list-group-item-action">
+    <a href="{% url 'FixedAssets:fixed_asset_home' entity.slug %}" class="list-group-item list-group-item-action">
         <i class="fas fa-boxes"></i> Fixed Assets Menu
     </a>
     <a href="{% url 'djan_led:supervisor_trans_home' entity.slug %}" class="list-group-item list-group-item-action">
         <i class="fas fa-plus-circle"></i> New Transaction
-    </a>
-
-     <a href="{% url 'FinanceApp:finance_reports_home' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-boxes"></i> Finance Reports Menu
     </a>
 
 

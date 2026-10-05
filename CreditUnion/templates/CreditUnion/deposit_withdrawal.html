@@ -1,0 +1,338 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<style>
+    .dd-page      { padding: 16px; max-width: 1300px; margin: 0 auto; }
+
+    /* Compact header with summary inline */
+    .dd-header    { display: flex; justify-content: space-between;
+                    align-items: center; margin-bottom: 12px;
+                    flex-wrap: wrap; gap: 10px; }
+    .dd-header h2 { margin: 0; color: #1e3a5f; font-size: 18px; }
+    .dd-header .sub { color: #6b7280; font-size: 12px; }
+
+    .dd-pills     { display: flex; gap: 10px; font-size: 12px; }
+    .dd-pill      { padding: 6px 12px; border-radius: 20px;
+                    font-weight: 600; }
+    .dd-pill.dep  { background: #d1fae5; color: #065f46; }
+    .dd-pill.wth  { background: #fee2e2; color: #991b1b; }
+    .dd-pill.net  { background: #1e3a5f; color: #fff; }
+
+    /* Compact form */
+    .dd-form      { background: #fff; border-radius: 10px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                    padding: 14px 18px; margin-bottom: 14px; }
+
+    .dd-tabs      { display: flex; gap: 8px; margin-bottom: 12px;
+                    max-width: 400px; }
+    .dd-tabs label {
+        flex: 1; padding: 8px; border: 2px solid #e5e7eb;
+        border-radius: 8px; text-align: center; cursor: pointer;
+        font-weight: 600; color: #6b7280; font-size: 13px;
+        transition: all 0.12s;
+    }
+    .dd-tabs input[type="radio"] { display: none; }
+    .dd-tabs label:has(input[value="Deposit"]:checked) {
+        border-color: #16a34a; background: #16a34a; color: #fff;
+    }
+    .dd-tabs label:has(input[value="Withdrawal"]:checked) {
+        border-color: #dc2626; background: #dc2626; color: #fff;
+    }
+
+    .dd-row       { display: grid; gap: 10px; margin-bottom: 10px; }
+    .dd-row-1     { grid-template-columns: 1fr 1.2fr 1fr 1fr; }
+    .dd-row-2     { grid-template-columns: 1fr 3fr; }
+
+    .dd-field label {
+        display: block; font-size: 11px; font-weight: 700;
+        color: #6b7280; text-transform: uppercase;
+        letter-spacing: 0.3px; margin-bottom: 3px;
+    }
+    .dd-field input,
+    .dd-field select {
+        width: 100%; padding: 7px 10px;
+        border: 1px solid #d1d5db; border-radius: 6px;
+        font-size: 13px; background: #fff;
+    }
+    .dd-field input:focus,
+    .dd-field select:focus {
+        outline: none; border-color: #1a56db;
+        box-shadow: 0 0 0 3px rgba(26,86,219,0.12);
+    }
+    .dd-field input[readonly] {
+        background: #f3f4f6; cursor: not-allowed;
+        color: #374151; font-weight: 600;
+    }
+
+    .dd-actions   { display: flex; justify-content: flex-end;
+                    margin-top: 4px; }
+
+    /* Search */
+    .dd-search    { display: flex; gap: 8px; align-items: end;
+                    background: #f9fafb; padding: 10px 14px;
+                    border-radius: 8px; margin-bottom: 12px;
+                    flex-wrap: wrap; }
+    .dd-search .grow { flex: 1; min-width: 200px; }
+    .dd-search label {
+        display: block; font-size: 11px; font-weight: 700;
+        color: #6b7280; text-transform: uppercase;
+        letter-spacing: 0.3px; margin-bottom: 3px;
+    }
+    .dd-search input,
+    .dd-search select {
+        padding: 7px 10px; border: 1px solid #d1d5db;
+        border-radius: 6px; font-size: 13px; width: 100%;
+    }
+
+    /* List */
+    .dd-table-card { background: #fff; border-radius: 8px;
+                     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                     overflow: hidden; }
+    .dd-table     { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .dd-table th  { text-align: left; padding: 9px 12px;
+                    background: #f3f4f6; color: #374151;
+                    font-weight: 700; font-size: 11px;
+                    text-transform: uppercase; letter-spacing: 0.3px;
+                    border-bottom: 2px solid #e5e7eb; }
+    .dd-table td  { padding: 7px 12px; border-bottom: 1px solid #f3f4f6; }
+    .dd-table tr:hover td { background: #f9fafb; }
+    .dd-table td.num { text-align: right; font-weight: 600; }
+    .dd-table td.ctr { text-align: center; }
+    .dd-empty     { padding: 30px; text-align: center; color: #9ca3af; }
+
+    .badge-dep    { background: #d1fae5; color: #065f46; padding: 2px 8px;
+                    border-radius: 10px; font-size: 10px; font-weight: 700;
+                    text-transform: uppercase; }
+    .badge-wth    { background: #fee2e2; color: #991b1b; padding: 2px 8px;
+                    border-radius: 10px; font-size: 10px; font-weight: 700;
+                    text-transform: uppercase; }
+
+    @media (max-width: 900px) {
+        .dd-row-1 { grid-template-columns: 1fr 1fr; }
+        .dd-row-2 { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="dd-page">
+
+    <!-- HEADER -->
+    <div class="dd-header">
+        <div>
+            <h2><i class="fas fa-piggy-bank"></i> Deposits &amp; Withdrawals</h2>
+            <div class="sub">{{ entity.name }}</div>
+        </div>
+        <div class="dd-pills">
+            <span class="dd-pill dep">
+                Deposits ₵{{ total_deposits|floatformat:2|intcomma }}
+            </span>
+            <span class="dd-pill wth">
+                Withdrawals ₵{{ total_withdrawals|floatformat:2|intcomma }}
+            </span>
+            <span class="dd-pill net">
+                Net ₵{{ net|floatformat:2|intcomma }}
+            </span>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding:9px 14px; border-radius:6px; margin-bottom:12px;
+                        background:{% if message.tags == 'error' %}#fef2f2{% else %}#ecfdf5{% endif %};
+                        border:1px solid {% if message.tags == 'error' %}#fca5a5{% else %}#a7f3d0{% endif %};
+                        color:{% if message.tags == 'error' %}#991b1b{% else %}#065f46{% endif %};
+                        font-size: 13px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- FORM -->
+    <div class="dd-form">
+        <form method="post">
+            {% csrf_token %}
+                {% if form.errors %}
+                    <div style="padding:10px 14px; border-radius:6px; margin-bottom:12px;
+                                background:#fef2f2; border:1px solid #fca5a5;
+                                color:#991b1b; font-size:13px;">
+                        <strong>Form errors:</strong>
+                        <ul style="margin:6px 0 0 20px; padding:0;">
+                            {% for field, errors in form.errors.items %}
+                                <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+            <div class="dd-tabs">
+                <label>
+                    <input type="radio" name="txn_type" value="Deposit"
+                           {% if form.txn_type.value == "Deposit" or not form.txn_type.value %}checked{% endif %}>
+                    <span><i class="fas fa-arrow-down"></i> Deposit</span>
+                </label>
+                <label>
+                    <input type="radio" name="txn_type" value="Withdrawal"
+                           {% if form.txn_type.value == "Withdrawal" %}checked{% endif %}>
+                    <span><i class="fas fa-arrow-up"></i> Withdrawal</span>
+                </label>
+            </div>
+
+            <!-- Row 1 -->
+            <div class="dd-row dd-row-1">
+                <div class="dd-field">
+                    <label>Date *</label>
+                    {{ form.date }}
+                </div>
+                <div class="dd-field">
+                    <label>Reference No</label>
+                    {{ form.trans_no }}
+                </div>
+                <div class="dd-field">
+                    <label>Amount (₵) *</label>
+                    {{ form.amount }}
+                </div>
+                <div class="dd-field">
+                    <label>Payment Mode</label>
+                    <input type="text" value="Cash Payment" readonly>
+                </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="dd-row dd-row-2">
+                <div class="dd-field">
+                    <label>Member *</label>
+                    {{ form.member }}
+                </div>
+                <div class="dd-field">
+                    <label>Details</label>
+                    {{ form.details }}
+                </div>
+            </div>
+                 <div class="dd-actions" style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button type="reset" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                        <a href="{% url 'CreditUnion:credit_union_dashboard' entity.slug %}"
+                        class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Close
+                        </a>
+                    <button type="submit" name="save" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Transaction
+                    </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- SEARCH -->
+    <form method="get" class="dd-search">
+        <div class="grow">
+            <label>Search</label>
+            <input type="text" name="q" value="{{ search }}"
+                   placeholder="Name, member ID or reference">
+        </div>
+        <div style="width: 140px;">
+            <label>Type</label>
+            <select name="type">
+                <option value="" {% if not type_filter %}selected{% endif %}>All</option>
+                <option value="Deposit" {% if type_filter == 'Deposit' %}selected{% endif %}>Deposits</option>
+                <option value="Withdrawal" {% if type_filter == 'Withdrawal' %}selected{% endif %}>Withdrawals</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Apply</button>
+        {% if search or type_filter %}
+            <a href="{% url 'CreditUnion:deposit_withdrawal_manage' entity.slug %}"
+               class="btn btn-secondary">Clear</a>
+        {% endif %}
+    </form>
+
+    <!-- LIST -->
+    <!-- DEPOSITS -->
+    <!-- LIST -->
+    <div class="dd-table-card">
+        <table class="dd-table">
+            <thead>
+                <tr>
+                    <th style="width:11%;">Date</th>
+                    <th style="width:20%;">Member</th>
+                    <th style="width:12%;">Ref</th>
+                    <th style="width:9%;">Mode</th>
+                    <th style="width:13%; text-align:right;">Withdrawal</th>
+                    <th style="width:13%; text-align:right;">Deposit</th>
+                    <th style="width:10%;">Status</th>
+                    <th style="width:12%; text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td>{{ t.date|date:"d/m/Y" }}</td>
+                    <td>{{ t.member_name }}</td>
+                    <td><code style="font-size:11px;">{{ t.rec_vou_no }}</code></td>
+                    <td>{{ t.pay_mode }}</td>
+                    <td class="num" style="color:#991b1b;">
+                        {% if t.sub_module == 'savings_withdrawal' %}
+                            ₵{{ t.amount|floatformat:2|intcomma }}
+                        {% endif %}
+                    </td>
+                    <td class="num" style="color:#065f46;">
+                        {% if t.sub_module == 'savings_deposit' %}
+                            ₵{{ t.amount|floatformat:2|intcomma }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if t.journal_status == 'POSTED' %}
+                            <span style="background:#d1fae5; color:#065f46;
+                                         padding:2px 8px; border-radius:10px;
+                                         font-size:11px; font-weight:700;">
+                                Posted
+                            </span>
+                        {% else %}
+                            <span style="background:#fef3c7; color:#92400e;
+                                         padding:2px 8px; border-radius:10px;
+                                         font-size:11px; font-weight:700;">
+                                Pending
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="ctr">
+                        <a href="{% url 'CreditUnion:deposit_withdrawal_view' entity.slug t.id %}"
+                        class="btn btn-sm btn-outline-primary" title="View">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{% url 'CreditUnion:deposit_withdrawal_edit' entity.slug t.id %}"
+                        class="btn btn-sm btn-outline-warning" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'CreditUnion:deposit_withdrawal_delete' entity.slug t.id %}"
+                        class="btn btn-sm btn-outline-danger" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="dd-empty">
+                        No transactions yet. Use the form above to add one.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr style="background:#f3f4f6; font-weight:800;
+                           border-top:2px solid #1a56db;">
+                    <td colspan="4" style="text-align:right; padding:12px;">
+                        TOTALS
+                    </td>
+                    <td class="num" style="color:#991b1b; padding:12px;">
+                        ₵{{ total_withdrawals|floatformat:2|intcomma }}
+                    </td>
+                    <td class="num" style="color:#065f46; padding:12px;">
+                        ₵{{ total_deposits|floatformat:2|intcomma }}
+                    </td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,93 +1,176 @@
-{% extends "base.html" %}
+{% extends 'Consolidated/base_consolidated.html' %}
+{% load humanize %}
 
-{% block content %}
-<div class="d-flex">
-    {% include "Consolidated/sidebar.html" %}
-    <div class="flex-grow-1 p-4" style="margin-left: 250px;">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h1>📊 {{ title }}</h1>
-            <span class="text-muted">{{ root_entity.name }}</span>
-        </div>
+{% block consolidated_content %}
+<div style="padding:20px; max-width:1200px; margin:0 auto;">
 
-        <form method="get" class="row g-3 mb-4">
-            <div class="col-auto">
-                <label for="month" class="form-label">Month</label>
-                <select name="month" id="month" class="form-select">
-                    {% for m in months %}
-                    <option value="{{ m.value }}" {% if m.value == selected_month %}selected{% endif %}>
-                        {{ m.label }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-auto">
-                <label for="year" class="form-label">Year</label>
-                <select name="year" id="year" class="form-select">
-                    {% for y in years %}
-                    <option value="{{ y.value }}" {% if y.value == selected_year %}selected{% endif %}>
-                        {{ y.label }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-auto d-flex align-items-end">
-                <button type="submit" class="btn btn-primary">Generate</button>
-            </div>
-        </form>
-
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card text-white bg-success">
-                    <div class="card-body">
-                        <h5>Cash Inflows</h5>
-                        <h2>{{ total_inflows|floatformat:2 }}</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-white bg-danger">
-                    <div class="card-body">
-                        <h5>Cash Outflows</h5>
-                        <h2>{{ total_outflows|floatformat:2 }}</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-white {% if net_cash >= 0 %}bg-primary{% else %}bg-warning{% endif %}">
-                    <div class="card-body">
-                        <h5>Net Cash Flow</h5>
-                        <h2>{{ net_cash|floatformat:2 }}</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header bg-dark text-white">
-                <h5 class="mb-0">Entity Breakdown</h5>
-            </div>
-            <div class="card-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr><th>Entity</th><th class="text-end">Inflows</th><th class="text-end">Outflows</th><th class="text-end">Net</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for item in entity_data %}
-                        <tr>
-                            <td>{{ item.name }}</td>
-                            <td class="text-end">{{ item.inflows|floatformat:2 }}</td>
-                            <td class="text-end">{{ item.outflows|floatformat:2 }}</td>
-                            <td class="text-end {% if item.net >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                {{ item.net|floatformat:2 }}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="4">No entities found.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+    <div style="text-align:center; background:#fff; padding:20px;
+                border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08);
+                margin-bottom:18px;">
+        <h2 style="margin:0; color:#1e3a5f; font-size:20px;">
+            {{ entity_config.organization_name|default:"Cash Flow" }}
+        </h2>
+        <h3 style="margin:12px 0 4px; color:#1a56db; font-size:16px;">
+            {% if scope_label %}{{ scope_label }} — {% endif %}Cash Flow Statement
+        </h3>
+        <div style="color:#6b7280; font-size:13px;">
+            {{ entity_count }} parish{{ entity_count|pluralize:"es" }}
+            {% if period_label %} — {{ period_label }}{% endif %}
         </div>
     </div>
+
+    <form method="get" style="background:#f9fafb; padding:12px 16px;
+                              border-radius:8px; margin-bottom:14px;
+                              display:flex; gap:12px; align-items:end;
+                              flex-wrap:wrap;">
+        <div>
+            <label style="display:block; font-size:12px; font-weight:600; color:#374151;">From</label>
+            <input type="text" name="start" value="{{ start }}" placeholder="dd/mm/yyyy"
+                   style="padding:6px 10px; border:1px solid #d1d5db; border-radius:6px;">
+        </div>
+        <div>
+            <label style="display:block; font-size:12px; font-weight:600; color:#374151;">To</label>
+            <input type="text" name="end" value="{{ end }}" placeholder="dd/mm/yyyy"
+                   style="padding:6px 10px; border:1px solid #d1d5db; border-radius:6px;">
+        </div>
+        <button type="submit" class="btn btn-primary">Apply</button>
+        <a href="?" class="btn btn-secondary">Reset</a>
+    </form>
+
+    <div style="display:flex; gap:8px; justify-content:flex-end;
+                margin-bottom:16px; flex-wrap:wrap;">
+        <a href="?{{ querystring }}&format=html"
+           style="background:#1a56db; color:#fff; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:600; font-size:13px;">
+            <i class="fas fa-eye"></i> View
+        </a>
+        <a href="?{{ querystring }}&format=pdf" target="_blank"
+           style="background:#dc2626; color:#fff; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:600; font-size:13px;">
+            <i class="fas fa-file-pdf"></i> PDF
+        </a>
+        <a href="?{{ querystring }}&format=excel"
+           style="background:#16a34a; color:#fff; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:600; font-size:13px;">
+            <i class="fas fa-file-excel"></i> Excel
+        </a>
+        <button onclick="window.print()"
+                style="background:#6b7280; color:#fff; padding:8px 16px; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px;">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <a href="{% url 'Consolidated:reports_home' %}"
+           style="background:#374151; color:#fff; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:600; font-size:13px;">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div style="background:#fff; border-radius:8px;
+                box-shadow:0 1px 3px rgba(0,0,0,0.08); overflow:hidden;">
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <tbody>
+
+                <!-- OPERATING -->
+                <tr style="background:#eff6ff;">
+                    <td colspan="2" style="padding:10px 14px; font-weight:700; color:#1e3a5f;">OPERATING ACTIVITIES</td>
+                    <td style="padding:10px 14px; width:200px;"></td>
+                </tr>
+                {% for r in operating_rows %}
+                <tr>
+                    <td style="padding:6px 14px; width:90px; color:#6b7280;">{{ r.code }}</td>
+                    <td style="padding:6px 14px;">{{ r.name }}</td>
+                    <td style="padding:6px 14px; text-align:right;
+                               color:{% if r.amount >= 0 %}#065f46{% else %}#991b1b{% endif %};">
+                        ₵{{ r.amount|floatformat:2|intcomma }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" style="padding:8px 14px; color:#9ca3af; font-style:italic;">No operating cash movements.</td></tr>
+                {% endfor %}
+                <tr style="border-top:1px solid #e5e7eb; background:#f0f9ff;">
+                    <td colspan="2" style="padding:10px 14px; font-weight:700; text-align:right;">Net Cash from Operating</td>
+                    <td style="padding:10px 14px; text-align:right; font-weight:700;">₵{{ total_operating|floatformat:2|intcomma }}</td>
+                </tr>
+
+                <!-- INVESTING -->
+                <tr style="background:#fef3c7; height:14px;"><td colspan="3"></td></tr>
+                <tr style="background:#fef3c7;">
+                    <td colspan="2" style="padding:10px 14px; font-weight:700; color:#92400e;">INVESTING ACTIVITIES</td>
+                    <td></td>
+                </tr>
+                {% for r in investing_rows %}
+                <tr>
+                    <td style="padding:6px 14px; color:#6b7280;">{{ r.code }}</td>
+                    <td style="padding:6px 14px;">{{ r.name }}</td>
+                    <td style="padding:6px 14px; text-align:right;
+                               color:{% if r.amount >= 0 %}#065f46{% else %}#991b1b{% endif %};">
+                        ₵{{ r.amount|floatformat:2|intcomma }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" style="padding:8px 14px; color:#9ca3af; font-style:italic;">No investing cash movements.</td></tr>
+                {% endfor %}
+                <tr style="border-top:1px solid #e5e7eb;">
+                    <td colspan="2" style="padding:10px 14px; font-weight:700; text-align:right;">Net Cash from Investing</td>
+                    <td style="padding:10px 14px; text-align:right; font-weight:700;">₵{{ total_investing|floatformat:2|intcomma }}</td>
+                </tr>
+
+                <!-- FINANCING -->
+                <tr style="background:#ecfdf5; height:14px;"><td colspan="3"></td></tr>
+                <tr style="background:#ecfdf5;">
+                    <td colspan="2" style="padding:10px 14px; font-weight:700; color:#065f46;">FINANCING ACTIVITIES</td>
+                    <td></td>
+                </tr>
+                {% for r in financing_rows %}
+                <tr>
+                    <td style="padding:6px 14px; color:#6b7280;">{{ r.code }}</td>
+                    <td style="padding:6px 14px;">{{ r.name }}</td>
+                    <td style="padding:6px 14px; text-align:right;
+                               color:{% if r.amount >= 0 %}#065f46{% else %}#991b1b{% endif %};">
+                        ₵{{ r.amount|floatformat:2|intcomma }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" style="padding:8px 14px; color:#9ca3af; font-style:italic;">No financing cash movements.</td></tr>
+                {% endfor %}
+                <tr style="border-top:1px solid #e5e7eb;">
+                    <td colspan="2" style="padding:10px 14px; font-weight:700; text-align:right;">Net Cash from Financing</td>
+                    <td style="padding:10px 14px; text-align:right; font-weight:700;">₵{{ total_financing|floatformat:2|intcomma }}</td>
+                </tr>
+
+                <!-- SUMMARY -->
+                <tr style="background:#f3f4f6; height:14px;"><td colspan="3"></td></tr>
+                <tr style="background:#f9fafb;">
+                    <td colspan="2" style="padding:12px 14px; font-weight:700; text-align:right;">
+                        Net Increase / (Decrease) in Cash
+                    </td>
+                    <td style="padding:12px 14px; text-align:right; font-weight:700;
+                               color:{% if net_change >= 0 %}#065f46{% else %}#991b1b{% endif %};">
+                        ₵{{ net_change|floatformat:2|intcomma }}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding:8px 14px; text-align:right; color:#6b7280;">Opening Cash Balance</td>
+                    <td style="padding:8px 14px; text-align:right;">₵{{ opening_cash|floatformat:2|intcomma }}</td>
+                </tr>
+                <tr style="border-top:3px double #1a56db;">
+                    <td colspan="2" style="padding:14px; font-weight:800; text-align:right; font-size:14px; color:#1e3a5f;">
+                        CLOSING CASH BALANCE
+                    </td>
+                    <td style="padding:14px; text-align:right; font-weight:800; font-size:14px; color:#1e3a5f;">
+                        ₵{{ closing_cash|floatformat:2|intcomma }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    {% if reconciled %}
+    <div style="margin-top:12px; padding:10px 14px; background:#ecfdf5;
+                border:1px solid #a7f3d0; color:#065f46; border-radius:6px; font-weight:600;">
+        ✓ Reconciled — Opening + Net Change = Closing Cash
+    </div>
+    {% else %}
+    <div style="margin-top:12px; padding:10px 14px; background:#fef2f2;
+                border:1px solid #fca5a5; color:#991b1b; border-radius:6px; font-weight:600;">
+         Not reconciled — check your postings.
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

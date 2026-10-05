@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import Sum, Count
 from decimal import Decimal
 from .models import Trans
-from .services.posting_service import TransactionPostingService
+#from .services.posting_service import TransactionPostingService
 from SysSetup.models import AuditLog
 
 @login_required
@@ -126,12 +126,12 @@ def batch_posting_confirm1(request):
         
         # Verify password
         if not request.user.check_password(confirm_password):
-            messages.error(request, "❌ Incorrect password. Batch posting cancelled.")
+            messages.error(request, " Incorrect password. Batch posting cancelled.")
             return redirect('RecPayApp:batch_posting_dashboard')
         
         # Verify confirmation text
         if confirm_text != 'CONFIRM BATCH POST':
-            messages.error(request, "❌ Please type 'CONFIRM BATCH POST' to proceed.")
+            messages.error(request, " Please type 'CONFIRM BATCH POST' to proceed.")
             return redirect('RecPayApp:batch_posting_preview')
         
         # Process the batch
@@ -235,12 +235,12 @@ def batch_posting_confirm(request):
         
         # Verify password
         if not request.user.check_password(confirm_password):
-            messages.error(request, "❌ Incorrect password. Batch posting cancelled.")
+            messages.error(request, " Incorrect password. Batch posting cancelled.")
             return redirect('RecPayApp:batch_posting_dashboard')
         
         # Verify confirmation text
         if confirm_text != 'CONFIRM BATCH POST':
-            messages.error(request, "❌ Please type 'CONFIRM BATCH POST' to proceed.")
+            messages.error(request, " Please type 'CONFIRM BATCH POST' to proceed.")
             return redirect('RecPayApp:batch_posting_preview')
         
         # Process the batch

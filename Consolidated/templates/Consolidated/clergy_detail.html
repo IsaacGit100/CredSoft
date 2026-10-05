@@ -1,0 +1,75 @@
+{% extends 'Consolidated/base_consolidated.html' %}
+
+{% block consolidated_content %}
+<div class="cd-page">
+
+    <div class="cd-header">
+        <h2>Clergy Profile</h2>
+        <h3>
+            {% if clergy.title %}{{ clergy.title }} {% endif %}{{ clergy.full_name }}
+        </h3>
+        <div class="cd-sub">{{ clergy.entity.name }}</div>
+    </div>
+
+    <div class="cd-actions">
+        <a href="{% url 'Consolidated:clergy_pdf' clergy.id %}"
+           class="btn btn-outline-danger" target="_blank">
+            <i class="fas fa-file-pdf"></i> PDF
+        </a>
+        <a href="{% url 'Consolidated:clergy_excel' clergy.id %}"
+           class="btn btn-outline-success">
+            <i class="fas fa-file-excel"></i> Excel
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <a href="{% url 'Consolidated:report_clergy' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div class="cd-card">
+        <table class="cd-table">
+            <tbody>
+                <tr><th>Full Name</th><td>{{ clergy.full_name|default:"—" }}</td></tr>
+                <tr><th>Title</th><td>{{ clergy.title|default:"—" }}</td></tr>
+                <tr><th>Clergy Type</th><td>{{ clergy.clergy_type|default:"—" }}</td></tr>
+                <tr><th>Parish</th><td>{{ clergy.entity.name }}</td></tr>
+                <tr><th>Email</th><td>{{ clergy.email_address|default:"—" }}</td></tr>
+                <tr><th>Telephone</th><td>{{ clergy.telephone|default:"—" }}</td></tr>
+                <tr><th>Postal Address</th><td>{{ clergy.postal_address|default:"—" }}</td></tr>
+                <tr><th>Residential Address</th><td>{{ clergy.res_address|default:"—" }}</td></tr>
+                <tr><th>Date Arrived</th><td>{{ clergy.date_arrived|date:"d/m/Y"|default:"—" }}</td></tr>
+                <tr><th>Date Departed</th><td>{{ clergy.date_depart|date:"d/m/Y"|default:"—" }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<style>
+    .cd-page       { padding: 20px; max-width: 800px; margin: 0 auto; }
+    .cd-header     { background: #fff; padding: 20px; border-radius: 10px;
+                     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                     text-align: center; margin-bottom: 16px; }
+    .cd-header h2  { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .cd-header h3  { margin: 12px 0 4px; color: #1a56db; font-size: 16px; }
+    .cd-sub        { color: #6b7280; font-size: 13px; }
+
+    .cd-actions    { display: flex; gap: 8px; justify-content: flex-end;
+                     margin-bottom: 14px; flex-wrap: wrap; }
+
+    .cd-card       { background: #fff; border-radius: 8px;
+                     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                     overflow: hidden; }
+    .cd-table      { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .cd-table th   { text-align: left; padding: 12px 18px;
+                     background: #f9fafb; color: #374151;
+                     font-weight: 600; width: 200px;
+                     border-bottom: 1px solid #f3f4f6; }
+    .cd-table td   { padding: 12px 18px; color: #1f2937;
+                     border-bottom: 1px solid #f3f4f6; }
+    .cd-table tr:last-child th,
+    .cd-table tr:last-child td { border-bottom: none; }
+</style>
+{% endblock %}

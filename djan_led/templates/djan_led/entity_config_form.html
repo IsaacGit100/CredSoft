@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="max-width:1000px; padding:20px;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div>
+            <h2 style="margin:0;">{{ title }}</h2>
+            <div style="color:#6b7280; font-size:13px;">
+                Organisation &amp; contact details — used across all reports and printouts
+            </div>
+        </div>
+        <a href="{% url 'ChurchApp:church_dashboard' entity.slug %}" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Close
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}"
+                 style="padding:12px 16px; border-radius:8px; margin-bottom:16px;
+                        background:{% if message.tags == 'error' %}#fef2f2{% else %}#ecfdf5{% endif %};
+                        border:1px solid {% if message.tags == 'error' %}#fca5a5{% else %}#a7f3d0{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data"
+          style="background:white; border-radius:8px; padding:24px;
+                 box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div style="background:#fef2f2; border:1px solid #fca5a5; color:#991b1b;
+                        padding:10px 14px; border-radius:6px; margin-bottom:16px;">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- Section: Report header -->
+        <h3 style="margin:0 0 14px 0; font-size:15px; color:#1a56db;
+                   border-bottom:2px solid #e5e7eb; padding-bottom:6px;">
+            <i class="fas fa-file-alt"></i> Report Header
+        </h3>
+
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                <label for="{{ form.organization_name.id_for_label }}"
+                       class="form-label">{{ form.organization_name.label }}</label>
+                {{ form.organization_name }}
+                {% if form.organization_name.errors %}
+                    <div class="invalid-feedback d-block">{{ form.organization_name.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.logo.id_for_label }}" class="form-label">
+                    {{ form.logo.label }}
+                </label>
+                {{ form.logo }}
+                {% if config.logo %}
+                    <img src="{{ config.logo.url }}" alt=""
+                         style="max-height:40px; margin-top:8px; border:1px solid #e5e7eb; padding:2px;">
+                {% endif %}
+                {% if form.logo.errors %}
+                    <div class="invalid-feedback d-block">{{ form.logo.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-12 mb-3">
+                <label for="{{ form.report_subtitle.id_for_label }}"
+                       class="form-label">{{ form.report_subtitle.label }}</label>
+                {{ form.report_subtitle }}
+                <small class="form-text text-muted">
+                    Optional. Appears under the organisation name on every report.
+                </small>
+            </div>
+        </div>
+
+        <!-- Section: Contact details -->
+        <h3 style="margin:24px 0 14px 0; font-size:15px; color:#1a56db;
+                   border-bottom:2px solid #e5e7eb; padding-bottom:6px;">
+            <i class="fas fa-address-card"></i> Contact &amp; Address
+        </h3>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.address.label }}</label>
+                {{ form.address }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">{{ form.city.label }}</label>
+                {{ form.city }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">{{ form.region.label }}</label>
+                {{ form.region }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">{{ form.country.label }}</label>
+                {{ form.country }}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ form.phone.label }}</label>
+                {{ form.phone }}
+            </div>
+            <div class="col-md-5 mb-3">
+                <label class="form-label">{{ form.email.label }}</label>
+                {{ form.email }}
+            </div>
+        </div>
+
+        <!-- Section: Entity type & reporting -->
+        <h3 style="margin:24px 0 14px 0; font-size:15px; color:#1a56db;
+                   border-bottom:2px solid #e5e7eb; padding-bottom:6px;">
+            <i class="fas fa-cogs"></i> Entity Type &amp; Reporting
+        </h3>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ form.entity_type.label }}</label>
+                {{ form.entity_type }}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ form.currency.label }}</label>
+                {{ form.currency }}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ form.fiscal_year_start.label }}</label>
+                {{ form.fiscal_year_start }}
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex; gap:10px; justify-content:flex-end;
+                    margin-top:20px; padding-top:16px; border-top:1px solid #e5e7eb;">
+            <a href="{% url 'ChurchApp:church_dashboard' entity.slug %}"
+               class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

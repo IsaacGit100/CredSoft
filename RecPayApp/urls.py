@@ -32,73 +32,24 @@ urlpatterns = [
     path("batch-post/", views.batch_post_transactions, name="batch_post_transactions"),
     path("post/transaction/", views.post_transaction, name="post_transaction"),
     #   path('journal-list-manage/', views.journal_list_manage, name='journal_list_manage'),
-    # API endpoints
-    path(
-        "api/member-info/<int:member_id>/",
-        views.api_member_info,
-        name="api_member_info",
-    ),
-    path(
-        "api/member-loans/<int:member_id>/",
-        views.api_member_loans,
-        name="api_member_loans",
-    ),
+    
     path("trans-all-delete/", views.trans_all_delete, name="trans_all_delete"),
-    path(
-        "entity/<slug:slug>/trans/list/manage/",
-        views.trans_list_manage,
-        name="trans_list_manage",
-    ),
+    path("entity/<slug:slug>/trans/list/manage/", views.trans_list_manage, name="trans_list_manage"),
     #  'entity/<slug:slug>/journal-entries/'
     
     
 #    path("trans/excel/all/", views_excel.trans_excel_all, name="trans_excel_all"),
-    path(
-        "RecPayApp/batch_posting_dashboard/",
-        views_batch.batch_posting_dashboard,
-        name="batch_posting_dashboard",
-    ),
-    path(
-        "RecPayApp/batch_post_review/",
-        views_batch.batch_posting_preview,
-        name="batch_posting_preview",
-    ),
-    path(
-        "RecPayApp/batch_posting_confirm/",
-        views_batch.batch_posting_confirm,
-        name="batch_posting_confirm",
-    ),
+    path("RecPayApp/batch_posting_dashboard/", views_batch.batch_posting_dashboard, name="batch_posting_dashboard"),
+    path("RecPayApp/batch_post_review/", views_batch.batch_posting_preview, name="batch_posting_preview"),
+    path("RecPayApp/batch_posting_confirm/", views_batch.batch_posting_confirm, name="batch_posting_confirm"),
     path("trans/detail/<int:pk>/", views.trans_detail, name="trans_detail"),
-    #  path('transactions/', views_services.transaction_list, name='transaction_list'),
-    #  path('transactions/list/', views_services.transaction_list, name='transaction_list_alt'),
-    #  ADD THIS - Process all transactions
-    #  path('transactions/process/', views_services.process_all_drafts, name='process_transactions'),
-    #  ADD THIS - Process single transaction
-    #  path('transactions/process/<int:trans_id>/', views_services.process_single_transaction_view, name='process_single_transaction'),
-    #  path('transactions/process/<int:trans_id>/', views_services.process_single_transaction_view, name='process_single_transaction'),
-    #  path('transactions/detail/<int:trans_id>/', views_services.transaction_detail, name='transaction_detail'),
+    
     path("report/trans-audit/", views.trans_audit_report, name="trans_audit_report"),
-    path(
-        "report/trans-audit/excel/",
-        views.trans_audit_report_excel,
-        name="trans_audit_report_excel",
-    ),
+    path("report/trans-audit/excel/", views.trans_audit_report_excel, name="trans_audit_report_excel"),
     path("trans/jour/bal/list/", views.trans_jour_bal_list, name="trans_jour_bal_list"),
-    path(
-        "trans/jour/bal/view/<int:pk>/",
-        views.trans_jour_bal_view,
-        name="trans_jour_bal_view",
-    ),
-    path(
-        "church/<slug:slug>/trans/create/",
-        views.church_trans_create,
-        name="church_trans_create",
-    ),
-    path(
-        "school/<slug:slug>/trans/create/",
-        views.school_trans_create,
-        name="school_trans_create",
-    ),
+    path("trans/jour/bal/view/<int:pk>/", views.trans_jour_bal_view, name="trans_jour_bal_view"),
+    path("church/<slug:slug>/trans/create/", views.church_trans_create, name="church_trans_create"),
+    path("school/<slug:slug>/trans/create/", views.school_trans_create, name="school_trans_create"),
     # Entity Trans
     path(
         "entity/<slug:slug>/trans/list/manage/",
@@ -120,4 +71,13 @@ urlpatterns = [
         views.trans_post_selected,
         name="trans_post_selected",
     ),
+    
+    ####################################
+    path('entity/<slug:slug>/supervisor/queue/', views.supervisor_queue, name='supervisor_queue'),
+    path('entity/<slug:slug>/supervisor/post-selected/', views.supervisor_post_selected, name='supervisor_post_selected'),
+    path('entity/<slug:slug>/supervisor/reject-selected/',  views.supervisor_reject_selected, name='supervisor_reject_selected'),
+    
+    path('<slug:slug>/supervisor/queue/', views.supervisor_queue, name='supervisor_queue'),
+    path('<slug:slug>/supervisor/post-selected/', views.supervisor_post_selected, name='supervisor_post_selected'),
+    path('<slug:slug>/supervisor/reject-selected/', views.supervisor_reject_selected, name='supervisor_reject_selected'),
 ]

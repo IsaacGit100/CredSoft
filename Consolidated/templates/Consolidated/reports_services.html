@@ -1,0 +1,175 @@
+{% extends 'Consolidated/base_consolidated.html' %}
+{% load humanize %}
+
+{% block consolidated_content %}
+<div class="sv-page">
+
+    <div class="sv-header">
+        <h2>{{ entity_config.organization_name|default:"Consolidated Services" }}</h2>
+        <h3>Consolidated Services List</h3>
+        <div class="sv-sub">
+            {{ service_count }} service{{ service_count|pluralize }}
+            across {{ entity_count }} parish{{ entity_count|pluralize:"es" }}
+        </div>
+    </div>
+
+    <div class="sv-actions">
+        <a href="?{{ request.GET.urlencode }}&format=pdf"
+           class="btn btn-outline-danger" target="_blank">
+            <i class="fas fa-file-pdf"></i> PDF (whole list)
+        </a>
+        <a href="?{{ request.GET.urlencode }}&format=excel"
+           class="btn btn-outline-success">
+            <i class="fas fa-file-excel"></i> Excel (all fields)
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <a href="{% url 'Consolidated:reports_home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <form method="get" class="sv-search">
+        <input type="text" name="q" value="{{ search }}"
+               placeholder="Search by service, parish or clergy..." class="sv-search-input">
+        <input type="text" name="start" value="{{ start }}" placeholder="From dd/mm/yyyy"
+               class="sv-date">
+        <input type="text" name="end" value="{{ end }}" placeholder="To dd/mm/yyyy"
+               class="sv-date">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> Apply
+        </button>
+        {% if search or start or end %}
+            <a href="{% url 'Consolidated:report_services' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Clear
+            </a>
+        {% endif %}
+    </form>
+
+    <div class="sv-card">
+        <table class="sv-table">
+            <thead>
+                <tr>
+                    <th style="width:4%;">No</th>
+                    <th style="width:9%;">Date</th>
+                    <th style="width:15%;">Service</th>
+                    <th style="width:13%;">Parish</th>
+                    <th style="width:15%;">Officiant</th>
+                    <th style="width:18%;">Clergy</th>
+                    <th style="width:6%; text-align:right;">Att.</th>
+                    <th style="width:6%; text-align:right;">Comm.</th>
+                    <th style="width:5%;">Posted</th>
+                    <th style="width:9%; text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in services %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ s.date|date:"d/m/Y" }}</td>
+                    <td>{{ s.name_of_service|default:"—" }}</td>
+                    <td>{{ s.entity.name }}</td>
+                    <td>{{ s.officiant|default:"—" }}</td>
+                    <td>
+                        {% for c in s.clergy.all %}
+                            {{ c.full_name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}—{% endfor %}
+                    </td>
+                    <td class="num">{{ s.attendance|default:0|intcomma }}</td>
+                    <td class="num">{{ s.communicants|default:0|intcomma }}</td>
+                    <td>
+                        {% if s.posted_to_ledger %}
+                            <span style="color:#16a34a; font-size:11px; font-weight:600;">Yes</span>
+                        {% else %}
+                            <span style="color:#9ca3af; font-size:11px;">No</span>
+                        {% endif %}
+                    </td>
+                    <td class="sv-actions-cell">
+                        <a href="{% url 'Consolidated:service_detail' s.id %}"
+                           class="sv-btn sv-btn-view" title="View all fields">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{% url 'Consolidated:service_pdf' s.id %}"
+                           class="sv-btn sv-btn-pdf" target="_blank" title="PDF">
+                            <i class="fas fa-file-pdf"></i>
+                        </a>
+                        <a href="{% url 'Consolidated:service_excel' s.id %}"
+                           class="sv-btn sv-btn-excel" title="Excel">
+                            <i class="fas fa-file-excel"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="sv-empty">
+                        {% if search or start or end %}
+                            No services match your filters.
+                        {% else %}
+                            No services found.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if services %}
+            <tfoot>
+                <tr>
+                    <td colspan="6" style="text-align:right;">TOTAL</td>
+                    <td class="num" style="font-weight:700;">{{ total_attendance|intcomma }}</td>
+                    <td class="num" style="font-weight:700;">{{ total_communicants|intcomma }}</td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+
+</div>
+
+<style>
+    .sv-page        { padding: 20px; max-width: 1500px; margin: 0 auto; }
+    .sv-header      { background: #fff; padding: 20px; border-radius: 10px;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                      margin-bottom: 16px; text-align: center; }
+    .sv-header h2   { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .sv-header h3   { margin: 12px 0 4px; color: #1a56db; font-size: 16px; }
+    .sv-sub         { color: #6b7280; font-size: 13px; }
+
+    .sv-actions     { display: flex; gap: 8px; justify-content: flex-end;
+                      margin-bottom: 14px; flex-wrap: wrap; }
+    .sv-search      { display: flex; gap: 8px; margin-bottom: 14px;
+                      background: #fff; padding: 14px; border-radius: 8px;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+                      flex-wrap: wrap; }
+    .sv-search-input{ flex: 2; min-width: 200px; padding: 8px 12px;
+                      border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+    .sv-date        { width: 130px; padding: 8px 12px;
+                      border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+
+    .sv-card        { background: #fff; border-radius: 8px;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                      overflow: hidden; }
+    .sv-table       { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .sv-table th    { text-align: left; padding: 9px 10px;
+                      background: #f3f4f6; color: #374151;
+                      font-weight: 700; font-size: 11px;
+                      border-bottom: 2px solid #e5e7eb; }
+    .sv-table td    { padding: 7px 10px; border-bottom: 1px solid #f3f4f6;
+                      vertical-align: middle; }
+    .sv-table td.num { text-align: right; font-family: monospace; }
+    .sv-table tfoot td { padding: 10px; border-top: 2px solid #1a56db;
+                         background: #f3f4f6; }
+    .sv-table tr:hover td { background: #f9fafb; }
+    .sv-empty       { text-align: center; padding: 40px; color: #9ca3af; }
+
+    .sv-actions-cell{ text-align: center; white-space: nowrap; }
+    .sv-btn         { display: inline-block; padding: 3px 7px;
+                      border-radius: 4px; text-decoration: none;
+                      margin: 0 1px; font-size: 11px; }
+    .sv-btn-view    { background: #17a2b8; color: #fff; }
+    .sv-btn-pdf     { background: #dc2626; color: #fff; }
+    .sv-btn-excel   { background: #16a34a; color: #fff; }
+    .sv-btn:hover   { opacity: 0.85; color: #fff; }
+</style>
+{% endblock %}

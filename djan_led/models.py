@@ -4,10 +4,7 @@ from django.db import models
 from django.db import models
 from django.contrib.auth.models import User
 from django_ledger.models import EntityModel
-
-from django.db import models
-from django.contrib.auth.models import User
-from django_ledger.models import EntityModel
+from django.db.models.signals import post_save
 
 class UserProfile(models.Model):
     USER_ROLES = (
@@ -19,7 +16,6 @@ class UserProfile(models.Model):
         ("CreditUnion", "CreditUnion"),
         ("Church", "Church"),
     )
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='djan_led_profile')
     default_entity = models.ForeignKey(EntityModel, on_delete=models.SET_NULL, null=True, blank=True, related_name='default_users')
     allowed_entities = models.ManyToManyField(EntityModel, blank=True, related_name='allowed_users')
     role = models.CharField(max_length=20, choices=USER_ROLES, default='user')
@@ -48,7 +44,7 @@ class UserProfile(models.Model):
         verbose_name_plural = "User Profiles"
 
 # Auto-create profile when a user is created
-from django.db.models.signals import post_save
+
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
@@ -78,25 +74,26 @@ class EntityConfig(models.Model):
     ]
 
     entity = models.OneToOneField(EntityModel, on_delete=models.CASCADE, related_name="config")
-    entity_type = models.CharField(max_length=20, choices=ENTITY_TYPE_CHOICES, default='church',
-        blank=True,
-        help_text="Select the type of entity"
-    )
+    entity_type = models.CharField(max_length=20, choices=ENTITY_TYPE_CHOICES, default='church', blank=True)
+    organization_name = models.CharField(max_length=200, null=True, blank=True, default='')
+    report_subtitle = models.CharField(max_length=200, blank=True, null=True, default="")
+    logo = models.ImageField(upload_to="entity_logos/", blank=True, null=True, help_text="Logo shown on printed reports and PDFs.")
+    display_name = models.CharField(max_length=200, blank=True, default="", help_text="Name shown on reports. Leave blank to use the entity's name.")
+    
+    address = models.CharField(max_length=250, blank=True, default="")
+    city = models.CharField(max_length=100, blank=True, default="")
+    region = models.CharField(max_length=100, blank=True, default="")
+    country = models.CharField(max_length=100, blank=True, default="Ghana")
+    phone = models.CharField(max_length=50, blank=True, default="")
+    email = models.EmailField(blank=True, default="")
+
     # Loan settings
-    loan_interest_rate = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0.0
-    )
     max_loan_term = models.PositiveIntegerField(default=36)  # months
     min_loan_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
     moratorium_days = models.PositiveIntegerField(default=0)
 
     # Savings settings
-    savings_interest_rate = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0.0
-    )
-    min_savings_balance = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0.0
-    )
+    min_savings_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
     savings_frequency = models.CharField(max_length=20, default="monthly")
     sav_int_appl = models.CharField(max_length=20, null=True, blank=True, choices=SAV_INT_APPL, default='' )
     # Membership
@@ -133,7 +130,7 @@ class EntityConfig(models.Model):
 
     interest_expense_account_code = models.CharField(max_length=20, default="5020")
     savings_interest_payable_account_code = models.CharField(max_length=20, default="2020")
-    
+
     loan_interest_rate = models.DecimalField(max_digits=8, decimal_places=4, default=0, help_text="Annual interest rate (%)")
     loan_asset_account_code = models.CharField(max_length=20, default='1080')
     loan_interest_income_code = models.CharField(max_length=20, default='4010')

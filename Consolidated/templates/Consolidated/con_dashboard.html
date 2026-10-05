@@ -1,0 +1,288 @@
+{% extends 'base_consolidated.html' %}
+{% load humanize %}
+
+{% block consolidated_content %}
+<style>
+    .cb-page      { padding: 20px; max-width: 1400px; margin: 0 auto; }
+    .cb-header    { text-align: center; border-bottom: 2px solid #1a56db;
+                    padding-bottom: 14px; margin-bottom: 20px; }
+    .cb-header h2 { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .cb-header h3 { margin-top: 12px; margin-bottom: 4px; font-size: 16px;
+                    color: #1a56db; }
+    .cb-header .sub { color: #6b7280; font-size: 12px; }
+
+    /* Selection panel */
+    .cb-select    { background: #fff; border-radius: 8px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                    padding: 18px; margin-bottom: 20px; }
+    .cb-select h4 { margin: 0 0 12px 0; font-size: 14px;
+                    color: #1e3a5f; }
+    .cb-churches  { display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                    gap: 8px; margin-bottom: 14px; }
+    .cb-church    { display: flex; align-items: center; gap: 8px;
+                    padding: 8px 10px; border: 1px solid #e5e7eb;
+                    border-radius: 6px; cursor: pointer;
+                    transition: background 0.1s; }
+    .cb-church:hover { background: #f9fafb; }
+    .cb-church input { margin: 0; }
+    .cb-church .name { font-size: 13px; color: #374151; }
+    .cb-dates     { display: flex; gap: 12px; align-items: end;
+                    flex-wrap: wrap; padding-top: 14px;
+                    border-top: 1px solid #e5e7eb; }
+    .cb-field label { display: block; font-size: 12px; font-weight: 600;
+                      color: #374151; margin-bottom: 4px; }
+    .cb-field input { padding: 6px 10px; border: 1px solid #d1d5db;
+                      border-radius: 6px; }
+    .cb-actions   { display: flex; gap: 8px; align-items: center;
+                    margin-left: auto; flex-wrap: wrap; }
+
+    /* Tiles */
+    .cb-tiles     { display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 12px; margin-bottom: 20px; }
+    .cb-tile      { background: #fff; border-left: 4px solid #1a56db;
+                    padding: 14px 18px; border-radius: 8px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .cb-tile .lbl { font-size: 11px; text-transform: uppercase;
+                    color: #6b7280; font-weight: 700; letter-spacing: 0.5px; }
+    .cb-tile .val { font-size: 22px; font-weight: 700; margin-top: 4px; }
+    .cb-tile.cash  { border-color: #0891b2; } .cb-tile.cash .val  { color: #0891b2; }
+    .cb-tile.green { border-color: #16a34a; } .cb-tile.green .val { color: #16a34a; }
+    .cb-tile.red   { border-color: #dc2626; } .cb-tile.red .val   { color: #dc2626; }
+    .cb-tile.blue  { border-color: #1a56db; } .cb-tile.blue .val  { color: #1a56db; }
+
+    .cb-tile.pri  { background: linear-gradient(135deg, #1e3a5f, #1a56db);
+                    color: #fff; border: none; }
+    .cb-tile.pri .lbl { color: rgba(255,255,255,0.85); }
+    .cb-tile.pri .val { color: #fff; font-size: 24px; }
+
+    /* Table */
+    .cb-table-card{ background: #fff; border-radius: 8px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                    overflow: hidden; margin-bottom: 20px; }
+    .cb-table-card h4 { margin: 0; padding: 14px 18px;
+                        background: #f9fafb;
+                        border-bottom: 1px solid #e5e7eb;
+                        font-size: 14px; color: #1e3a5f; }
+    .cb-table     { width: 100%; border-collapse: collapse;
+                    font-size: 13px; }
+    .cb-table th  { text-align: right; padding: 8px 12px;
+                    background: #f3f4f6; color: #374151;
+                    font-weight: 700; font-size: 12px;
+                    border-bottom: 2px solid #e5e7eb; }
+    .cb-table th:first-child { text-align: left; }
+    .cb-table td  { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; }
+    .cb-table td.num { text-align: right; }
+    .cb-table tr:hover td { background: #f9fafb; }
+    .cb-table tfoot td { font-weight: 800; background: #f3f4f6;
+                         border-top: 2px solid #1a56db; font-size: 13px; }
+    .cb-link      { color: #1a56db; text-decoration: none;
+                    font-size: 12px; }
+    .cb-link:hover{ text-decoration: underline; }
+
+    .cb-links     { display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 10px; margin-bottom: 20px; }
+</style>
+
+<div class="cb-page">
+
+    <!-- ===== Header ===== -->
+    <div class="cb-header">
+        <h2>{{ entity_config.organization_name|default:"Organization" }}</h2>
+        {% if entity_config.report_subtitle %}
+            <div class="sub">{{ entity_config.report_subtitle }}</div>
+        {% endif %}
+        <h3>Bishop's Consolidated View</h3>
+        <div class="sub">
+            {{ selected_count }} of {{ total_count }} parishes — {{ period_label }}
+        </div>
+    </div>
+
+    <!-- ===== Selection ===== -->
+    <form method="get" class="cb-select">
+        <h4>
+            <i class="fas fa-church"></i> Select Parishes
+            {% if all_selected %}
+                <span style="color:#16a34a; font-weight:400; font-size:12px;">
+                    (all selected)
+                </span>
+            {% endif %}
+        </h4>
+
+        <div class="cb-churches">
+            {% for church in all_churches %}
+                <label class="cb-church">
+                    <input type="checkbox" name="entities" value="{{ church.slug }}"
+                           {% if church.slug in selected_slugs %}checked{% endif %}>
+                    <span class="name">{{ church.name }}</span>
+                </label>
+            {% empty %}
+                <div style="color:#9ca3af;">No church entities found.</div>
+            {% endfor %}
+        </div>
+
+        <div class="cb-dates">
+            <div class="cb-field">
+                <label>From</label>
+                <input type="text" name="start" value="{{ start }}"
+                       placeholder="dd/mm/yyyy">
+            </div>
+            <div class="cb-field">
+                <label>To</label>
+                <input type="text" name="end" value="{{ end }}"
+                       placeholder="dd/mm/yyyy">
+            </div>
+            <div class="cb-actions">
+                <button type="button" onclick="selectAll(true)"
+                        class="btn btn-outline-secondary">
+                    <i class="fas fa-check-square"></i> Select All
+                </button>
+                <button type="button" onclick="selectAll(false)"
+                        class="btn btn-outline-secondary">
+                    <i class="fas fa-square"></i> Clear
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Apply
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- ===== Tiles ===== -->
+    <div class="cb-tiles">
+        <div class="cb-tile pri">
+            <div class="lbl"><i class="fas fa-wallet"></i> Total Cash</div>
+            <div class="val">₵{{ totals.total_cash|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="cb-tile cash">
+            <div class="lbl"><i class="fas fa-university"></i> Bank</div>
+            <div class="val">₵{{ totals.bank|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="cb-tile green">
+            <div class="lbl"><i class="fas fa-arrow-down"></i> Receipts</div>
+            <div class="val">₵{{ totals.total_receipts|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="cb-tile red">
+            <div class="lbl"><i class="fas fa-arrow-up"></i> Payments</div>
+            <div class="val">₵{{ totals.total_payments|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="cb-tile {% if totals.net_income >= 0 %}green{% else %}red{% endif %}">
+            <div class="lbl"><i class="fas fa-chart-line"></i> Net Income</div>
+            <div class="val">₵{{ totals.net_income|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="cb-tile blue">
+            <div class="lbl"><i class="fas fa-building"></i> Total Assets</div>
+            <div class="val">₵{{ totals.total_assets|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="cb-tile red">
+            <div class="lbl"><i class="fas fa-file-invoice"></i> Liabilities</div>
+            <div class="val">₵{{ totals.total_liabilities|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="cb-tile green">
+            <div class="lbl"><i class="fas fa-landmark"></i> Equity</div>
+            <div class="val">₵{{ totals.total_equity|floatformat:2|intcomma }}</div>
+        </div>
+    </div>
+
+    <!-- ===== Report Links ===== -->
+    <div class="cb-links">
+        <a href="{% url 'Consolidated:consolidated_trial_balance' %}?{{ querystring }}"
+           class="btn btn-primary">
+            <i class="fas fa-balance-scale"></i> Consolidated Trial Balance
+        </a>
+        <a href="{% url 'Consolidated:consolidated_income_statement' %}?{{ querystring }}"
+           class="btn btn-primary">
+            <i class="fas fa-chart-line"></i> Consolidated Income Statement
+        </a>
+        <a href="{% url 'Consolidated:consolidated_balance_sheet' %}?{{ querystring }}"
+           class="btn btn-secondary">
+            <i class="fas fa-file-invoice-dollar"></i> Consolidated Balance Sheet
+        </a>
+        <a href="{% url 'Consolidated:consolidated_cash_flow' %}?{{ querystring }}"
+           class="btn btn-secondary">
+            <i class="fas fa-water"></i> Consolidated Cash Flow
+        </a>
+    </div>
+
+    <!-- ===== Per-Parish Breakdown ===== -->
+    <div class="cb-table-card">
+        <h4><i class="fas fa-list"></i> Per-Parish Breakdown</h4>
+        <table class="cb-table">
+            <thead>
+                <tr>
+                    <th>Parish</th>
+                    <th>Cash</th>
+                    <th>Bank</th>
+                    <th>Total Cash</th>
+                    <th>Receipts</th>
+                    <th>Payments</th>
+                    <th>Net Income</th>
+                    <th>Assets</th>
+                    <th>Liabilities</th>
+                    <th>Equity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in per_entity %}
+                <tr>
+                    <td>{{ row.entity.name }}</td>
+                    <td class="num">₵{{ row.cash|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ row.bank|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ row.total_cash|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ row.total_receipts|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ row.total_payments|floatformat:2|intcomma }}</td>
+                    <td class="num"
+                        style="color:{% if row.net_income >= 0 %}#16a34a{% else %}#dc2626{% endif %};">
+                        ₵{{ row.net_income|floatformat:2|intcomma }}
+                    </td>
+                    <td class="num">₵{{ row.total_assets|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ row.total_liabilities|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ row.total_equity|floatformat:2|intcomma }}</td>
+                    <td>
+                        <a href="{% url 'Report:finance_dashboard' row.entity.slug %}"
+                           class="cb-link">
+                            Open <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="11" style="text-align:center; padding:30px;
+                                            color:#9ca3af;">
+                        No parishes selected. Use the checkboxes above.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if per_entity %}
+            <tfoot>
+                <tr>
+                    <td>TOTAL</td>
+                    <td class="num">₵{{ totals.cash|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ totals.bank|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ totals.total_cash|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ totals.total_receipts|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ totals.total_payments|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ totals.net_income|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ totals.total_assets|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ totals.total_liabilities|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ totals.total_equity|floatformat:2|intcomma }}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+
+</div>
+
+<script>
+    function selectAll(state) {
+        document.querySelectorAll('.cb-churches input[type="checkbox"]')
+            .forEach(cb => cb.checked = state);
+    }
+</script>
+{% endblock %}

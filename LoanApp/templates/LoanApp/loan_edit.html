@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .le-page { padding:20px; max-width:800px; margin:0 auto; }
+    .le-card { background:#fff; border-radius:10px;
+               box-shadow:0 1px 3px rgba(0,0,0,0.08); padding:24px; }
+    .le-header { margin-bottom:20px; }
+    .le-header h2 { margin:0 0 4px; color:#1e3a5f; font-size:20px; }
+    .le-row { display:grid; gap:14px; margin-bottom:14px;
+              grid-template-columns:1fr 1fr; }
+    .le-field label { display:block; font-size:12px; font-weight:600;
+                      color:#374151; margin-bottom:4px; }
+    .le-actions { display:flex; gap:10px; justify-content:flex-end;
+                  padding-top:16px; border-top:1px solid #e5e7eb;
+                  margin-top:20px; }
+</style>
+
+<div class="le-page">
+    <div class="le-card">
+        <div class="le-header">
+            <h2><i class="fas fa-edit"></i> Edit Loan {{ loan.loan_no }}</h2>
+            <div style="color:#6b7280; font-size:13px;">
+                {{ entity.name }} {{ loan.member.full_name }}
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding:10px 14px; border-radius:6px; margin-bottom:14px;
+                            background:{% if message.tags == 'error' %}#fef2f2{% else %}#ecfdf5{% endif %};
+                            border:1px solid {% if message.tags == 'error' %}#fca5a5{% else %}#a7f3d0{% endif %};
+                            color:{% if message.tags == 'error' %}#991b1b{% else %}#065f46{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="le-row">
+                <div class="le-field">
+                    <label>{{ form.principal.label }}</label>
+                    {{ form.principal }}
+                </div>
+                <div class="le-field">
+                    <label>{{ form.interest_rate.label }}</label>
+                    {{ form.interest_rate }}
+                </div>
+            </div>
+
+            <div class="le-row">
+                <div class="le-field">
+                    <label>{{ form.term_months.label }}</label>
+                    {{ form.term_months }}
+                </div>
+                <div class="le-field">
+                    <label>{{ form.moratorium_months.label }}</label>
+                    {{ form.moratorium_months }}
+                </div>
+            </div>
+
+            <div class="le-field" style="margin-bottom:14px;">
+                <label>{{ form.purpose.label }}</label>
+                {{ form.purpose }}
+            </div>
+
+            <div class="le-row">
+                <div class="le-field">
+                    <label>{{ form.date_applied.label }}</label>
+                    {{ form.date_applied }}
+                </div>
+                <div class="le-field">
+                    <label>{{ form.date_approved.label }}</label>
+                    {{ form.date_approved }}
+                </div>
+            </div>
+
+            <div class="le-field">
+                <label>{{ form.approved_by.label }}</label>
+                {{ form.approved_by }}
+            </div>
+
+            <div class="le-actions">
+                <a href="{% url 'LoanApp:loan_detail' entity.slug loan.id %}"
+                   class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update Loan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

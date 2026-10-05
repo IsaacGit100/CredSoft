@@ -19,22 +19,22 @@
                     </button>
                      <ul class="dropdown-menu">
                             <li class="dropdown-header">PDF Reports</li>
-                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_info_pdf' entity.slug %}">📄 Members Information</a></li>
-                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_contact_pdf' entity.slug %}">📞 Members Contact</a></li>
-                            <li><a class="dropdown-item" href="{% url 'MembersApp:next_of_kin_pdf' entity.slug %}">👨‍👩‍👧 Next of Kin</a></li>
-                            <li><a class="dropdown-item" href="{% url 'MembersApp:financial_report_pdf' entity.slug %}">💰 Financial Report</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_info_pdf' entity.slug %}"> Members Information</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_contact_pdf' entity.slug %}"> Members Contact</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:next_of_kin_pdf' entity.slug %}"> Next of Kin</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:financial_report_pdf' entity.slug %}"> Financial Report</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li class="dropdown-header">Excel Reports</li>
-                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_info_excel' entity.slug %}">📊 Members Information</a></li>
-                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_contact_excel' entity.slug %}">📞 Members Contact</a></li>
-                            <li><a class="dropdown-item" href="{% url 'MembersApp:next_of_kin_excel' entity.slug %}">👨‍👩‍👧 Next of Kin</a></li>
-                            <li><a class="dropdown-item" href="{% url 'MembersApp:financial_report_excel' entity.slug %}">💰 Financial Report</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_info_excel' entity.slug %}"> Members Information</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:members_contact_excel' entity.slug %}"> Members Contact</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:next_of_kin_excel' entity.slug %}"> Next of Kin</a></li>
+                            <li><a class="dropdown-item" href="{% url 'MembersApp:financial_report_excel' entity.slug %}"> Financial Report</a></li>
                         </ul>
                     </div>
                     <a href="{% url 'MembersApp:member_create' entity.slug %}" style="background: #28a745; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; margin-left: 5px;">
                         <i class="fas fa-plus"></i> Add Member
                     </a>
-                    <a href="{% url 'CreditUnion:union_dashboard' entity.slug %}" style="background: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; margin-left: 5px;">
+                    <a href="{% url 'CreditUnion:supervisor_credit_union_home' entity.slug %}" style="background: #6c757d; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; margin-left: 5px;">
                         <i class="fas fa-times"></i> Exit
                     </a>
                    

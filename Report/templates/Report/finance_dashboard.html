@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container" style="padding:20px; max-width:1300px;">
+
+    <!-- ===== Header ===== -->
+    <div style="text-align:center; border-bottom:2px solid #1a56db;
+                padding-bottom:14px; margin-bottom:22px;">
+        {% if entity_config.logo %}
+            <img src="{{ entity_config.logo.url }}" alt=""
+                 style="max-height:55px; margin-bottom:6px;">
+        {% endif %}
+        <h2 style="margin:0; color:#1e3a5f; font-size:20px;">
+            {{ entity_config.organization_name|default:"Organization" }}
+        </h2>
+        <h3 style="margin-top:12px; margin-bottom:4px; font-size:16px; color:#1a56db;">
+            {{ entity_config.display_name|default:entity.name }}
+        </h3>
+        <div style="color:#6b7280; font-size:12px;">
+            Finance Dashboard — {{ period_label }}
+        </div>
+    </div>
+
+    <!-- ===== Date filter ===== -->
+    <form method="get"
+          style="background:#f9fafb; padding:12px 16px; border-radius:8px;
+                 margin-bottom:20px; display:flex; gap:12px; align-items:end; flex-wrap:wrap;">
+        <div>
+            <label style="display:block; font-size:12px; font-weight:600; color:#374151;">From</label>
+            <input type="text" name="start" value="{{ start }}" placeholder="dd/mm/yyyy"
+                   style="padding:6px 10px; border:1px solid #d1d5db; border-radius:6px;">
+        </div>
+        <div>
+            <label style="display:block; font-size:12px; font-weight:600; color:#374151;">To</label>
+            <input type="text" name="end" value="{{ end }}" placeholder="dd/mm/yyyy"
+                   style="padding:6px 10px; border:1px solid #d1d5db; border-radius:6px;">
+        </div>
+        <button type="submit" class="btn btn-primary">Apply</button>
+        <a href="?" class="btn btn-secondary">Reset</a>
+    </form>
+
+    <!-- ===== Row 1 — Cash position ===== -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+                gap:12px; margin-bottom:16px;">
+
+        <div style="background:white; border-left:4px solid #0891b2;
+                    padding:14px 18px; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; text-transform:uppercase; color:#6b7280;
+                        font-weight:700; letter-spacing:.5px;">
+                <i class="fas fa-money-bill-wave"></i> Cash on Hand
+            </div>
+            <div style="font-size:22px; font-weight:700; color:#0891b2; margin-top:4px;">
+                ₵{{ data.cash|floatformat:2|intcomma }}
+            </div>
+        </div>
+
+        <div style="background:white; border-left:4px solid #0891b2;
+                    padding:14px 18px; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; text-transform:uppercase; color:#6b7280;
+                        font-weight:700; letter-spacing:.5px;">
+                <i class="fas fa-university"></i> Bank Balance
+            </div>
+            <div style="font-size:22px; font-weight:700; color:#0891b2; margin-top:4px;">
+                ₵{{ data.bank|floatformat:2|intcomma }}
+            </div>
+        </div>
+
+        <div style="background:linear-gradient(135deg,#1e3a5f,#1a56db); color:white;
+                    padding:14px 18px; border-radius:8px;
+                    box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+            <div style="font-size:11px; text-transform:uppercase;
+                        font-weight:700; letter-spacing:.5px; opacity:.9;">
+                <i class="fas fa-wallet"></i> Total Cash Position
+            </div>
+            <div style="font-size:24px; font-weight:800; margin-top:4px;">
+                ₵{{ data.total_cash|floatformat:2|intcomma }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Row 2 — Period flows ===== -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+                gap:12px; margin-bottom:16px;">
+
+        <div style="background:white; border-left:4px solid #16a34a;
+                    padding:14px 18px; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; text-transform:uppercase; color:#6b7280;
+                        font-weight:700;">
+                <i class="fas fa-arrow-down"></i> Receipts
+            </div>
+            <div style="font-size:20px; font-weight:700; color:#16a34a; margin-top:4px;">
+                ₵{{ data.total_receipts|floatformat:2|intcomma }}
+            </div>
+        </div>
+
+        <div style="background:white; border-left:4px solid #dc2626;
+                    padding:14px 18px; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; text-transform:uppercase; color:#6b7280;
+                        font-weight:700;">
+                <i class="fas fa-arrow-up"></i> Payments
+            </div>
+            <div style="font-size:20px; font-weight:700; color:#dc2626; margin-top:4px;">
+                ₵{{ data.total_payments|floatformat:2|intcomma }}
+            </div>
+        </div>
+
+        <div style="background:white;
+                    border-left:4px solid {% if data.net_flow >= 0 %}#16a34a{% else %}#dc2626{% endif %};
+                    padding:14px 18px; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; text-transform:uppercase; color:#6b7280;
+                        font-weight:700;">
+                <i class="fas fa-balance-scale"></i> Net Flow
+            </div>
+            <div style="font-size:20px; font-weight:700; margin-top:4px;
+                        color:{% if data.net_flow >= 0 %}#16a34a{% else %}#dc2626{% endif %};">
+                ₵{{ data.net_flow|floatformat:2|intcomma }}
+            </div>
+        </div>
+
+        <div style="background:white;
+                    border-left:4px solid {% if data.net_income >= 0 %}#16a34a{% else %}#dc2626{% endif %};
+                    padding:14px 18px; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; text-transform:uppercase; color:#6b7280;
+                        font-weight:700;">
+                <i class="fas fa-chart-line"></i>
+                {% if data.net_income >= 0 %}Net Income{% else %}Net Loss{% endif %}
+            </div>
+            <div style="font-size:20px; font-weight:700; margin-top:4px;
+                        color:{% if data.net_income >= 0 %}#16a34a{% else %}#dc2626{% endif %};">
+                ₵{{ data.net_income|floatformat:2|intcomma }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Row 3 — Balance sheet snapshot ===== -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+                gap:12px; margin-bottom:24px;">
+
+        <div style="background:white; border-left:4px solid #1a56db;
+                    padding:14px 18px; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; text-transform:uppercase; color:#6b7280;
+                        font-weight:700;">
+                <i class="fas fa-building"></i> Total Assets
+            </div>
+            <div style="font-size:20px; font-weight:700; color:#1a56db; margin-top:4px;">
+                ₵{{ data.total_assets|floatformat:2|intcomma }}
+            </div>
+        </div>
+
+        <div style="background:white; border-left:4px solid #991b1b;
+                    padding:14px 18px; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; text-transform:uppercase; color:#6b7280;
+                        font-weight:700;">
+                <i class="fas fa-file-invoice"></i> Liabilities
+            </div>
+            <div style="font-size:20px; font-weight:700; color:#991b1b; margin-top:4px;">
+                ₵{{ data.total_liabilities|floatformat:2|intcomma }}
+            </div>
+        </div>
+
+        <div style="background:white; border-left:4px solid #065f46;
+                    padding:14px 18px; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; text-transform:uppercase; color:#6b7280;
+                        font-weight:700;">
+                <i class="fas fa-landmark"></i> Equity
+            </div>
+            <div style="font-size:20px; font-weight:700; color:#065f46; margin-top:4px;">
+                ₵{{ data.total_equity|floatformat:2|intcomma }}
+            </div>
+        </div>
+
+        <div style="background:white; border-left:4px solid #7c3aed;
+                    padding:14px 18px; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-size:11px; text-transform:uppercase; color:#6b7280;
+                        font-weight:700;">
+                <i class="fas fa-clock"></i> Pending Postings
+            </div>
+            <div style="font-size:20px; font-weight:700; color:#7c3aed; margin-top:4px;">
+                {{ data.pending_trans }}
+                <span style="font-size:12px; color:#6b7280; font-weight:400;">
+                    / {{ data.posted_trans }} posted
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Report quick links ===== -->
+    <h3 style="font-size:14px; color:#374151; margin-bottom:10px;">
+        <i class="fas fa-file-alt"></i> Financial Reports
+    </h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+                gap:10px; margin-bottom:24px;">
+
+        <a href="{% url 'Report:trial_balance' entity.slug %}" class="btn btn-primary" style="justify-content:center;">
+            <i class="fas fa-balance-scale"></i> Trial Balance
+        </a>
+        <a href="{% url 'Report:income_statement' entity.slug %}" class="btn btn-primary" style="justify-content:center;">
+            <i class="fas fa-chart-line"></i> Income Statement
+        </a>
+        <a href="{% url 'Report:balance_sheet' entity.slug %}" class="btn btn-primary" style="justify-content:center;">
+            <i class="fas fa-file-invoice-dollar"></i> Balance Sheet
+        </a>
+        <a href="{% url 'Report:cash_flow' entity.slug %}" class="btn btn-primary" style="justify-content:center;">
+            <i class="fas fa-water"></i> Cash Flow
+        </a>
+        <a href="{% url 'Report:journal_list' entity.slug %}" class="btn btn-secondary" style="justify-content:center;">
+            <i class="fas fa-book"></i> Journal List
+        </a>
+        <a href="{% url 'Report:trans_records' entity.slug %}" class="btn btn-secondary" style="justify-content:center;">
+            <i class="fas fa-receipt"></i> Transaction Records
+        </a>
+        <a href="{% url 'Report:journal_records' entity.slug %}" class="btn btn-secondary" style="justify-content:center;">
+            <i class="fas fa-search-dollar"></i> Journal Records
+        </a>
+        <a href="{% url 'Report:index' entity.slug %}" class="btn btn-secondary" style="justify-content:center;">
+            <i class="fas fa-th-large"></i> All Reports
+        </a>
+    </div>
+
+    <!-- ===== Recent activity ===== -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+
+        <!-- Recent Transactions -->
+        <div style="background:white; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08); overflow:hidden;">
+            <div style="background:#f9fafb; padding:12px 16px;
+                        border-bottom:1px solid #e5e7eb; font-weight:700;
+                        font-size:13px; color:#1e3a5f;">
+                <i class="fas fa-history"></i> Recent Transactions
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                <tbody>
+                    {% for t in data.recent_trans %}
+                    <tr style="border-bottom:1px solid #f3f4f6;">
+                        <td style="padding:6px 12px; color:#6b7280; white-space:nowrap;">
+                            {{ t.date|date:"d/m" }}
+                        </td>
+                        <td style="padding:6px 12px;">
+                            {{ t.ledger_name|default:t.purpose|truncatechars:25 }}
+                        </td>
+                        <td style="padding:6px 12px; text-align:right; font-weight:600;
+                                   color:{% if t.trans_type == 'Receipts' %}#16a34a{% elif t.trans_type == 'Payments' %}#dc2626{% else %}#6b7280{% endif %};">
+                            ₵{{ t.amount|floatformat:2|intcomma }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" style="padding:20px; text-align:center; color:#9ca3af;">
+                        No transactions yet.
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent Journals -->
+        <div style="background:white; border-radius:8px;
+                    box-shadow:0 1px 3px rgba(0,0,0,0.08); overflow:hidden;">
+            <div style="background:#f9fafb; padding:12px 16px;
+                        border-bottom:1px solid #e5e7eb; font-weight:700;
+                        font-size:13px; color:#1e3a5f;">
+                <i class="fas fa-book"></i> Recent Journal Entries
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                <tbody>
+                    {% for je in data.recent_journals %}
+                    <tr style="border-bottom:1px solid #f3f4f6;">
+                        <td style="padding:6px 12px; color:#6b7280; white-space:nowrap;">
+                            {{ je.timestamp|date:"d/m" }}
+                        </td>
+                        <td style="padding:6px 12px;">
+                            <code style="font-size:10px; color:#6b7280;">{{ je.je_number }}</code>
+                            {{ je.description|truncatechars:30|default:"" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2" style="padding:20px; text-align:center; color:#9ca3af;">
+                        No journal entries yet.
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== Footer actions ===== -->
+    <div style="text-align:center; margin-top:24px;">
+        <a href="{% url 'ChurchApp:church_dashboard' entity.slug %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Church Dashboard
+        </a>
+    </div>
+
+</div>
+
+<style>
+@media (max-width: 768px) {
+    .container > div[style*="grid-template-columns:1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+{% endblock %}

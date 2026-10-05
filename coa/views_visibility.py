@@ -215,7 +215,7 @@ def save_account_visibility(request):
                 account.save()
                 updated_count += 1
         
-        messages.success(request, f'✅ Updated {updated_count} account(s). {len(checked_ids)} account(s) now visible.')
+        messages.success(request, f' Updated {updated_count} account(s). {len(checked_ids)} account(s) now visible.')
         return redirect('coa:account_visibility_manager')
     
     return redirect('coa:account_visibility_manager')
@@ -227,7 +227,7 @@ def refresh_account_visibility(request):
     
     if request.method == 'POST':
         # Just a refresh action - no actual changes needed
-        messages.success(request, '🔄 Account visibility settings have been refreshed!')
+        messages.success(request, ' Account visibility settings have been refreshed!')
         return redirect('coa:account_visibility_manager')
     
     return redirect('coa:account_visibility_manager')
@@ -244,7 +244,7 @@ def reset_account_visibility(request):
             is_data_entry=True
         ).update(is_data_view=True)
         
-        messages.success(request, f'✅ Reset {updated} accounts to visible.')
+        messages.success(request, f' Reset {updated} accounts to visible.')
         return redirect('coa:account_visibility_manager')
     
     return redirect('coa:account_visibility_manager')

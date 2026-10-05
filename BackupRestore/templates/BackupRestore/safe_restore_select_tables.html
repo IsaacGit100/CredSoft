@@ -148,7 +148,7 @@
                     progressBar.innerText = '100%';
                     statusMsg.innerHTML = `
                         <div class="alert alert-success mt-2">
-                            <strong>✅ Copy completed successfully!</strong><br>
+                            <strong> Copy completed successfully!</strong><br>
                             Copied: ${data.success_tables ? data.success_tables.length : 0} tables.<br>
                             ${data.failed_tables && data.failed_tables.length ? `Failed: ${data.failed_tables.length}<br>` : ''}
                             <button type="button" class="btn btn-primary mt-2" onclick="window.location.href='{% url 'BackupRestore:backup_panel' %}'">
@@ -163,7 +163,7 @@
                     document.getElementById('copyBtn').innerText = 'Copy Selected Tables to Live Database';
                 } else if (data.status === 'FAILED') {
                     clearInterval(interval);
-                    statusMsg.innerHTML = `<div class="alert alert-danger mt-2">❌ Copy failed: ${data.error}</div>`;
+                    statusMsg.innerHTML = `<div class="alert alert-danger mt-2"> Copy failed: ${data.error}</div>`;
                     document.getElementById('copyBtn').disabled = false;
                     document.getElementById('copyBtn').innerText = 'Copy Selected Tables to Live Database';
                 } else {

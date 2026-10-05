@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mr-page">
+
+    <!-- Header -->
+    <div class="mr-header">
+        <h2>{{ entity_config.organization_name|default:"Consolidated Members" }}</h2>
+        <h3>Consolidated Members List</h3>
+        <div class="mr-sub">
+            {{ member_count }} member{{ member_count|pluralize }}
+            across {{ entity_count }} parish{{ entity_count|pluralize:"es" }}
+        </div>
+    </div>
+
+    <!-- Top actions -->
+    <div class="mr-actions">
+        <a href="?{{ request.GET.urlencode }}&format=pdf"
+           class="btn btn-outline-danger" target="_blank">
+            <i class="fas fa-file-pdf"></i> PDF (whole list)
+        </a>
+        <a href="?{{ request.GET.urlencode }}&format=excel"
+           class="btn btn-outline-success">
+            <i class="fas fa-file-excel"></i> Excel (all fields)
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <a href="{% url 'Consolidated:reports_home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- Search -->
+    <form method="get" class="mr-search">
+        <input type="text" name="q" value="{{ search }}"
+               placeholder="Search by ID, name or telephone..."
+               class="mr-search-input">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> Search
+        </button>
+        {% if search %}
+            <a href="{% url 'Consolidated:report_members' %}"
+               class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Clear
+            </a>
+        {% endif %}
+    </form>
+
+    <!-- Table -->
+    <div class="mr-card">
+        <table class="mr-table">
+            <thead>
+                <tr>
+                    <th style="width:5%;">No</th>
+                    <th style="width:20%;">Full Name</th>
+                    <th style="width:12%;">Telephone</th>
+                    <th style="width:11%;">Date of Birth</th>
+                    <th style="width:11%;">Baptised</th>
+                    <th style="width:11%;">Confirmed</th>
+                    <th>Res. Address</th>
+                    <th style="width:14%; text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in members %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ m.full_name }}</td>
+                    <td>{{ m.telephone1|default:"—" }}</td>
+                    <td>{{ m.date_of_birth|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{{ m.date_baptised|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{{ m.date_confirmed|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{{ m.res_address|default:"—" }}</td>
+                    <td class="mr-actions-cell">
+                        <a href="{% url 'ChurchApp:member_detail' m.entity.slug m.id %}"
+                           class="mr-btn mr-btn-view" title="View all fields">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{% url 'ChurchApp:member_pdf' m.entity.slug m.id %}"
+                           class="mr-btn mr-btn-pdf" title="PDF (listed fields)"
+                           target="_blank">
+                            <i class="fas fa-file-pdf"></i>
+                        </a>
+                        <a href="{% url 'ChurchApp:member_excel' m.entity.slug m.id %}"
+                           class="mr-btn mr-btn-excel" title="Excel (all fields)">
+                            <i class="fas fa-file-excel"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="mr-empty">
+                        {% if search %}
+                            No members match "{{ search }}".
+                        {% else %}
+                            No members found.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<style>
+    .mr-page        { padding: 20px; max-width: 1400px; margin: 0 auto; }
+
+    .mr-header      { background: #fff; padding: 20px; border-radius: 10px;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                      margin-bottom: 16px; text-align: center; }
+    .mr-header h2   { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .mr-header h3   { margin: 12px 0 4px; color: #1a56db; font-size: 16px; }
+    .mr-sub         { color: #6b7280; font-size: 13px; }
+
+    .mr-actions     { display: flex; gap: 8px; justify-content: flex-end;
+                      margin-bottom: 14px; flex-wrap: wrap; }
+
+    .mr-search      { display: flex; gap: 8px; margin-bottom: 14px;
+                      background: #fff; padding: 14px;
+                      border-radius: 8px;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .mr-search-input{ flex: 1; padding: 8px 12px;
+                      border: 1px solid #d1d5db; border-radius: 6px;
+                      font-size: 14px; }
+
+    .mr-card        { background: #fff; border-radius: 8px;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                      overflow: hidden; }
+    .mr-table       { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .mr-table th    { text-align: left; padding: 10px 12px;
+                      background: #f3f4f6; color: #374151;
+                      font-weight: 700; font-size: 12px;
+                      border-bottom: 2px solid #e5e7eb; }
+    .mr-table td    { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; }
+    .mr-table tr:hover td { background: #f9fafb; }
+    .mr-empty       { text-align: center; padding: 40px; color: #9ca3af; }
+
+    .mr-actions-cell{ text-align: center; white-space: nowrap; }
+    .mr-btn         { display: inline-block; padding: 4px 8px;
+                      border-radius: 4px; text-decoration: none;
+                      margin: 0 2px; font-size: 12px; }
+    .mr-btn-view    { background: #17a2b8; color: #fff; }
+    .mr-btn-pdf     { background: #dc2626; color: #fff; }
+    .mr-btn-excel   { background: #16a34a; color: #fff; }
+    .mr-btn:hover   { opacity: 0.85; color: #fff; }
+</style>
+{% endblock %}

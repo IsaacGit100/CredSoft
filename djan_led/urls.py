@@ -7,12 +7,19 @@ app_name = 'djan_led'
 
 
 urlpatterns = [
+    path('entity/<slug:slug>/back-to-home/', views.back_to_home, name='back_to_home'),
+    path("<slug:slug>/config/",  views.entity_config_edit, name="entity_config_edit"),
+  
+    
+    
     path("redirect/", views.after_login_redirect, name="after_login_redirect"),
     path("entity/<slug:slug>/", views.entity_dashboard, name="entity_dashboard"),
     path("djan_led/home/", views.djan_led_home, name="djan_led_home"),
+    path("entity/<slug:slug>/finance-reports/home/", views.finance_reports_home, name='finance_reports_home'),
     path("entity/<slug:slug>/cred/home/", views.supervisor_cred_home, name='supervisor_cred_home'),
+    path("entity/<slug:slug>/account-visibility/", views.account_visibility, name="account_visibility"),
     
-    
+    path("entity/<slug:slug>/account-pereferences/", views.account_preferences, name="account_preferences"),
     path("entity/<slug:slug>/coa/home/", views.coa_home, name="coa_home"),
     path("entity/<slug:slug>/chart-of-accounts/", views.chart_of_accounts, name="chart_of_accounts"),
     path("entity/<slug:slug>/autofill-coa/", views.autofill_chart_of_accounts, name="autofill_chart_of_accounts"),
@@ -33,7 +40,9 @@ urlpatterns = [
     path("entity/<slug:slug>/opening-balance-pdf/", views.opening_balance_PDF, name="opening_balance_PDF"),
     path("entity/<slug:slug>/opening-balance-excel/", views.opening_balance_excel, name="opening_balance_excel"),
     path("entity/<slug:slug>/entity_dashboard/", views.entity_dashboard, name="entity_dashboard"),
-    path("entity/<slug:slug>/account-visibility/", views.account_visibility, name="account_visibility"),
+    
+    path("entity/<slug:slug>/account-visibility/", views.account_preferences, name="account_preferences"),
+    
     path("entity/<slug:slug>/super/Trans/Home/", views.supervisor_trans_home, name="supervisor_trans_home"),
     # =========================== Finance Reports ====================================
     path("entity/<slug:slug>/trial-balance/pdf/", views_reports.trial_balance_pdf, name="trial_balance_pdf"),
@@ -53,12 +62,16 @@ urlpatterns = [
     path("entity/<slug:slug>/manual-journal-entry/list/", views.manual_journal_entry_list, name="manual_journal_entry_list"),
     path("entity/<slug:slug>/manual-journal-entry/", views.manual_journal_entry, name="manual_journal_entry"),
     path("entity/<slug:slug>/pending-journal-entries/", views.pending_journal_entries, name="pending_journal_entries"),
+    
+    
+    
     path("entity/<slug:slug>/autofill/<str:account_type>/", views.autofill_accounts, name="autofill_accounts"),
     path("entity/<slug:slug>/autofill/<str:account_type>/", views.autofill_accounts, name="autofill_accounts"),
-    path("entity/<slug:slug>/coa/manage/", views.coa_list_manage, name="coa_list_manage"),
+    path("entity/<slug:slug>/coa/manage/", views.coa_list_manage, name="coa_list_manage"), 
     path("entity/<slug:slug>/coa/manage/<uuid:account_uuid>/edit/", views.coa_acc_edit, name="coa_acc_edit"),
     path("entity/<slug:slug>/coa/manage/<uuid:account_uuid>/delete/", views.coa_acc_delete, name="coa_acc_delete"),
-    
+    path("entity/<slug:slug>/coa/pdf/",   views.coa_pdf,   name="coa_pdf"),
+    path("entity/<slug:slug>/coa/excel/", views.coa_excel, name="coa_excel"),
     
     
     path('coa/add_coa_to_entity/', views.add_coa_to_entity, name='add_coa_to_entity' ),
@@ -67,17 +80,9 @@ urlpatterns = [
     
     # View COA
     path('entity/<slug:slug>/chart-of-accounts/', views.chart_of_accounts, name='chart_of_accounts'),
-
-    # Manage (Edit/Delete) COA
     path('entity/<slug:slug>/coa/manage/', views.coa_list_manage, name='coa_list_manage'),
-
-    # PDF Export
     path('entity/<slug:slug>/chart-of-accounts/pdf/', views.chart_of_accounts_pdf, name='chart_of_accounts_pdf'),
-
-    # Excel Export
     path('entity/<slug:slug>/chart-of-accounts/excel/', views.chart_of_accounts_excel, name='chart_of_accounts_excel'),
-
-  #  path('entity/<slug:slug>/tech_dashboard/', views.tech_dashboard, name='tech_dashboard'),
     path('coa-management/set-default/<slug:slug>/', views.set_default_coa, name='set_default_coa'),
     
    

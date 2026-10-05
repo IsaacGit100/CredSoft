@@ -10,7 +10,7 @@
             <div class="mb-2">
                 <label class="form-label">Customer</label>
                 <select name="customer" class="form-select">
-                    <option value="">Walk‑in</option>
+                    <option value="">Walk - in</option>
                     {% for c in customers %}
                     <option value="{{ c.id }}" {% if c.id == sale.customer.id %}selected{% endif %}>{{ c.name }}</option>
                     {% endfor %}
@@ -43,7 +43,7 @@
                     </div>
                     <div class="col-1">
                         <label class="form-label">&nbsp;</label>
-                        <button type="button" class="btn btn-danger btn-sm remove-line">✕</button>
+                        <button type="button" class="btn btn-danger btn-sm remove-line"> </button>
                     </div>
                 </div>
                 {% endfor %}

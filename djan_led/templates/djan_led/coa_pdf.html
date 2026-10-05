@@ -66,7 +66,7 @@
     </style>
 </head>
 <body>
-    <h1>📊 Chart of Accounts</h1>
+    <h1> Chart of Accounts</h1>
     <div class="subtitle">{{ entity.name }} – Generated on {% now "Y-m-d H:i" %}</div>
 
     <table>
@@ -85,7 +85,7 @@
                 <td style="padding-left: {{ acc.depth|add:"-1"|mul:1.5 }}em;">
                     {% if acc.depth > 1 %}
                         <span style="color: #999; font-family: monospace;">
-                            {% for i in ""|ljust:acc.depth|add:"-1" %}{% if forloop.first %}├──{% else %}   {% endif %}{% endfor %}
+                            {% for i in ""|ljust:acc.depth|add:"-1" %}{% if forloop.first %} {% else %}   {% endif %}{% endfor %}
                         </span>
                     {% endif %}
                     {{ acc.name }}

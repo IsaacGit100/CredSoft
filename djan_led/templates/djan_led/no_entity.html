@@ -8,9 +8,10 @@
         </div>
         <div class="card-body">
             <p>{{ message|default:"You have not been assigned to any entity yet." }}</p>
-            <p>Please contact your system administrator to assign you to a church, school, or credit union.</p>
-            <a href="{% url 'djan_led:djan_led_home' %}" class="btn btn-secondary">Logout</a>
+            <p>Please contact your system administrator.</p>
+            <a href="{% url 'userauth:logout' %}" class="btn btn-secondary">Logout</a>
         </div>
     </div>
 </div>
 {% endblock %}
+

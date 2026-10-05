@@ -1,6 +1,6 @@
 # djan_led/lazy_loader_patch.py
 """
-Monkey‑patch the LazyLoader in django‑ledger to prevent AppRegistryNotReady.
+Monkey-patch the LazyLoader in django-ledger to prevent AppRegistryNotReady.
 Place this file and import it at the very top of manage.py and wsgi.py.
 """
 import sys
@@ -31,11 +31,11 @@ def apply_patch():
             LazyLoader._orig_getattribute = orig
             LazyLoader.__getattribute__ = safe_getattribute
             LazyLoader._patched = True
-            print("✅ LazyLoader patched successfully.")
+            print(" LazyLoader patched successfully.")
         else:
-            print("ℹ️ LazyLoader already patched.")
+            print(" LazyLoader already patched.")
     except Exception as e:
-        print(f"⚠️ Could not patch LazyLoader: {e}")
+        print(f" Could not patch LazyLoader: {e}")
 
 # Apply the patch immediately when this module is imported
 apply_patch()

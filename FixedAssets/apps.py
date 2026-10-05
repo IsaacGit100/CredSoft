@@ -22,5 +22,22 @@ class DjanLedConfig(AppConfig):
     name = 'djan_led'
 
     def ready(self):
-        # Monkey‑patch the __str__ method to avoid AttributeError
+        # Monkey-patch the __str__ method to avoid AttributeError
         AccountModel.__str__ = safe_account_str
+
+
+# FixedAssets/apps.py
+
+from django.apps import AppConfig
+
+
+class FixedAssetsConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "FixedAssets"
+
+    def ready(self):
+        # Register the depreciation handler with the posting service
+        from services.transaction_posting_service import register_posting_handler
+        from .services import apply_posted_depreciation
+
+        register_posting_handler("Depreciation", apply_posted_depreciation)

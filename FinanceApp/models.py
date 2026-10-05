@@ -135,7 +135,7 @@ class JournalEntry(models.Model):
                 self.source_trans.status = 'POSTED'
                 self.source_trans.save()
             
-            print(f"✅ Posted journal: {self.entry_number}")
+            print(f" Posted journal: {self.entry_number}")
             
 
 class JournalLine(models.Model):

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container-fluid px-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>
+            <i class="fas fa-user-shield text-primary"></i>
+            Supervisor Queue  {{ entity.name }}
+        </h3>
+        <span class="badge bg-warning text-dark p-2">{{ pending_count }} Pending</span>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">
+            <i class="fas fa-inbox"></i> Supervisor Queue
+        </h3>
+        <a href="{% url 'Report:trans_records' entity.slug %}"
+          class="btn btn-secondary">View/Print Transaction Report
+        </a>
+        <a href="javascript:history.back()" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="card card-body mb-3">
+        <div class="row g-2">
+            <div class="col-md-2">
+                <label class="form-label small">Module</label>
+                <select name="module" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    {% for v, l in module_choices %}
+                        <option value="{{ v }}" {% if module_filter == v %}selected{% endif %}>{{ l }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Type</label>
+                <select name="trans_type" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    {% for v, l in type_choices %}
+                        <option value="{{ v }}" {% if trans_type_filter == v %}selected{% endif %}>{{ l }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">From</label>
+                <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">To</label>
+                <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-sm btn-primary me-1">Filter</button>
+                <a href="{% url 'RecPayApp:supervisor_queue' entity.slug %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
+
+    <form method="post" id="queueForm">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th width="30"><input type="checkbox" id="selectAll"></th>
+                        <th>Voucher</th>
+                        <th>Date</th>
+                        <th>Module</th>
+                        <th>Type</th>
+                        <th>Member / Name</th>
+                        <th>Purpose</th>
+                        <th class="text-end">Amount</th>
+                        <th>Dr / Cr</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transactions %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="selected_transactions"
+                                   value="{{ t.pk }}" class="row-check">
+                        </td>
+                        <td><code>{{ t.rec_vou_no }}</code></td>
+                        <td>{{ t.date|date:"Y-m-d" }}</td>
+                        <td><span class="badge bg-info">{{ t.get_module_display }}</span></td>
+                        <td>
+                            {% if t.trans_type == 'Receipts' %}
+                                <span class="badge bg-success">Receipt</span>
+                            {% elif t.trans_type == 'Payments' %}
+                                <span class="badge bg-danger">Payment</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Journal</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if t.church_member %}{{ t.church_member.full_name }}
+                            {% elif t.member %}{{ t.member.full_name }}
+                            {% elif t.member_name %}{{ t.member_name }}
+                            {% elif t.non_member_name %}{{ t.non_member_name }}
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>{{ t.purpose|default:"—"|truncatechars:25 }}</td>
+                        <td class="text-end">₵{{ t.amount|floatformat:2|intcomma }}</td>
+                        <td>
+                            {% if t.trans_type == 'Journal' %}
+                                <small>
+                                    <strong>Dr</strong> {{ t.debit_account_code }}<br>
+                                    <strong>Cr</strong> {{ t.credit_account_code }}
+                                </small>
+                            {% elif t.trans_type == 'Receipts' %}
+                                <small>
+                                    <strong>Dr</strong> Cash / Bank<br>
+                                    <strong>Cr</strong> {{ t.ledger_code }}
+                                </small>
+                            {% else %}
+                                <small>
+                                    <strong>Dr</strong> {{ t.ledger_code }}<br>
+                                    <strong>Cr</strong> Cash / Bank
+                                </small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            <i class="fas fa-check-circle fa-2x mb-2 d-block"></i>
+                            No pending transactions.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if transactions %}
+        <div class="d-flex justify-content-between mt-3">
+            <div>
+                <button type="submit"
+                        formaction="{% url 'RecPayApp:supervisor_post_selected' entity.slug %}"
+                        class="btn btn-success"
+                        onclick="return confirm('Post selected transactions to the journal?')">
+                    <i class="fas fa-upload"></i> Post Selected
+                </button>
+                <button type="submit"
+                        formaction="{% url 'RecPayApp:supervisor_reject_selected' entity.slug %}"
+                        class="btn btn-danger"
+                        onclick="return confirm('Reject selected transactions?')">
+                    <i class="fas fa-times"></i> Reject Selected
+                </button>
+            </div>
+            <div><span id="selectedCount" class="text-muted">0 selected</span></div>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.row-check');
+    const counter = document.getElementById('selectedCount');
+    function update() {
+        if (counter) counter.textContent =
+            document.querySelectorAll('.row-check:checked').length + ' selected';
+    }
+    if (selectAll) selectAll.addEventListener('change', function () {
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        update();
+    });
+    checkboxes.forEach(cb => cb.addEventListener('change', update));
+});
+</script>
+{% endblock %}

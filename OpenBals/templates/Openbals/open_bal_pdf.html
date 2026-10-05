@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Pending Opening Balances</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm 1cm 1.5cm 1cm;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10px;
+            color: #222;
+        }
+
+        h1 {
+            font-size: 15px;
+            color: #1a3a6c;
+            text-align: center;
+            margin: 0 0 4px 0;
+        }
+
+        h2 {
+            font-size: 10px;
+            text-align: center;
+            color: #555;
+            font-weight: normal;
+            margin: 0 0 10px 0;
+        }
+
+        /* Summary row */
+        table.summary {
+            width: 780pt;       /* fixed total width */
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        table.summary td {
+            width: 195pt;       /* 4 × 195 = 780 */
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: center;
+            font-size: 10px;
+        }
+        table.summary .label {
+            display: block;
+            font-size: 8px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        table.summary .value {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 3px;
+        }
+
+        /* Data table — every column has a FIXED pt width */
+        table.data {
+            width: 780pt;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        table.data th {
+            background-color: #1a3a6c;
+            color: #ffffff;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 6px 4px;
+            border: 1px solid #1a3a6c;
+            text-align: left;
+        }
+        table.data td {
+            padding: 5px 4px;
+            border: 1px solid #ccc;
+            font-size: 10px;
+            word-wrap: break-word;
+        }
+        table.data .right  { text-align: right; }
+        table.data .center { text-align: center; }
+        table.data .code   { font-family: Courier, monospace; font-size: 10px; }
+        table.data tfoot td {
+            padding: 6px 4px;
+            border: 1px solid #999;
+            background-color: #e8eef7;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        /* Explicit column widths in points */
+        .col-num     { width: 30pt; }
+        .col-date    { width: 70pt; }
+        .col-code    { width: 70pt; }
+        .col-account { width: 190pt; }
+        .col-debit   { width: 85pt; }
+        .col-credit  { width: 85pt; }
+        .col-desc    { width: 250pt; }
+        /* total = 30+70+70+190+85+85+250 = 780pt */
+    </style>
+</head>
+<body>
+
+    <h1>{{ entity.name }}</h1>
+    <h2>Pending Opening Balances &nbsp;•&nbsp; {{ pending_count }} line{{ pending_count|pluralize }} &nbsp;•&nbsp; Generated {{ now|date:"Y-m-d H:i" }}</h2>
+
+    <!-- Summary -->
+    <table class="summary">
+        <tr>
+            <td>
+                <span class="label">Total Debit</span>
+                <span class="value" style="color:#1e40af;">₵{{ total_debit|floatformat:2 }}</span>
+            </td>
+            <td>
+                <span class="label">Total Credit</span>
+                <span class="value" style="color:#166534;">₵{{ total_credit|floatformat:2 }}</span>
+            </td>
+            <td>
+                <span class="label">Difference</span>
+                <span class="value" style="color:{% if is_balanced %}#166534{% else %}#991b1b{% endif %};">
+                    ₵{{ difference|floatformat:2 }}
+                </span>
+            </td>
+            <td>
+                <span class="label">Status</span>
+                <span class="value" style="color:{% if is_balanced %}#166534{% else %}#991b1b{% endif %};">
+                    {% if is_balanced %}BALANCED{% else %}UNBALANCED{% endif %}
+                </span>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Data table -->
+    <table class="data">
+        <thead>
+            <tr>
+                <th class="col-num center">#</th>
+                <th class="col-date">Date</th>
+                <th class="col-code">Code</th>
+                <th class="col-account">Account</th>
+                <th class="col-debit right">Debit (₵)</th>
+                <th class="col-credit right">Credit (₵)</th>
+                <th class="col-desc">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in lines %}
+            <tr>
+                <td class="col-num center">{{ forloop.counter }}</td>
+                <td class="col-date">{{ line.date|date:"Y-m-d" }}</td>
+                <td class="col-code code">{{ line.account_code.code }}</td>
+                <td class="col-account">{{ line.account_name }}</td>
+                <td class="col-debit right">
+                    {% if line.debit_amount > 0 %}{{ line.debit_amount|floatformat:2 }}{% else %}—{% endif %}
+                </td>
+                <td class="col-credit right">
+                    {% if line.credit_amount > 0 %}{{ line.credit_amount|floatformat:2 }}{% else %}—{% endif %}
+                </td>
+                <td class="col-desc">{{ line.description|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="center" style="padding:15px; color:#888;">No pending lines.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="right">TOTALS</td>
+                <td class="right">{{ total_debit|floatformat:2 }}</td>
+                <td class="right">{{ total_credit|floatformat:2 }}</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+</body>
+</html>

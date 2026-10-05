@@ -66,7 +66,7 @@ body { background-color: #E6F0FA; font-family: Arial; margin: 0; padding: 20px; 
     </div>
     
     <div class="section">
-        <div class="section-title">📊 Build Custom Report</div>
+        <div class="section-title"> Build Custom Report</div>
         
         <form method="post" id="reportForm">
             {% csrf_token %}
@@ -90,7 +90,7 @@ body { background-color: #E6F0FA; font-family: Arial; margin: 0; padding: 20px; 
                         <span class="field-count" id="fieldCount">0 fields selected</span>
                     </div>
                     <div id="checkboxFields" class="checkbox-group">
-                        <div class="loading">⏳ Loading fields. Please wait...</div>
+                        <div class="loading"> Loading fields. Please wait...</div>
                     </div>
                 </div>
                 
@@ -109,8 +109,8 @@ body { background-color: #E6F0FA; font-family: Arial; margin: 0; padding: 20px; 
                 </div>
                 
                 <div class="buttons">
-                    <button type="submit" name="generate_pdf" class="btn btn-danger" onclick="return validateForm()">📄 Generate PDF</button>
-                    <button type="submit" name="generate_excel" class="btn btn-success" onclick="return validateForm()">📊 Generate Excel</button>
+                    <button type="submit" name="generate_pdf" class="btn btn-danger" onclick="return validateForm()"> Generate PDF</button>
+                    <button type="submit" name="generate_excel" class="btn btn-success" onclick="return validateForm()"> Generate Excel</button>
                 </div>
             </div>
         </form>
@@ -160,7 +160,7 @@ document.getElementById('tableSelect').addEventListener('change', function() {
     
     // Show the container and loading message
     mainContainer.style.display = 'block';
-    fieldsContainer.innerHTML = '<div class="loading">⏳ Loading fields. Please wait...</div>';
+    fieldsContainer.innerHTML = '<div class="loading"> Loading fields. Please wait...</div>';
     
     // Make the AJAX request
     const url = '/custom-reports/get-table-columns/?table=' + encodeURIComponent(tableName);
@@ -184,7 +184,7 @@ document.getElementById('tableSelect').addEventListener('change', function() {
         console.log("Number of fields:", data.fields ? data.fields.length : 0);
         
         if (data.error) {
-            fieldsContainer.innerHTML = '<div class="error-message">❌ Error: ' + data.error + '</div>';
+            fieldsContainer.innerHTML = '<div class="error-message"> Error: ' + data.error + '</div>';
             return;
         }
         
@@ -204,12 +204,12 @@ document.getElementById('tableSelect').addEventListener('change', function() {
             updateFieldCount();
             console.log("Successfully added", data.fields.length, "fields");
         } else {
-            fieldsContainer.innerHTML = '<div class="error-message">⚠️ No fields found for this table</div>';
+            fieldsContainer.innerHTML = '<div class="error-message"> No fields found for this table</div>';
         }
     })
     .catch(error => {
         console.error("Error details:", error);
-        fieldsContainer.innerHTML = '<div class="error-message">❌ Error loading fields: ' + error.message + '. Please check that the server is running.</div>';
+        fieldsContainer.innerHTML = '<div class="error-message"> Error loading fields: ' + error.message + '. Please check that the server is running.</div>';
     });
 });
 

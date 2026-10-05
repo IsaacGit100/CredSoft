@@ -3,7 +3,13 @@ from django import forms
 from django.core.exceptions import ValidationError
 from .models import Master
 from datetime import datetime
-
+from django_ledger.models import (
+    EntityModel,
+    JournalEntryModel,
+    TransactionModel,
+    AccountModel,
+    LedgerModel,
+)
 
 class MasterForm(forms.ModelForm):
     """Member form with NOK percentage validation"""
@@ -102,8 +108,8 @@ class MasterForm(forms.ModelForm):
         self.fields['date_enrolled'].input_formats = ['%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d']
         
         # Set queryset for approval fields
-        self.fields['approved_by_chairman'].queryset = Master.objects.filter(role='Chairman')
-        self.fields['approved_by_manager'].queryset = Master.objects.filter(role='Manager')
+        self.fields['approved_by_chairman'].queryset = Master.objects.filter(entity=entity, role='Chairman')
+        self.fields['approved_by_manager'].queryset = Master.objects.filter(entity=entity, role='Manager')
         
         # Make NOK percentage fields optional
         self.fields['nok_percent1'].required = False
@@ -176,9 +182,8 @@ class MasterSearchForm(forms.Form):
     """Search form for members"""
     q = forms.CharField(required=False, label='Search', 
                         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Search by name, phone, email...'}))
- 
- 
-    
+
+
 # MembersApp/forms.py
 from django import forms
 from .models import Master

@@ -13,9 +13,13 @@ import os
 from decouple import config
 
 
-
 DEBUG = config("DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS = ["hi-wavescoders.com", "www.hi-wavescoders.com"]
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "hi-wavescoders.com",
+    "www.hi-wavescoders.com",
+]
 
 os.environ['DJANGO_LEDGER_USE_DEPRECATED_BEHAVIOR'] = 'True'
 import warnings
@@ -31,55 +35,49 @@ SECRET_KEY = config("SECRET_KEY")
 
 # Application definition
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.humanize',
-
-    
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.contrib.humanize",
     # Your custom apps
-    'core',
-    'SysSetup',
-    'UserAuth',
-    'MembersApp',
-    'coa',
-    'LoanApp',
-    'RecPayApp',
-    'FinanceApp',
-    'InvestApp',
-    'help_module',
-   
-    'CustomReports',
-    'crispy_forms',
-    'CoreApp',
-    'Supervisor',
-    'LoginApp',
-    'services',
-    'BackupRestore',
-    'reset',
-    'AndyApp',
-    'FixedAssets',
-    'OpenBals',
-    'django_ledger',
-#    'djan_led',
-    'djan_led.apps.DjanLedConfig',
-    'ChurchApp',
-    'Consolidated',
-    'website',
-    'CredApp',
-    'POS',
-    'CreditUnion',
-    'Dividend',
-    'Tech',
-    'DocMgt',
-    'Images',
-    
-   
-    
-    
+    "core",
+    "SysSetup",
+    "UserAuth",
+    "MembersApp.apps.MembersAppConfig",
+    "coa",
+    "LoanApp",
+    "RecPayApp",
+    "FinanceApp",
+    "InvestApp",
+    "help_module",
+    "CustomReports",
+    "crispy_forms",
+    "CoreApp",
+    "Supervisor",
+    "LoginApp",
+    "services",
+    "BackupRestore",
+    "reset",
+    "AndyApp",
+    "FixedAssets",
+    "OpenBals",
+    "django_ledger",
+    #    'djan_led',
+    "djan_led.apps.DjanLedConfig",
+    "ChurchApp",
+    "Consolidated",
+    "website",
+    "POS",
+    "CreditUnion",
+    "Dividend",
+    "Tech",
+    "DocMgt",
+    "Images",
+    "Report",
+    "AutoServices",
 ]
 
 
@@ -99,21 +97,20 @@ ROOT_URLCONF = 'CredSoft.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-    
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'SysSetup.context_processors.system_settings',
-                'help_module.context_processors.help_context',
-                'djan_led.context_processors.current_entity',
-                
-           
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "SysSetup.context_processors.system_settings",
+                "help_module.context_processors.help_context",
+                "djan_led.context_processors.current_entity",
+                "djan_led.context_processors.entity_config",
+                "Consolidated.context_processors.current_context",
             ],
         },
     },
@@ -122,83 +119,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'CredSoft.wsgi.application'
 
 
-#SECRET_KEY = 'django-insecure-8#uhl1f@...'
-DEBUG = False
+# SECRET_KEY = 'django-insecure-8#uhl1f@...'
+
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': config("DB_NAME"),
-        'USER': config("DB_USER"),
-        'PASSWORD': config("DB_PASSWORD"),
-        'HOST': config("DB_HOST", default="localhost"),
-        'PORT': config("DB_PORT", default="3306"),
-        'OPTIONS': {
-            'init_command': "SET sql_mode=''",
-            'charset': 'utf8mb4',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST", default="localhost"),
+        "PORT": config("DB_PORT", default="3306"),
+        "OPTIONS": {
+            "init_command": "SET sql_mode=''",
+            "charset": "utf8mb4",
         },
     }
 }
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.mysql',
-#        'NAME': 'mataheko_CredSoft_db',
-#        'USER': 'mataheko_admin',
-#        'PASSWORD': 'BigOne1@1234',
-#        'HOST': 'localhost',
-#        'PORT': '3306',
-#        'OPTIONS': {
-#            'init_command': "SET sql_mode=''",
-#            'charset': 'utf8mb4',
-#        },
-#    }
-#}
-
-
-
-
-# Use SQLite3 for now
-# DATABASES = {
-#    "default": {
-#        "ENGINE": "django.db.backends.sqlite3",
-#        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-#    }
-# }
-
-
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': BASE_DIR / 'db.sqlite3',
-#    }
-#}
-
-
-
-# DATABASE - Using SQLite for development
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': 'postgres',
-#        'USER': 'postgres',
-#        'PASSWORD': 'Kwashikojo@1234',
-#        'HOST': 'db.fwiaudjmwzwjiyottpgg.supabase.co',
-#        'PORT': '6543',
-#        'OPTIONS': {
-#            'sslmode': 'require',
-#        },
-#    }
-#}
-# DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.mysql',
-#        'NAME': 'CredDb',
-#        'USER': 'CredUser',
-#        'HOST': 'localhost',
-#        'PASSWORD': 'BigOne1',
-#        'PORT': '3306',
-#    }
-# }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -226,7 +163,7 @@ LOCALE_NAME = 'en_GH'
 
 
 # Static files
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
@@ -241,16 +178,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Login/Logout URLs
-# LOGIN_URL = 'userauth:login'
-# LOGIN_REDIRECT_URL = 'userauth:dashboard'
-# LOGOUT_REDIRECT_URL = 'userauth:login'
-
-
-# LOGIN_URL = '/login/'           # Where to go if not logged in
-# LOGIN_REDIRECT_URL = '/'        # Where to go after successful login
-# LOGOUT_REDIRECT_URL = '/login/' # Where to go after logout
 
 
 LOGIN_URL = '/accounts/login/'

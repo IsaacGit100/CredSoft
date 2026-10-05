@@ -13,6 +13,20 @@ from decimal import Decimal
 from datetime import datetime
 from .models import Master
 from django_ledger.models import EntityModel
+from django_ledger.models import (
+    EntityModel,
+    JournalEntryModel,
+    TransactionModel,
+    AccountModel,
+    LedgerModel,
+)
+
+# MembersApp/views_reports_excel.py
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, Border, Side
+
 
 # ============================================================
 # 1. MEMBERS INFORMATION REPORT
@@ -40,7 +54,7 @@ def members_info_pdf(request, slug):
     elements.append(Spacer(1, 0.5*cm))
     
     # Table Data
-    members = Master.objects.filter(is_deleted=False).order_by('last_name', 'first_name')
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by('last_name', 'first_name')
     
     table_data = [['ID', 'Full Name', 'Title', 'Gender', 'Date of Birth', 'Date Enrolled', 'Status', 'Role']]
     
@@ -101,7 +115,7 @@ def members_contact_pdf(request, slug):
     elements.append(Paragraph(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", normal_style))
     elements.append(Spacer(1, 0.5*cm))
 
-    members = Master.objects.filter(is_deleted=False).order_by('last_name', 'first_name')
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by('last_name', 'first_name')
 
     table_data = [['ID', 'Full Name', 'Phone 1', 'Phone 2', 'Email', 'City', 'Postal Address', 'Residential Address']]
 
@@ -162,7 +176,7 @@ def next_of_kin_pdf(request, slug):
     elements.append(Paragraph(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", normal_style))
     elements.append(Spacer(1, 0.5*cm))
 
-    members = Master.objects.filter(is_deleted=False).order_by('last_name', 'first_name')
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by('last_name', 'first_name')
 
     table_data = [['ID', 'Member Name', 'NOK Name', 'NOK Address', 'NOK Phone', 'Relation', 'Percentage']]
 
@@ -223,9 +237,6 @@ def next_of_kin_pdf(request, slug):
     return response
 
 
-# ============================================================
-# 4. FINANCIAL REPORT
-# ============================================================
 @login_required
 def financial_report_pdf(request, slug):
     """PDF Report - Members financial information"""
@@ -246,7 +257,7 @@ def financial_report_pdf(request, slug):
     elements.append(Paragraph(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", normal_style))
     elements.append(Spacer(1, 0.5*cm))
 
-    members = Master.objects.filter(is_deleted=False).order_by('last_name', 'first_name')
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by('last_name', 'first_name')
 
     table_data = [['ID', 'Full Name', 'Shares', 'Shares Withd', 'Deposits', 'Dep. Withd', 'Dividend', 'Div. Withd',
                    'Loan Balance', 'Guaranteed', 'Guaranted', 'Avail bal', 'Int_Accrued', 'Int_Deferred']]
@@ -338,14 +349,6 @@ def financial_report_pdf(request, slug):
 
 
 # ##======================================== Excel Reports ====================================
-# MembersApp/views_reports_excel.py
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, Border, Side
-from datetime import datetime
-from .models import Master
-from django_ledger.models import EntityModel
 
 
 def get_excel_style():
@@ -404,7 +407,7 @@ def members_info_excel(request, slug):
         cell.alignment = header_alignment
         cell.border = thin_border
 
-    members = Master.objects.filter(is_deleted=False).order_by(
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by(
         "last_name", "first_name"
     )
 
@@ -485,7 +488,7 @@ def members_contact_excel(request, slug):
         cell.alignment = header_alignment
         cell.border = thin_border
 
-    members = Master.objects.filter(is_deleted=False).order_by(
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by(
         "last_name", "first_name"
     )
 
@@ -563,7 +566,7 @@ def next_of_kin_excel(request, slug):
         cell.alignment = header_alignment
         cell.border = thin_border
 
-    members = Master.objects.filter(is_deleted=False).order_by(
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by(
         "last_name", "first_name"
     )
 
@@ -669,7 +672,7 @@ def financial_report_excel(request, slug):
         cell.alignment = header_alignment
         cell.border = thin_border
 
-    members = Master.objects.filter(is_deleted=False).order_by(
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by(
         "last_name", "first_name"
     )
     total_deposits = 0

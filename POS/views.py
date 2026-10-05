@@ -489,7 +489,7 @@ def sales_form(request, slug):
             {
                 "type": "Sale",
                 "date": s.sale_date,
-                "customer": s.customer.name if s.customer else "Walk‑in",
+                "customer": s.customer.name if s.customer else "Walk-in",
                 "amount": s.total_amount,
                 "id": s.id,
                 "obj": s,
@@ -500,7 +500,7 @@ def sales_form(request, slug):
             {
                 "type": "Payment",
                 "date": p.payment_date,
-                "customer": p.customer.name if p.customer else "Walk‑in",
+                "customer": p.customer.name if p.customer else "Walk-in",
                 "amount": p.amount,
                 "id": p.id,
                 "obj": p,

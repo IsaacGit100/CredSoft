@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div style="max-width:720px; margin:30px auto; padding:20px;">
+
+    <!-- Header -->
+    <div style="background:#fff; border-radius:10px; padding:24px;
+                box-shadow:0 1px 3px rgba(0,0,0,0.08); margin-bottom:16px;">
+
+        <div style="display:flex; justify-content:space-between;
+                    align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+                <h2 style="margin:0; color:#1e3a5f; font-size:20px;">
+                    {% if trans.sub_module == 'savings_deposit' %}
+                        <i class="fas fa-arrow-down" style="color:#16a34a;"></i>
+                        Deposit Details
+                    {% else %}
+                        <i class="fas fa-arrow-up" style="color:#dc2626;"></i>
+                        Withdrawal Details
+                    {% endif %}
+                </h2>
+                <div style="color:#6b7280; font-size:13px; margin-top:4px;">
+                    {{ entity.name }}
+                </div>
+            </div>
+
+            <div style="text-align:right;">
+                <div style="font-size:26px; font-weight:800;
+                            color:{% if trans.sub_module == 'savings_deposit' %}#16a34a{% else %}#dc2626{% endif %};">
+                    ₵{{ trans.amount|floatformat:2|intcomma }}
+                </div>
+                {% if trans.journal_status == 'POSTED' %}
+                    <span style="background:#d1fae5; color:#065f46;
+                                 padding:3px 10px; border-radius:10px;
+                                 font-size:11px; font-weight:700;">
+                        POSTED
+                    </span>
+                {% else %}
+                    <span style="background:#fef3c7; color:#92400e;
+                                 padding:3px 10px; border-radius:10px;
+                                 font-size:11px; font-weight:700;">
+                        PENDING
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Details grid -->
+        <table style="width:100%; border-collapse:collapse; font-size:14px;">
+            <tbody>
+                <tr>
+                    <th style="text-align:left; padding:10px 0; color:#6b7280;
+                               font-weight:600; width:180px;
+                               border-bottom:1px solid #f3f4f6;">
+                        Date
+                    </th>
+                    <td style="padding:10px 0; border-bottom:1px solid #f3f4f6;">
+                        {{ trans.date|date:"d/m/Y" }}
+                    </td>
+                </tr>
+                <tr>
+                    <th style="text-align:left; padding:10px 0; color:#6b7280;
+                               font-weight:600; border-bottom:1px solid #f3f4f6;">
+                        Member
+                    </th>
+                    <td style="padding:10px 0; border-bottom:1px solid #f3f4f6;">
+                        {% if trans.member %}
+                            <a href="{% url 'CreditUnion:member_view' entity.slug trans.member.id %}"
+                               style="color:#1a56db; text-decoration:none; font-weight:600;">
+                                {{ trans.member_name }}
+                            </a>
+                            <span style="color:#9ca3af; font-size:12px;">
+                                (ID: {{ trans.member.id }})
+                            </span>
+                        {% else %}
+                            {{ trans.member_name|default:"—" }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th style="text-align:left; padding:10px 0; color:#6b7280;
+                               font-weight:600; border-bottom:1px solid #f3f4f6;">
+                        Reference No
+                    </th>
+                    <td style="padding:10px 0; border-bottom:1px solid #f3f4f6;">
+                        <code>{{ trans.rec_vou_no|default:"—" }}</code>
+                    </td>
+                </tr>
+                <tr>
+                    <th style="text-align:left; padding:10px 0; color:#6b7280;
+                               font-weight:600; border-bottom:1px solid #f3f4f6;">
+                        Payment Mode
+                    </th>
+                    <td style="padding:10px 0; border-bottom:1px solid #f3f4f6;">
+                        {{ trans.pay_mode|default:"—" }}
+                    </td>
+                </tr>
+                <tr>
+                    <th style="text-align:left; padding:10px 0; color:#6b7280;
+                               font-weight:600; border-bottom:1px solid #f3f4f6;">
+                        Ledger Account
+                    </th>
+                    <td style="padding:10px 0; border-bottom:1px solid #f3f4f6;">
+                        {{ trans.ledger_code|default:"—" }}
+                        {% if trans.ledger_name %}
+                            — {{ trans.ledger_name }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th style="text-align:left; padding:10px 0; color:#6b7280;
+                               font-weight:600; border-bottom:1px solid #f3f4f6;">
+                        Details
+                    </th>
+                    <td style="padding:10px 0; border-bottom:1px solid #f3f4f6;">
+                        {{ trans.details|default:"—" }}
+                    </td>
+                </tr>
+                <tr>
+                    <th style="text-align:left; padding:10px 0; color:#6b7280;
+                               font-weight:600; border-bottom:1px solid #f3f4f6;">
+                        Recorded By
+                    </th>
+                    <td style="padding:10px 0; border-bottom:1px solid #f3f4f6;">
+                        {{ trans.created_by_name|default:trans.created_by_username|default:"—" }}
+                    </td>
+                </tr>
+                <tr>
+                    <th style="text-align:left; padding:10px 0; color:#6b7280;
+                               font-weight:600; border-bottom:1px solid #f3f4f6;">
+                        Recorded On
+                    </th>
+                    <td style="padding:10px 0; border-bottom:1px solid #f3f4f6;">
+                        {{ trans.created_at|date:"d/m/Y H:i"|default:"—" }}
+                    </td>
+                </tr>
+                {% if trans.journal_entry_id %}
+                <tr>
+                    <th style="text-align:left; padding:10px 0; color:#6b7280;
+                               font-weight:600;">
+                        Journal Entry
+                    </th>
+                    <td style="padding:10px 0;">
+                        <code style="font-size:12px;">{{ trans.journal_entry_id }}</code>
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex; gap:10px; justify-content:space-between;
+                flex-wrap:wrap;">
+        <a href="{% url 'CreditUnion:deposit_withdrawal_manage' entity.slug %}"
+           class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+
+        <div style="display:flex; gap:8px;">
+            {% if trans.journal_status != 'POSTED' %}
+                <a href="{% url 'CreditUnion:deposit_withdrawal_edit' entity.slug trans.id %}"
+                   class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'CreditUnion:deposit_withdrawal_delete' entity.slug trans.id %}"
+                   class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Delete
+                </a>
+            {% else %}
+                <span style="color:#6b7280; font-size:13px; padding:8px 12px;
+                             background:#f3f4f6; border-radius:6px;">
+                    <i class="fas fa-lock"></i> Posted — cannot edit or delete
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

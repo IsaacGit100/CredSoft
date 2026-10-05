@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid px-3" style="padding-top:20px;">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 style="color:#1e3a5f; margin:0;">
+                <i class="fas fa-hand-holding-usd"></i> Member Contributions
+            </h3>
+            <div style="color:#6b7280; font-size:13px;">{{ entity.name }}</div>
+        </div>
+        <a href="javascript:history.back()" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- Filter form -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="get">
+                <div class="row g-2">
+
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Member</label>
+                        <select name="member" class="form-select form-select-sm">
+                            <option value="">— All members —</option>
+                            {% for m in members %}
+                                <option value="{{ m.pk }}"
+                                    {% if filters.member_id == m.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ m.full_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">From</label>
+                        <input type="date" name="start" class="form-control form-control-sm"
+                               value="{{ filters.start }}">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">To</label>
+                        <input type="date" name="end" class="form-control form-control-sm"
+                               value="{{ filters.end }}">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">Category</label>
+                        <select name="category" class="form-select form-select-sm">
+                            <option value="">— All —</option>
+                            {% for c in categories %}
+                                <option value="{{ c }}"
+                                    {% if filters.category == c %}selected{% endif %}>
+                                    {{ c }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end gap-1">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <a href="{{ request.path }}" class="btn btn-outline-secondary btn-sm">
+                            Clear
+                        </a>
+                        <a href="{% url 'ChurchApp:member_contributions_pdf' entity.slug %}?{{ request.GET.urlencode }}"
+                           target="_blank" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                        <a href="{% url 'ChurchApp:member_contributions_excel' entity.slug %}?{{ request.GET.urlencode }}"
+                           class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary tiles -->
+    <div class="row g-2 mb-3">
+        <div class="col-md-4">
+            <div class="card border-primary">
+                <div class="card-body py-2">
+                    <div class="text-muted small">Total Contributions</div>
+                    <h4 class="mb-0 text-primary">₵{{ totals.total|floatformat:2|intcomma }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body py-2">
+                    <div class="text-muted small">Records</div>
+                    <h4 class="mb-0 text-success">{{ totals.count }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-body py-2">
+                    <div class="text-muted small">Period</div>
+                    <div style="font-weight:700;">{{ filters.period_label|default:"All dates" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Per-member summary -->
+    {% if per_member %}
+    <div class="card mb-3">
+        <div class="card-header bg-light fw-bold small text-uppercase">
+            Summary by Member
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Member</th>
+                        <th class="text-end">Total Given</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pm in per_member %}
+                    <tr>
+                        <td>{{ pm.member__full_name }}</td>
+                        <td class="text-end" style="font-family:monospace;">
+                            ₵{{ pm.total|floatformat:2|intcomma }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="fw-bold" style="background:#f9fafb;">
+                        <td>GRAND TOTAL</td>
+                        <td class="text-end" style="font-family:monospace;">
+                            ₵{{ totals.total|floatformat:2|intcomma }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Detail list -->
+    <div class="card">
+        <div class="card-header bg-light fw-bold small text-uppercase">
+            Detailed Records
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width:60px;">#</th>
+                            <th>Date</th>
+                            <th>Member</th>
+                            <th>Category</th>
+                            <th>Receipt</th>
+                            <th>Details</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in rows %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ r.date|date:"d/m/Y" }}</td>
+                            <td>{{ r.member.full_name }}</td>
+                            <td>
+                                <span style="background:#eff6ff; color:#1e40af;
+                                             padding:2px 8px; border-radius:10px;
+                                             font-size:11px; font-weight:700;">
+                                    {{ r.ledger_name|default:"—" }}
+                                </span>
+                            </td>
+                            <td><code>{{ r.receipt_no|default:"—" }}</code></td>
+                            <td style="color:#6b7280; font-size:12px;">
+                                {{ r.details|default:"—"|truncatechars:50 }}
+                            </td>
+                            <td class="text-end" style="font-family:monospace;
+                                                       font-weight:700;">
+                                ₵{{ r.amount|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                No contributions match the current filter.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if rows %}
+                        <tr class="fw-bold" style="background:#f9fafb;">
+                            <td colspan="6" class="text-end">TOTAL</td>
+                            <td class="text-end" style="font-family:monospace;">
+                                ₵{{ totals.total|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

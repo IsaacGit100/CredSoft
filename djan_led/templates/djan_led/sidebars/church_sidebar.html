@@ -1,57 +1,186 @@
-<div class="list-group">
-    <a href="{% url 'djan_led:entity_dashboard' entity.slug %}" class="list-group-item list-group-item-action active">
+<style>
+    .side-nav {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .side-nav .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #374151;
+        font-weight: 500;
+        transition: background 0.12s, color 0.12s;
+    }
+    .side-nav .nav-link i {
+        width: 18px;
+        text-align: center;
+        color: #6b7280;
+    }
+    .side-nav .nav-link:hover {
+        background: #f3f4f6;
+        color: #1a56db;
+    }
+    .side-nav .nav-link:hover i {
+        color: #1a56db;
+    }
+
+    /* Active item */
+    .side-nav .nav-link.active {
+        background: linear-gradient(135deg, #1e3a5f, #1a56db);
+        color: #fff;
+    }
+    .side-nav .nav-link.active i {
+        color: #fff;
+    }
+
+    /* Section header (non-clickable) */
+    .side-nav .nav-header {
+        padding: 10px 14px 4px;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #9ca3af;
+        font-weight: 700;
+    }
+
+    /* DATA ENTRY parent block */
+    .side-nav .sub-group {
+        background: #f9fafb;
+        border-radius: 8px;
+        margin: 4px 0;
+        padding: 4px;
+    }
+    .side-nav .sub-group .nav-link {
+        padding: 8px 12px;
+    }
+    .side-nav .sub-list {
+        padding: 4px 12px 8px 42px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        color: #6b7280;
+        font-size: 12.5px;
+    }
+    .side-nav .sub-list span::before {
+        content: "•";
+        color: #cbd5e1;
+        margin-right: 6px;
+    }
+
+    /* Divider */
+    .side-nav hr {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 10px 4px;
+    }
+
+    /* Action buttons at bottom */
+    .side-nav .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 13.5px;
+        margin-bottom: 6px;
+        transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .side-nav .action-btn:hover {
+        transform: translateY(-1px);
+    }
+    .side-nav .action-btn i { width: 18px; text-align: center; }
+
+    .side-nav .btn-password {
+        background: linear-gradient(135deg, #7c3aed, #a855f7);
+        color: #fff;
+        box-shadow: 0 2px 6px rgba(124,58,237,0.25);
+    }
+    .side-nav .btn-password:hover {
+        box-shadow: 0 4px 12px rgba(124,58,237,0.35);
+        color: #fff;
+    }
+
+    .side-nav .btn-logout {
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+        color: #fff;
+        box-shadow: 0 2px 6px rgba(220,38,38,0.25);
+    }
+    .side-nav .btn-logout:hover {
+        box-shadow: 0 4px 12px rgba(220,38,38,0.35);
+        color: #fff;
+    }
+</style>
+
+<div class="side-nav">
+
+    <!-- Dashboard -->
+    <a href="{% url 'ChurchApp:church_dashboard' entity.slug %}"
+       class="nav-link active">
         <i class="fas fa-home"></i> Dashboard
     </a>
 
+    <!-- DATA ENTRY group -->
+    <div class="sub-group">
+        <a href="{% url 'ChurchApp:church_data_entry_home' entity.slug %}"
+           class="nav-link">
+            <i class="fas fa-book"></i> Data Entry
+        </a>
+        <div class="sub-list">
+            <span>Clergy</span>
+            <span>Members</span>
+            <span>Guilds</span>
+            <span>Member Roles</span>
+        </div>
+    </div>
 
-    <a href="{% url 'ChurchApp:role_create' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-book"></i> Create Roles for Church Members
+    <!-- Main menu -->
+    <a href="{% url 'ChurchApp:dues_tithe_list_manage' entity.slug %}" class="nav-link">
+        <i class="fas fa-hand-holding-usd"></i> Dues &amp; Tithes
     </a>
 
-    <a href="{% url 'ChurchApp:dues_tithe_list_manage' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-book"></i> Enter Dues, Tithes for Church Members
+    <a href="{% url 'ChurchApp:trans_create' entity.slug %}" class="nav-link">
+        <i class="fas fa-exchange-alt"></i> Receipts &amp; Payments
     </a>
 
-    <a href="{% url 'ChurchApp:trans_create' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-book"></i> Enter Other Receipts And Payments
+    <a href="{% url 'ChurchApp:service_list_manage' entity.slug %}" class="nav-link">
+        <i class="fas fa-church"></i> Church Service Entry
     </a>
 
-    <a href="{% url 'ChurchApp:service_activity_create' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-book"></i> Enter Details of a Service 
+    <a href="{% url 'ChurchApp:member_contributions_list' entity.slug %}" class="nav-link">
+        <i class="fas fa-church"></i> Member Contributions
     </a>
 
 
-    <a href="{% url 'ChurchApp:church_data_entry_home' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-book"></i> Enter Data For Members, Clergy, Guilds & Events
+    <a href="{% url 'ChurchApp:supervisor_church' entity.slug %}" class="nav-link">
+        <i class="fas fa-user-shield"></i> Supervisor Operations
     </a>
-     <a href="{#}" class="list-group-item list-group-item-action">
-        <i class="fas fa-plus-circle"></i> Reports
-    </a>
-    
-    <a href="{% url 'ChurchApp:supervisor_church' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-book"></i> Supervisor Operations
-      </a>
 
-    <a href="{% url 'djan_led:trial_balance' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-balance-scale"></i> Trial Balance
+    <a href="{% url 'Report:finance_reports' entity.slug %}" class="nav-link">
+        <i class="fas fa-balance-scale"></i> Finance Reports
     </a>
-    <a href="{% url 'djan_led:income_statement' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-chart-line"></i> Income Statement
-    </a>
-    <a href="{% url 'djan_led:cash_flow' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-file-alt"></i> Cash Flow
-    </a>
-    <a href="{% url 'djan_led:balance_sheet' entity.slug %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-money-bill-wave"></i> Balance Sheet
-    </a>
-    <a href="{% url 'userauth:change_password' %}" class="list-group-item list-group-item-action">
-        <i class="fas fa-key"></i> Change Password
-    </a>
-    <a href="{% url 'DocMgt:document_list' entity.slug %}" class="list-group-item list-group-item-action">
+
+    <a href="{% url 'DocMgt:document_list' entity.slug %}" class="nav-link">
         <i class="fas fa-file-alt"></i> Document Management
     </a>
+
     <hr>
-    <a href="{% url 'userauth:logout' %}" class="btn btn-danger w-100">
+
+    <!-- Bottom actions -->
+    <a href="{% url 'userauth:change_password' %}?next={{ request.path|urlencode }}"
+       class="action-btn btn-password">
+        <i class="fas fa-key"></i> Change Password
+    </a>
+
+    <a href="{% url 'userauth:logout' %}" class="action-btn btn-logout">
         <i class="fas fa-sign-out-alt"></i> Logout
     </a>
 

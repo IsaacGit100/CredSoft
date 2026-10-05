@@ -471,10 +471,7 @@
             <div class="subtitle">{{ entity.name }}</div>
         </div>
         <div class="header-actions">
-            <a href="{% url 'RecPayApp:trans_create' entity.slug %}" class="btn btn-white">
-                <i class="fas fa-plus"></i> New
-            </a>
-            <a href="{% url 'RecPayApp:recpay_home' entity.slug %}" class="btn btn-outline-white">
+            <a href="{% url 'ChurchApp:church_dashboard' entity.slug %}" class="btn btn-outline-white">
                 <i class="fas fa-times"></i> Close
             </a>
         </div>
@@ -529,13 +526,15 @@
             </div>
             <div class="card-body">
                 <div class="tab-group">
-                    <button type="button" class="tab-btn active" id="btnReceipts">
+
+                    <button type="button" class="tab-btn {% if not trans or trans.trans_type == 'Receipts' %}active{% endif %}" id="btnReceipts">
                         <i class="fas fa-arrow-down"></i> Receipts
-                    </button>
-                    <button type="button" class="tab-btn" id="btnPayments">
+                    
+                    <button type="button" class="tab-btn {% if trans and trans.trans_type == 'Payments' %}active{% endif %}" id="btnPayments">
                         <i class="fas fa-arrow-up"></i> Payments
-                    </button>
-                    <input type="hidden" name="trans_type" id="trans_type" value="Receipts">
+
+                    <input type="hidden" name="trans_type" id="trans_type" value="{% if trans %}{{ trans.trans_type }}{% else %}Receipts{% endif %}">
+                
                 </div>
             </div>
         </div>
@@ -549,29 +548,37 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Date <span class="required">*</span></label>
-                        <input type="text" name="date" id="date" class="form-control" placeholder="dd/mm/yyyy" value="{{ today|date:'d/m/Y' }}" required>
+                        <input type="text" name="date" id="date" class="form-control"
+                            value="{% if trans %}{{ trans.date|date:'d/m/Y' }}{% else %}{{ today|date:'d/m/Y' }}{% endif %}" required>
                     </div>
                     <div class="form-group">
                         <label>Reference No <span class="required">*</span></label>
-                        <input type="text" name="trans_no" id="trans_no" class="form-control" placeholder="Receipt/Voucher No" required>
+                        <input type="text" name="trans_no" id="trans_no" class="form-control"
+                                placeholder="Receipt/Voucher No"
+                                value="{% if trans %}{{ trans.trans_no }}{% endif %}" required>
                     </div>
                     <div class="form-group">
                         <label>Payment Mode</label>
+
                         <select name="pay_mode" id="pay_mode" class="form-control">
-                            <option value="Cash">Cash</option>
-                            <option value="Cheque">Cheque</option>
-                            <option value="Transfer">Transfer</option>
+                            <option value="Cash"     {% if not trans or trans.pay_mode == 'Cash' %}selected{% endif %}>Cash</option>
+                            <option value="Cheque"   {% if trans and trans.pay_mode == 'Cheque' %}selected{% endif %}>Cheque</option>
+                            <option value="Transfer" {% if trans and trans.pay_mode == 'Transfer' %}selected{% endif %}>Transfer</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Amount (₵) <span class="required">*</span></label>
-                        <input type="number" name="amount" id="amount" class="form-control" step="0.01" min="0.01" placeholder="0.00" required>
+                        <input type="number" name="amount" id="amount" class="form-control" step="0.01" min="0.01"
+                            placeholder="0.00"
+                            value="{% if trans %}{{ trans.amount }}{% endif %}" required>
                     </div>
                 </div>
                 <div class="form-grid mt-2">
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label>Description / Details</label>
-                        <input type="text" name="details" class="form-control" placeholder="Enter description...">
+                        <input type="text" name="details" class="form-control"
+                            placeholder="Enter description..."
+                            value="{% if trans %}{{ trans.details|default:'' }}{% endif %}">
                     </div>
                 </div>
             </div>
@@ -588,9 +595,10 @@
             <div class="card-body">
                 <div class="form-group" style="max-width:300px;margin-bottom:12px;">
                     <label>Name Type</label>
+
                     <select name="name_type" id="name_type" class="form-control">
-                        <option value="Member">Member</option>
-                        <option value="Non Member">Non Member</option>
+                        <option value="Member"     {% if not trans or trans.member_id or trans.church_member_id %}selected{% endif %}>Member</option>
+                        <option value="Non Member" {% if trans and not trans.member_id and not trans.church_member_id %}selected{% endif %}>Non Member</option>
                     </select>
                 </div>
 
@@ -601,11 +609,18 @@
                             <label>Select Member</label>
                             <select name="member_id" id="member_id" class="form-control">
                                 <option value="">-- Select Member --</option>
+
                                 {% for member in members %}
-                                <option value="{{ member.id }}" data-name="{{ member.first_name }} {{ member.last_name }}" data-balance="{{ member.available_balance }}" data-phone="{{ member.telephone1 }}">
+
+                                <option value="{{ member.id }}"
+                                        {% if trans.church_member_id == member.id or trans.member_id == member.id %}selected{% endif %}
+                                        data-name="{{ member.first_name }} {{ member.last_name }}"
+                                        data-phone="{{ member.telephone1 }}">
                                     {{ member.full_name }} ({{ member.id }})
                                 </option>
+
                                 {% endfor %}
+
                             </select>
                             <span id="memberLoader" class="loader" style="display: none;"></span>
                         </div>
@@ -622,11 +637,13 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Full Name</label>
-                            <input type="text" name="non_member_name" class="form-control" placeholder="Enter full name">
+                            <input type="text" name="non_member_name" class="form-control" placeholder="Enter full name"
+                                value="{% if trans %}{{ trans.non_member_name|default:'' }}{% endif %}">
                         </div>
                         <div class="form-group">
                             <label>Contact</label>
-                            <input type="text" name="non_member_contact" class="form-control" placeholder="Address & Phone">
+                            <input type="text" name="non_member_contact" class="form-control" placeholder="Address & Phone"
+                                value="{% if trans %}{{ trans.non_member_contact|default:'' }}{% endif %}">
                         </div>
                     </div>
                 </div>
@@ -643,18 +660,24 @@
                     <div class="form-group" style="grid-column: span 2;">
                         <label>General Ledger Account <span class="required">*</span></label>
                         <select name="chart_account" id="chart_account" class="form-control">
+
                             {% for acc in accounts %}
-                                <option value="{{ acc.id }},{{ acc.code }},{{ acc.name }}">
+                                <option value="{{ acc.pk }},{{ acc.code }},{{ acc.name }}"
+                                        {% if trans and trans.ledger_code == acc.code %}selected{% endif %}>
                                     {{ acc.code }} - {{ acc.name }}
                                 </option>
                             {% endfor %}
+
+
+
+
                         </select>
                     </div>
                     <div class="form-group" style="justify-content:flex-end;">
                         <label>&nbsp;</label>
-                        <button type="submit" name="save" class="btn btn-success btn-block">
-                            <i class="fas fa-save"></i> Save Transaction
-                        </button>
+                            <button type="submit" name="save" class="btn btn-success btn-block">
+                                <i class="fas fa-save"></i> {% if trans %}Update Transaction{% else %}Save Transaction{% endif %}
+                            </button>
                     </div>
                 </div>
                 <div id="ledger-display-fields" class="hidden">
@@ -689,11 +712,30 @@
             </div>
             <div class="card-body">
                 <div class="form-grid">
-                    <div class="form-group"><label>Cheque Date</label><input type="text" name="cheque_date" class="form-control" placeholder="dd/mm/yyyy"></div>
-                    <div class="form-group"><label>Cheque No</label><input type="text" name="cheque_no" class="form-control" placeholder="Cheque Number"></div>
-                    <div class="form-group"><label>Bank Name</label><input type="text" name="bank" class="form-control" placeholder="Bank Name"></div>
-                    <div class="form-group"><label>Branch Name</label><input type="text" name="bank_branch" class="form-control" placeholder="Branch Name"></div>
-                    <div class="form-group"><label>Account No</label><input type="text" name="bank_no" class="form-control" placeholder="Account Number"></div>
+
+
+
+                    <div class="form-group"><label>Cheque Date</label>
+                        <input type="text" name="cheque_date" class="form-control" placeholder="dd/mm/yyyy"
+                               value="{% if trans and trans.cheque_date %}{{ trans.cheque_date|date:'d/m/Y' }}{% endif %}">
+                    </div>
+                    <div class="form-group"><label>Cheque No</label>
+                         <input type="text" name="cheque_no"   class="form-control" 
+                        value="{% if trans %}{{ trans.cheque_no|default:'' }}{% endif %}">
+                    </div>
+                        
+                    <div class="form-group"><label>Bank Name</label>
+                        <input type="text" name="bank" class="form-control" 
+                        value="{% if trans %}{{ trans.bank|default:'' }}{% endif %}">
+                    </div>
+                    <div class="form-group"><label>Branch Name</label>
+                        <input type="text" name="bank_branch" class="form-control"
+                        value="{% if trans %}{{ trans.bank_branch|default:'' }}{% endif %}">
+                    </div>
+                    <div class="form-group"><label>Account No</label>
+                        <input type="text" name="bank_no"     class="form-control"
+                         value="{% if trans %}{{ trans.bank_no|default:'' }}{% endif %}">
+                    </div>
                 </div>
             </div>
         </div>
@@ -705,8 +747,14 @@
             </div>
             <div class="card-body">
                 <div class="form-grid">
-                    <div class="form-group"><label>Mobile Money No</label><input type="text" name="momo_no" class="form-control" placeholder="Mobile Money Number"></div>
-                    <div class="form-group"><label>Account Name</label><input type="text" name="momo_name" class="form-control" placeholder="Account Name"></div>
+                    <div class="form-group"><label>Mobile Money No</label>
+                        <input type="text" name="momo_no"     class="form-control" 
+                        value="{% if trans %}{{ trans.momo_no|default:'' }}{% endif %}">
+                    </div>
+                    <div class="form-group"><label>Account Name</label>
+                        <input type="text" name="momo_name"   class="form-control" 
+                        value="{% if trans %}{{ trans.momo_name|default:'' }}{% endif %}">  
+                    </div>
                 </div>
             </div>
         </div>
@@ -770,10 +818,10 @@
                             <td style="text-align:center;white-space:nowrap;">
                                 <div class="flex" style="gap:4px;justify-content:center;">
                                     <a href="{% url 'RecPayApp:trans_view' entity.slug t.id %}" class="btn btn-primary btn-sm" title="View"><i class="fas fa-eye"></i></a>
-                                    <a href="{% url 'RecPayApp:trans_edit' entity.slug t.id %}" class="btn btn-warning btn-sm" title="Edit"><i class="fas fa-edit"></i></a>
+                                    <a href="{% url 'ChurchApp:trans_edit' entity.slug t.id %}" class="btn btn-warning btn-sm" title="Edit"><i class="fas fa-edit"></i></a>
                                     <a href="{% url 'RecPayApp:trans_delete' entity.slug t.id %}" class="btn btn-danger btn-sm" title="Delete" onclick="return confirm('Delete this transaction?')"><i class="fas fa-trash"></i></a>
                                 </div>
-                            </td>
+                            </td>                     
                         </tr>
                         {% empty %}
                         <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--gray-500);">
@@ -831,18 +879,19 @@ JAVASCRIPT
             btnReceipts.classList.remove('active');
         });
 
-        // ----- Name Type Toggle -----
+        // ----- Name Type Toggle ------------------------------------------------------------------------------
+                // ----- Name Type Toggle -----
         nameType.addEventListener('change', function() {
             if (this.value === 'Member') {
-                memberFields.style.display = 'block';
-                nonMemberFields.style.display = 'none';
+                memberFields.classList.remove('hidden');
+                nonMemberFields.classList.add('hidden');
             } else {
-                memberFields.style.display = 'none';
-                nonMemberFields.style.display = 'block';
+                memberFields.classList.add('hidden');
+                nonMemberFields.classList.remove('hidden');
             }
         });
         nameType.dispatchEvent(new Event('change'));
-
+        // -------------------------------------------------------------------------------------
         // ----- Payment Mode Toggle -----
         payMode.addEventListener('change', function() {
             if (this.value === 'Cheque') {
@@ -858,9 +907,14 @@ JAVASCRIPT
         });
         payMode.dispatchEvent(new Event('change'));
 
-        // ----- Member Selection -----
+        // ----- Member Selection -------------------------
+                // ----- Member Selection (reads from option data attributes) -----
         memberSelect.addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
             const memberId = this.value;
+
+            const sel = document.getElementById('member_id');
+            console.log(sel.options[sel.selectedIndex].outerHTML);
 
             if (!memberId) {
                 memberName.value = '';
@@ -871,45 +925,20 @@ JAVASCRIPT
                 return;
             }
 
-            memberLoader.style.display = 'inline-block';
+            const name    = selected.getAttribute('data-name')    || '';
+            const balance = selected.getAttribute('data-balance') || '0';
+            const phone   = selected.getAttribute('data-phone')   || '';
 
-            // Fetch member info
-            fetch(`/recpay/api/member-info/${memberId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        memberName.value = data.name;
-                        memberInfo.innerHTML = `<strong>Balance:</strong> ₵${data.balance.toFixed(2)} | <strong>Phone:</strong> ${data.phone || '-'}`;
-                        memberInfo.classList.remove('hidden');
-                    }
-                })
-                .catch(() => {})
-                .finally(() => { memberLoader.style.display = 'none'; });
+            memberName.value = name;
+            memberInfo.innerHTML =
+                `<strong>Balance:</strong> ₵${parseFloat(balance).toFixed(2)} | ` +
+                `<strong>Phone:</strong> ${phone || '-'}`;
+            memberInfo.classList.remove('hidden');
 
-            // Fetch loans
-            loanLoader.style.display = 'inline-block';
-            fetch(`/recpay/api/member-loans/${memberId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    loanSelect.innerHTML = '<option value="">-- Select Loan --</option>';
-                    if (data.success && data.loans && data.loans.length > 0) {
-                        data.loans.forEach(loan => {
-                            loanSelect.innerHTML += `
-                                <option value="${loan.id}"
-                                    data-loan-id="Loan #${loan.id}"
-                                    data-principal="${loan.principal}"
-                                    data-balance="${loan.balance}"
-                                    data-interest-rate="${loan.interest_rate}">
-                                    Loan #${loan.id} - ₵${loan.principal.toFixed(2)} (Balance: ₵${loan.balance.toFixed(2)})
-                                </option>
-                            `;
-                        });
-                    } else {
-                        loanSelect.innerHTML += '<option value="" disabled>No active loans</option>';
-                    }
-                })
-                .catch(() => {})
-                .finally(() => { loanLoader.style.display = 'none'; });
+            // Church members have no loans — hide the section
+            loanSelect.innerHTML = '<option value="">-- Select Loan --</option>';
+            loanSection.classList.add('hidden');
+            loanDetails.classList.add('hidden');
         });
 
         // ----- Loan Selection -----
@@ -984,6 +1013,11 @@ JAVASCRIPT
                 setTimeout(() => msg.remove(), 500);
             });
         }, 4000);
+
+        // Re-apply visibility & info on load (matters for the edit form)
+        payMode.dispatchEvent(new Event('change'));
+        nameType.dispatchEvent(new Event('change'));
+        memberSelect.dispatchEvent(new Event('change'));
     });
 </script>
 

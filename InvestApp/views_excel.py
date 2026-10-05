@@ -12,7 +12,7 @@ from django.template.loader import get_template
 from django.http import HttpResponse
 from openpyxl import Workbook
 
-def invest_export_excel(request):
+def invest_export_excel(request, slug):
     # Get filtered data
     investments = get_filtered_investments(request)
 
@@ -73,7 +73,7 @@ def invest_export_excel(request):
     return response
 
 
-def quarterly_report_excel(request):
+def quarterly_report_excel(request, slug):
     year = 2026
     quarterly_data = _build_quarterly_data(year)
     wb = Workbook()
@@ -94,10 +94,10 @@ def quarterly_report_excel(request):
 
 def _build_quarterly_data(year):
     quarters = [
-        {'name': 'Jan – Mar', 'start': f'{year}-01-01', 'end': f'{year}-03-31'},
-        {'name': 'Apr – Jun', 'start': f'{year}-04-01', 'end': f'{year}-06-30'},
-        {'name': 'Jul – Sep', 'start': f'{year}-07-01', 'end': f'{year}-09-30'},
-        {'name': 'Oct – Dec', 'start': f'{year}-10-01', 'end': f'{year}-12-31'},
+        {'name': 'Jan - Mar', 'start': f'{year}-01-01', 'end': f'{year}-03-31'},
+        {'name': 'Apr - Jun', 'start': f'{year}-04-01', 'end': f'{year}-06-30'},
+        {'name': 'Jul - Sep', 'start': f'{year}-07-01', 'end': f'{year}-09-30'},
+        {'name': 'Oct - Dec', 'start': f'{year}-10-01', 'end': f'{year}-12-31'},
     ]
     quarterly_data = []
     for q in quarters:

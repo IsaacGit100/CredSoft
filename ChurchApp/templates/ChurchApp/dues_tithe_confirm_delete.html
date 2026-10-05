@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Confirm Delete
+                    </h3>
+                </div>
+
+                <div class="card-body">
+
+                    <!-- Block deletion if not editable -->
+                    {% if not trans.can_delete %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-lock"></i>
+                            <strong>Cannot Delete:</strong> {{ trans.lock_reason }}
+                        </div>
+                        <a href="{% url 'ChurchApp:dues_tithe_view' entity.slug trans.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+
+                    {% else %}
+
+                        <!-- Warning -->
+                        <div class="alert alert-danger">
+                            <strong>Warning!</strong>
+                            You are about to delete this transaction. This action <strong>cannot be undone</strong>.
+                        </div>
+
+                        <!-- Transaction Details -->
+                        <h6 class="fw-bold text-muted">TRANSACTION DETAILS</h6>
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th width="35%">Voucher No:</th>
+                                    <td><code>{{ trans.rec_vou_no }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th>Date:</th>
+                                    <td>{{ trans.date|date:"l, F d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Member:</th>
+                                    <td>
+                                        {% if trans.church_member %}
+                                            {{ trans.church_member.full_name }}
+                                        {% elif trans.member %}
+                                            {{ trans.member.full_name }}
+                                        {% elif trans.non_member_name %}
+                                            {{ trans.non_member_name }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Type:</th>
+                                    <td>
+                                        <span class="badge {% if trans.purpose == 'Tithe' %}bg-success{% else %}bg-primary{% endif %}">
+                                            {{ trans.purpose|default:"—" }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Amount:</th>
+                                    <td><strong class="text-danger h5">₵{{ trans.amount|floatformat:2 }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Ledger Code:</th>
+                                    <td><code>{{ trans.ledger_code|default:"—" }}</code> – {{ trans.ledger_name|default:"—" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Description:</th>
+                                    <td>{{ trans.details|default:"—" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        {% if trans.journal_status == 'PENDING' %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% elif trans.journal_status == 'APPROVED' %}
+                                            <span class="badge bg-info">Approved</span>
+                                        {% elif trans.journal_status == 'POSTED' %}
+                                            <span class="badge bg-success">Posted</span>
+                                        {% elif trans.journal_status == 'REJECTED' %}
+                                            <span class="badge bg-secondary">Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <hr>
+
+                        <!-- Confirmation Form -->
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" id="confirmCheck" required>
+                                <label class="form-check-label" for="confirmCheck">
+                                    I understand that this action cannot be undone.
+                                </label>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'ChurchApp:dues_tithe_view' entity.slug trans.pk %}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Yes, Delete Transaction
+                                </button>
+                            </div>
+                        </form>
+
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-borderless th {
+        color: #6c757d;
+        font-weight: 600;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+    .table-borderless td {
+        padding: 8px 12px;
+        font-size: 0.95rem;
+    }
+    code {
+        background: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #d63384;
+    }
+    .card.border-danger {
+        border: 2px solid #dc3545;
+    }
+</style>
+{% endblock %}

@@ -198,9 +198,6 @@
                     <p>Gives us the dashboard of the entire system</p>
                 </div>
             </a>
-
-
-
             
             <!-- User Management -->
             <a href="{% url 'djan_led:chart_of_accounts' entity.slug %}" class="menu-btn">
@@ -300,6 +297,32 @@
                     <p>Generate Chart of Accounts in Excel and Check Downloads</p>
                 </div>
             </a>
+            
+            <a href="{% url 'ChurchApp:member_contributions_list' entity.slug %}" class="menu-btn">
+                <div class="menu-icon">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+                <div class="menu-text">
+                    <h3>Member Contributions</h3>
+                    <p>List of all giving — filter by member, date, or category</p>
+                </div>
+            </a>
+
+
+
+             <!-- Footer -->
+            <div class="footer">
+                <a href="{% url 'ChurchApp:church_dashboard' entity.slug %}" class="btn-main-menu">
+                    <i class="fas fa-arrow-left"></i> Back to Main Menu
+                </a>
+            </div>
+
+
+            <a href="{% url 'djan_led:back_to_home' slug=entity.slug %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+
+
 
 
     </div>

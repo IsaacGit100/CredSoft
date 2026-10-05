@@ -1,11 +1,4 @@
-from django.shortcuts import render
-
-# Create your views here.
-
-
-def djan_led_home(request):
-    return render(request, 'djan_led/djan_led_home.html')
-
+from djan_led.utils import get_module_home_url
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 
@@ -15,25 +8,69 @@ from decimal import Decimal
 from django.utils import timezone
 from .models import UserProfile
 from .utils import user_can_access_entity
-from django_ledger.models import (
-    EntityModel,
-    JournalEntryModel,
-    TransactionModel,
-    AccountModel,
-    LedgerModel,
-)
+from django_ledger.models import (EntityModel, JournalEntryModel, TransactionModel, AccountModel, LedgerModel)
+
+from .forms import EntityConfigForm
+from .models import EntityConfig
+from djan_led.utils import get_visible_accounts
+
+from django.contrib import messages
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill
+from django.http import HttpResponse
+
 
 @login_required
 def coa_home(request, slug):
     return render(request, 'djan_led/coa_home.html')
+
+
+def djan_led_home(request):
+    return render(request, "djan_led/djan_led_home.html")
+
 
 @login_required
 def supervisor_trans_home(request, slug):
     return render(request, 'djan_led/supervisor_trans_home.html')
 
 @login_required
+def finance_reports_home(request, slug):
+    return render(request, 'djan_led/finance_reports_home.html')
+
+@login_required
 def supervisor_cred_home(request, slug):
     return render(request, 'djan_led/supervisor_creditunion_home.html')
+
+@login_required
+def entity_config_edit(request, slug):
+    entity = get_object_or_404(EntityModel, slug=slug)
+    config, _ = EntityConfig.objects.get_or_create(entity=entity)
+
+    if request.method == "POST":
+        form = EntityConfigForm(
+            request.POST,
+            request.FILES,
+            instance=config,
+        )
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Entity settings saved.")
+            return redirect("djan_led:entity_config_edit", slug=entity.slug)
+        else:
+            messages.error(request, "Please fix the errors below.")
+    else:
+        form = EntityConfigForm(instance=config)
+
+    return render(
+        request,
+        "djan_led/entity_config_form.html",
+        {
+            "entity": entity,
+            "config": config,
+            "form": form,
+            "title": f"Settings — {entity.name}",
+        },
+    )
 
 
 @login_required
@@ -67,13 +104,9 @@ def after_login_redirect(request):
     if profile.role == 'Church':
         return redirect('ChurchApp:church_dashboard', slug=profile.default_entity.slug)
     
-        
-
-
-
     if profile.role == "CreditUnion":
         if profile.default_entity:
-            return redirect("CreditUnion:union_dashboard", slug=profile.default_entity.slug)
+            return redirect("CreditUnion:credit_union_dashboard", slug=profile.default_entity.slug)
         else:
             return render(
                 request,
@@ -83,7 +116,7 @@ def after_login_redirect(request):
 
     # ---- Super Admin: portal ----
     if profile.role == "super_admin":
-        return redirect("Consolidated:portal")
+        return redirect("Consolidated:select_context")
 
     # ---- Normal User: entity dashboard ----
     if profile.default_entity:
@@ -193,7 +226,7 @@ def entity_dashboard(request, slug):
 
 
 @login_required
-def chart_of_accounts(request, slug):
+def chart_of_accounts1(request, slug):
     
     entity = get_object_or_404(EntityModel, slug=slug)
     coa = entity.get_default_coa()
@@ -231,11 +264,9 @@ def trial_balance(request, slug):
     if not user_can_access_entity(request.user, entity):
         return render(request, 'djan_led/access_denied.html', {'entity': entity})
 
-    # Get all accounts for this entity (non‑root, active)
+    # Get all accounts for this entity (non-root, active)
     accounts = AccountModel.objects.filter(
         coa_model__entity=entity,
-        active=True,
-        depth__gt=1
     ).order_by('code')
 
     trial_data = []
@@ -372,7 +403,7 @@ def income_statement(request, slug):
 
 
 @login_required
-def journal_entry_detail(request, slug, pk):
+def journal_entry_detail1(request, slug, pk):
     from django_ledger.models import EntityModel, JournalEntryModel, TransactionModel, AccountModel
     entity = get_object_or_404(EntityModel, slug=slug)
     
@@ -674,9 +705,9 @@ def balance_sheet(request, slug):
         else:
             return credits - debits
 
-    # Get active, non‑root accounts for each category
+    # Get active, non-root accounts for each category
     accounts = AccountModel.objects.filter(
-        coa_model=coa, active=True, depth__gt=1  # exclude root nodes
+        coa_model=coa  # exclude root nodes
     )
 
     asset_data = []
@@ -686,7 +717,7 @@ def balance_sheet(request, slug):
     for acc in accounts:
         balance = get_balance(acc)
         if balance == 0:
-            continue  # skip zero‑balance accounts
+            continue  # skip zero-balance accounts
 
         item = {"code": acc.code, "name": acc.name, "balance": balance}
         if acc.role == "asset":
@@ -791,7 +822,7 @@ def autofill_chart_of_accounts(request, slug):
         ("3000", "EQUITY", "equity", "credit", None),
         ("4000", "REVENUE", "revenue", "credit", None),
         ("5000", "EXPENSES", "expense", "debit", None),
-        # Assets sub‑nodes
+        # Assets sub-nodes
         ("1100", "Non-Current Assets", "asset", "debit", "1000"),
         ("1110", "Property, Plant & Equipment", "asset", "debit", "1100"),
         ("1120", "Investments", "asset", "debit", "1100"),
@@ -1220,12 +1251,12 @@ def opening_balance_excel(request, slug):
 
 @login_required
 def journal_entry_detail(request, slug, pk):
-   
+
     entity = get_object_or_404(EntityModel, slug=slug)
-    
+
     if not user_can_access_entity(request.user, entity):
         return render(request, 'djan_led/access_denied.html', {'entity': entity})
-    
+
     # Access check...
     entry = get_object_or_404(JournalEntryModel, ledger__entity=entity, uuid=pk)
     transactions = TransactionModel.objects.filter(journal_entry=entry)
@@ -1240,51 +1271,86 @@ def journal_entry_detail(request, slug, pk):
     }
     return render(request, 'djan_led/journal_entry_detail.html', context)
 
+
+##  ===============================================
 @login_required
 def account_visibility(request, slug):
-   
+    """Manage THIS USER's visible accounts for one entity."""
+
     entity = get_object_or_404(EntityModel, slug=slug)
-    
+
     if not user_can_access_entity(request.user, entity):
-        return render(request, 'djan_led/access_denied.html', {'entity': entity})
-    
+        return render(request, "djan_led/access_denied.html", {"entity": entity})
 
     try:
         profile = request.user.djan_led_profile
     except UserProfile.DoesNotExist:
         profile = UserProfile.objects.create(user=request.user)
-    if entity not in profile.allowed_entities.all() and entity != profile.default_entity:
+
+    if (entity not in profile.allowed_entities.all()
+            and entity != profile.default_entity):
         messages.error(request, "Access denied.")
-        return redirect('entity_dashboard', slug=entity.slug)
+        return redirect("entity_dashboard", slug=entity.slug)
 
     coa = entity.get_default_coa()
     if not coa:
         messages.error(request, "No Chart of Accounts found. Please autofill first.")
-        return redirect('chart_of_accounts', slug=entity.slug)
+        return redirect("chart_of_accounts", slug=entity.slug)
 
-    accounts = AccountModel.objects.filter(coa_model=coa).exclude(role='root').order_by('code')
+    accounts = (AccountModel.objects.filter(coa_model=coa).order_by("code"))
 
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        selected_uuids = [uuid for uuid in request.POST.getlist('selected_ids') if uuid.strip()]
-    #    selected_uuids = request.POST.getlist('selected_ids')
-        if action == 'activate':
-            count = AccountModel.objects.filter(uuid__in=selected_uuids).update(active=True)
-            messages.success(request, f"{count} accounts activated.")
-        elif action == 'deactivate':
-            count = AccountModel.objects.filter(uuid__in=selected_uuids).update(active=False)
-            messages.success(request, f"{count} accounts deactivated.")
-        return redirect('djan_led:account_visibility', slug=entity.slug)
+    prefs = profile.account_preferences or {}
+    current_codes = prefs.get(entity.slug, [])
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "reset":
+            prefs.pop(entity.slug, None)
+            profile.account_preferences = prefs
+            profile.save(update_fields=["account_preferences"])
+            messages.success(request, "Reset — you now see all active accounts.")
+            return render(request, "djan_led/account_visibility_success.html", {
+                "entity": entity,
+                "count": accounts.count(),
+                "verb": "reset — you now see all active accounts",
+                "chosen": [],
+            })
+
+        selected_codes = request.POST.getlist("selected_codes")
+
+        if not selected_codes:
+            messages.warning(request, "No accounts selected. Click 'Reset to All' if you want everything.")
+            return redirect("djan_led:account_visibility", slug=entity.slug)
+
+        prefs[entity.slug] = selected_codes
+        profile.account_preferences = prefs
+        profile.save(update_fields=["account_preferences"])
+
+        chosen = list(
+            AccountModel.objects
+            .filter(coa_model=coa, code__in=selected_codes)
+            .values("code", "name")
+            .order_by("code")
+        )
+
+        messages.success(request, f"Saved {len(selected_codes)} account(s) to your personal list.")
+
+        return render(request, "djan_led/account_visibility_success.html", {
+            "entity": entity,
+            "count": len(selected_codes),
+            "verb": "saved to your personal account list",
+            "chosen": chosen,
+        })
 
     context = {
-        'entity': entity,
-        'accounts': accounts,
+        "entity": entity,
+        "accounts": accounts,
+        "current_codes": current_codes,
+        "has_prefs": entity.slug in prefs,
     }
-    return render(request, 'djan_led/account_visibility.html', context)
+    return render(request, "djan_led/account_visibility.html", context)
 
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, PatternFill
-from django.http import HttpResponse
 
 @login_required
 def chart_of_accounts_excel(request, slug):
@@ -1319,7 +1385,7 @@ def chart_of_accounts_excel(request, slug):
         ws.cell(row=row, column=4, value=acc.balance_type.capitalize())
         ws.cell(row=row, column=5, value="Active" if acc.is_active else "Inactive")
 
-    # Auto‑width columns
+    # Auto-width columns
     for col in range(1, len(headers)+1):
         ws.column_dimensions[chr(64+col)].width = 20  # A=65, B=66...
 
@@ -1377,11 +1443,9 @@ def account_preferences(request, slug):
         messages.error(request, "No Chart of Accounts found.")
         return redirect('djan_led:entity_dashboard', slug=slug)
 
-    # Get all active, non‑root accounts for this entity
+    # Get all active, non-root accounts for this entity
     all_accounts = AccountModel.objects.filter(
         coa_model=coa,
-        active=True,
-        depth__gt=1
     ).order_by('code')
 
     # Get the user's saved preference for this entity
@@ -1420,9 +1484,7 @@ def manual_journal_entry(request, slug):
         return redirect("djan_led:entity_dashboard", slug=slug)
 
     # Get active, non-root accounts for dropdown
-    accounts = AccountModel.objects.filter(
-        coa_model=coa, active=True, depth__gt=1
-    ).order_by("code")
+    accounts = AccountModel.objects.filter(coa_model=coa).order_by("code")
 
     if request.method == "POST":
         date = request.POST.get("date")
@@ -1500,7 +1562,7 @@ def manual_journal_entry_create(request, slug):
         messages.error(request, "No Chart of Accounts found.")
         return redirect('djan_led:entity_dashboard', slug=slug)
 
-    accounts = AccountModel.objects.filter(coa_model=coa, active=True, depth__gt=1).order_by('code')
+    accounts = AccountModel.objects.filter(coa_model=coa).order_by('code')
 
     if request.method == 'POST':
         date = request.POST.get('date')
@@ -1893,13 +1955,9 @@ def coa_acc_delete(request, slug, account_uuid):
     return render(request, "djan_led/coa_acc_delete.html", context)
 
 
-
-
-
 @staff_member_required
 def add_coa_to_entity(request):
     pass
-
 
 
 @staff_member_required
@@ -2045,3 +2103,227 @@ import string
 def generate_random_password(length=12):
     alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
     return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+
+@login_required
+def back_to_home(request, slug=None):
+    """
+    Universal exit that returns the user to their entity's correct dashboard.
+    """
+    if slug:
+        entity = get_object_or_404(EntityModel, slug=slug)
+    else:
+        # Fall back to the user's default entity
+        entity = (
+            EntityModel.objects.filter(admin=request.user).first()
+            or EntityModel.objects.first()
+        )
+
+    return redirect(get_module_home_url(entity))
+
+from django.http import HttpResponse
+from Report.pdf_builder import Col, build_report_pdf
+from Report.utils import render_excel
+
+
+@login_required
+@login_required
+def coa_pdf(request, slug):
+    """Chart of Accounts as PDF — grouped by section, indented."""
+    from io import BytesIO
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.platypus import (
+        SimpleDocTemplate, Paragraph, Table, TableStyle,
+    )
+    from xml.sax.saxutils import escape
+
+    entity = get_object_or_404(EntityModel, slug=slug)
+    coa = entity.get_default_coa()
+
+    if not coa:
+        messages.error(request, "No Chart of Accounts found for this entity.")
+        return redirect("djan_led:coa_home", slug=entity.slug)
+
+    cfg = getattr(entity, "config", None)
+    accounts = list(AccountModel.objects.filter(coa_model=coa).order_by("code"))
+
+    # ---- Group accounts by their own role ----
+    SECTION_ORDER = [
+        ("asset",     "ASSETS",              "#1a56db"),
+        ("liability", "LIABILITIES",         "#991b1b"),
+        ("equity",    "CAPITAL & EQUITY",    "#065f46"),
+        ("revenue",   "INCOME",              "#065f46"),
+        ("cogs",      "COST OF GOODS SOLD",  "#92400e"),
+        ("expense",   "EXPENSES",            "#991b1b"),
+    ]
+
+    grouped = {role: [] for role, _, _ in SECTION_ORDER}
+
+    for a in accounts:
+        if a.role and a.role.startswith("root_"):
+            continue           # skip section header rows
+        if a.role in grouped:
+            grouped[a.role].append(a)
+
+    # ---- Build the PDF ----
+    buf = BytesIO()
+    doc = SimpleDocTemplate(
+        buf, pagesize=A4,
+        leftMargin=1.6 * cm, rightMargin=1.6 * cm,
+        topMargin=1.5 * cm, bottomMargin=1.5 * cm,
+        title="Chart of Accounts",
+    )
+
+    styles = {
+        "org":    ParagraphStyle("org", fontName="Helvetica-Bold", fontSize=14,
+                                 alignment=1, textColor=colors.HexColor("#1e3a5f"),
+                                 spaceAfter=4),
+        "sub":    ParagraphStyle("sub", fontName="Helvetica", fontSize=9,
+                                 alignment=1, textColor=colors.HexColor("#6b7280"),
+                                 spaceAfter=10),
+        "title":  ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=11,
+                                 alignment=1, spaceAfter=2),
+        "entity": ParagraphStyle("entity", fontName="Helvetica-Bold", fontSize=10,
+                                 alignment=1, textColor=colors.HexColor("#1a56db"),
+                                 spaceAfter=12),
+        "section": ParagraphStyle("section", fontName="Helvetica-Bold",
+                                  fontSize=10, textColor=colors.white),
+        "acct":   ParagraphStyle("acct", fontName="Helvetica", fontSize=9,
+                                 leading=11),
+    }
+
+    story = []
+
+    org_name = cfg.organization_name if cfg else "Organization"
+    story.append(Paragraph(escape(org_name), styles["org"]))
+    if cfg and cfg.report_subtitle:
+        story.append(Paragraph(escape(cfg.report_subtitle), styles["sub"]))
+    story.append(Paragraph("Chart of Accounts", styles["title"]))
+    story.append(Paragraph(escape(entity.name), styles["entity"]))
+
+    # ---- Table data ----
+    header_style = ParagraphStyle("h", fontName="Helvetica-Bold",
+                                  fontSize=9, textColor=colors.white)
+    table_data = [[
+        Paragraph("Code", header_style),
+        Paragraph("Account Name", header_style),
+        Paragraph("Role", header_style),
+        Paragraph("Type", header_style),
+    ]]
+    style_cmds = [
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e3a5f")),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("FONTSIZE", (0, 1), (-1, -1), 9),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 1), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 1), (-1, -1), 4),
+        ("LINEBELOW", (0, 1), (-1, -1), 0.15, colors.HexColor("#e5e7eb")),
+    ]
+
+    for role, label, color in SECTION_ORDER:
+        rows = grouped.get(role, [])
+        if not rows:
+            continue
+
+        # Section header — spans all columns, coloured bar
+        idx = len(table_data)
+        table_data.append([
+            Paragraph(f"{label}", styles["section"]),
+            "", "", "",
+        ])
+        style_cmds += [
+            ("SPAN", (0, idx), (-1, idx)),
+            ("BACKGROUND", (0, idx), (-1, idx), colors.HexColor(color)),
+            ("TOPPADDING", (0, idx), (-1, idx), 6),
+            ("BOTTOMPADDING", (0, idx), (-1, idx), 6),
+        ]
+
+        # Account rows — indented by depth
+        for a in rows:
+            depth = (a.depth or 3)
+            # depth 3 = top-level under section (no indent)
+            # depth 4 = 1 level deep, etc.
+            indent = "&nbsp;&nbsp;&nbsp;&nbsp;" * max(0, depth - 3)
+
+            table_data.append([
+                Paragraph(escape(a.code or ""), styles["acct"]),
+                Paragraph(f"{indent}{escape(a.name or '')}", styles["acct"]),
+                Paragraph(escape(a.role or ""), styles["acct"]),
+                Paragraph(escape(a.balance_type or ""), styles["acct"]),
+            ])
+
+    col_widths = [2.4 * cm, 10.6 * cm, 3.0 * cm, 2.0 * cm]
+    table = Table(table_data, colWidths=col_widths, repeatRows=1)
+    table.setStyle(TableStyle(style_cmds))
+    story.append(table)
+
+    def _footer(canvas, doc_):
+        from datetime import datetime
+        canvas.saveState()
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(colors.HexColor("#666666"))
+        w, _ = doc_.pagesize
+        canvas.drawCentredString(
+            w / 2, 1.0 * cm,
+            f"Generated {datetime.now():%d/%m/%Y %H:%M}  —  {org_name}",
+        )
+        canvas.drawRightString(w - 1.5 * cm, 1.0 * cm, f"Page {doc_.page}")
+        canvas.restoreState()
+
+    doc.build(story, onFirstPage=_footer, onLaterPages=_footer)
+
+    resp = HttpResponse(buf.getvalue(), content_type="application/pdf")
+    resp["Content-Disposition"] = f'inline; filename="coa_{entity.slug}.pdf"'
+    return resp
+
+@login_required
+def coa_excel(request, slug):
+    """Chart of Accounts as Excel with all fields."""
+    entity = get_object_or_404(EntityModel, slug=slug)
+    coa = entity.get_default_coa()
+
+    if not coa:
+        messages.error(request, "No Chart of Accounts found for this entity.")
+        return redirect("djan_led:coa_home", slug=entity.slug)
+
+    cfg = getattr(entity, "config", None)
+    accounts = AccountModel.objects.filter(coa_model=coa).order_by("code")
+
+    headers = [
+        "Code",
+        "Account Name",
+        "Depth",
+        "Role",
+        "Balance Type",
+        "Parent Code",
+        "Active",
+    ]
+
+    data = []
+    for a in accounts:
+        parent_code = a.parent.code if a.parent else ""
+        data.append(
+            [
+                a.code,
+                a.name,
+                a.depth or "",
+                a.role or "",
+                a.balance_type or "",
+                parent_code,
+                "Yes" if a.active else "No",
+            ]
+        )
+
+    return render_excel(
+        headers,
+        data,
+        filename=f"chart_of_accounts_{entity.slug}.xlsx",
+        sheet_name="Chart of Accounts",
+        title=(cfg.organization_name if cfg else "Chart of Accounts"),
+        subtitle=entity.name,
+    )

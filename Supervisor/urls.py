@@ -34,4 +34,15 @@ urlpatterns = [
     
     path("entity/<slug:slug>/pending_transactions/", views.pending_transactions, name='pending_transactions'),
     path("entity/<slug:slug>/post-selected/", views.post_selected_transactions, name='post_selected_transactions'),
+    
+    path('<slug:slug>/supervisor/queue/', views.supervisor_queue, name='supervisor_queue'),
+    path('<slug:slug>/supervisor/post-selected/', views.supervisor_post_selected, name='supervisor_post_selected'),
+    path('<slug:slug>/supervisor/reject-selected/', views.supervisor_reject_selected, name='supervisor_reject_selected'),
+    
+    
+    # ===============================================Supervisor Trans ==================
+    path('entity/<slug:slug>/trans-report/', views.trans_report, name='trans_report'),
+    path('entity/<slug:slug>/trans-report/pdf/', views.trans_report_pdf, name='trans_report_pdf'),
+    path('entity/<slug:slug>/trans-report/excel/', views.trans_report_excel, name='trans_report_excel'),
+    
 ]

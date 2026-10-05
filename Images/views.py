@@ -65,14 +65,14 @@ def member_images(request, slug, pk=None):
             member.save()
             messages.success(request, "ID card back uploaded successfully!")
 
-        return redirect("MembersApp:member_images", pk=member.id)
+        return redirect("Images:member_images", pk=member.id)
 
     context = {
         "member": member,
         "search_query": search_query,
         "search_results": search_results,
     }
-    return render(request, "MembersApp/member_images.html", context)
+    return render(request, "Images/member_images.html", context)
 
 
 @login_required
@@ -84,36 +84,9 @@ def view_member_images(request, slug, pk):
     context = {
         "member": member,
     }
-    return render(request, "MembersApp/view_member_images.html", context)
+    return render(request, "Images/view_member_images.html", context)
 
 
-@login_required
-def delete_image1(request, slug, pk, image_type):
-    """Delete a specific image"""
-    entity = get_object_or_404(EntityModel, slug=slug)
-    member = get_object_or_404(Master, pk=pk)
-
-    if request.method == "POST":
-        if image_type == "profile":
-            if member.profile_image:
-                member.profile_image.delete()
-                messages.success(request, "Profile image deleted!")
-        elif image_type == "signature":
-            if member.signature:
-                member.signature.delete()
-                messages.success(request, "Signature deleted!")
-        elif image_type == "id_front":
-            if member.id_card_front:
-                member.id_card_front.delete()
-                messages.success(request, "ID card front deleted!")
-        elif image_type == "id_back":
-            if member.id_card_back:
-                member.id_card_back.delete()
-                messages.success(request, "ID card back deleted!")
-
-        member.save()
-
-    return redirect("MembersApp:member_images", pk=member.pk)
 
 
 @login_required
@@ -160,7 +133,7 @@ def delete_member_image(request, slug, pk, image_type):
             messages.warning(request, f"No {image_name} found to delete")
 
         member.save()
-        #    return redirect('MembersApp:member_images_view', pk=member.id)
-        return redirect("MembersApp:view_member_images", pk=member.id)
-    #    return redirect('MembersApp:member_images_view', pk=member.id)
-    return redirect("MembersApp:view_member_images", pk=member.id)
+        
+        return redirect("Images:view_member_images", pk=member.id)
+    
+    return redirect("Images:view_member_images", pk=member.id)

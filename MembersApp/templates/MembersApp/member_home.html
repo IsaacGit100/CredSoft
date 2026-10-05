@@ -66,7 +66,7 @@
         }
 
         .blue-submenu a::before {
-            content: "▶";
+            content: " ";
             margin-right: 8px;
             font-size: 12px;
             opacity: 0.8;
@@ -85,7 +85,7 @@
                 <li><a href="{% url 'MembersApp:members_sav_int_list' %}">Members Savings Interest List</a></li>  
                 <li><a href="{% url 'MembersApp:min_sav_process' %}">Members Savings Minimum Balance Calc</a></li>  
                 <li><a href="{% url 'MembersApp:sav_int_process_list' %}">Members Savings Minimum Balance table</a></li>  
-                <li><a href="{% url 'MembersApp:back_to_home' %}">Exit</a><li>
+                <li><a href="{% url 'djan_led:back_to_home' entity.slug %}">Exit</a><li>
             </ul>
         </div>
 <div class="d-flex gap-2 mb-3 flex-wrap">

@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<style>
+    .st-page { padding:20px; max-width:1200px; margin:0 auto; }
+    .st-head { display:flex; justify-content:space-between; align-items:center;
+               margin-bottom:16px; }
+    .st-head h2 { margin:0; color:#1e3a5f; font-size:20px; }
+    .st-card { background:#fff; border-radius:10px;
+               box-shadow:0 1px 3px rgba(0,0,0,0.08);
+               padding:18px; margin-bottom:16px; }
+    .st-title { font-size:13px; color:#1a56db; font-weight:700;
+                text-transform:uppercase; letter-spacing:0.5px;
+                border-bottom:2px solid #e5e7eb; padding-bottom:8px;
+                margin-bottom:14px; }
+
+    .st-search { display:grid; grid-template-columns:1fr auto auto auto;
+                 gap:10px; align-items:end; }
+    .st-search label { font-size:12px; font-weight:600; color:#374151;
+                       display:block; margin-bottom:4px; }
+    .st-search input { width:100%; padding:8px 12px;
+                       border:1px solid #d1d5db; border-radius:6px;
+                       font-size:14px; }
+
+    .st-member-info { display:grid; grid-template-columns:repeat(4,1fr);
+                      gap:10px; margin-bottom:14px; }
+    .st-info-tile { padding:10px 14px; border-radius:8px;
+                    background:#f3f4f6; }
+    .st-info-tile .lbl { font-size:10px; text-transform:uppercase;
+                         font-weight:700; letter-spacing:0.4px;
+                         color:#6b7280; }
+    .st-info-tile .val { font-size:15px; font-weight:700; margin-top:3px;
+                         font-family:monospace; color:#111827; }
+    .st-info-tile.green { background:#ecfdf5; }
+    .st-info-tile.green .lbl { color:#065f46; }
+    .st-info-tile.green .val { color:#065f46; }
+
+    table.st { width:100%; border-collapse:collapse; font-size:12px; }
+    table.st th { background:#f3f4f6; padding:8px; text-align:left;
+                  font-size:11px; border-bottom:2px solid #e5e7eb; }
+    table.st td { padding:7px 8px; border-bottom:1px solid #f3f4f6; }
+    table.st td.num { text-align:right; font-family:monospace; }
+    table.st tr.me td { background:#fef3c7; }
+    table.st tr.total-row td { background:#eff6ff; font-weight:700;
+                               color:#1e40af; font-family:monospace; }
+    table.st tr.applied-row td { background:#ecfdf5; color:#065f46;
+                                 font-weight:700; }
+
+    .st-cand { padding:10px 14px; border-bottom:1px solid #f3f4f6;
+               display:flex; justify-content:space-between;
+               align-items:center; }
+    .st-cand:last-child { border-bottom:none; }
+    .st-cand a { text-decoration:none; }
+    .st-hint { padding:40px 20px; text-align:center; color:#9ca3af;
+               font-size:14px; }
+    .badge-me { background:#fef3c7; color:#92400e; padding:2px 8px;
+                border-radius:10px; font-size:10px; font-weight:700; }
+</style>
+
+<div class="st-page">
+
+    <div class="st-head">
+        <div>
+            <h2><i class="fas fa-search-dollar"></i> Savings Interest Trace</h2>
+            <div style="color:#6b7280; font-size:13px;">
+                {{ entity.name }} — explain how interest was calculated, day by day.
+            </div>
+        </div>
+        <a href="{% url 'CreditUnion:credit_union_dashboard' entity.slug %}"
+           class="btn btn-secondary btn-sm">Close</a>
+    </div>
+
+    <!-- SEARCH FORM -->
+    <div class="st-card">
+        <form method="get">
+            <div class="st-search">
+                <div>
+                    <label>Search member (name, member no., or ID)</label>
+                    <input type="text" name="q" value="{{ q }}"
+                           placeholder="e.g. Kwame, 1042, or 7">
+                </div>
+                <div>
+                    <label>From</label>
+                    <input type="date" name="start"
+                           value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div>
+                    <label>To</label>
+                    <input type="date" name="end"
+                           value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+            {% if selected_master %}
+                <input type="hidden" name="master_id" value="{{ selected_master.pk }}">
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- CANDIDATE LIST (only if multiple matches) -->
+    {% if candidates %}
+        <div class="st-card">
+            <div class="st-title">Multiple matches — pick one</div>
+            {% for m in candidates %}
+                <div class="st-cand">
+                    <div>
+                        <b>{{ m.full_name }}</b>
+                        <span style="color:#6b7280; font-size:12px; margin-left:8px;">
+                            #{{ m.pk }}
+                            {% if m.member_no %}| No. {{ m.member_no }}{% endif %}
+                        </span>
+                    </div>
+                    <a href="?master_id={{ m.pk }}&start={{ start_date|date:'Y-m-d' }}&end={{ end_date|date:'Y-m-d' }}"
+                       class="btn btn-sm btn-outline-primary">
+                        Select
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- THE TRACE -->
+    {% if selected_master %}
+        <div class="st-card">
+            <div class="st-title">
+                {{ selected_master.full_name }}
+                — {{ start_date|date:"d M Y" }} to {{ end_date|date:"d M Y" }}
+            </div>
+
+            <div class="st-member-info">
+                <div class="st-info-tile">
+                    <div class="lbl">Member</div>
+                    <div class="val">{{ selected_master.pk }}</div>
+                </div>
+                <div class="st-info-tile">
+                    <div class="lbl">Effective Rate</div>
+                    <div class="val">{{ selected_master.effective_sav_int_rate|floatformat:4 }} %</div>
+                </div>
+                <div class="st-info-tile">
+                    <div class="lbl">Current Balance</div>
+                    <div class="val">{{ selected_master.balance|floatformat:2|intcomma }}</div>
+                </div>
+                <div class="st-info-tile green">
+                    <div class="lbl">Total Interest (period)</div>
+                    <div class="val">{{ totals.interest|floatformat:4 }}</div>
+                </div>
+            </div>
+
+            {% if rows %}
+            <div style="overflow-x:auto;">
+                <table class="st">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th class="num">Balance</th>
+                            <th class="num">Rate %</th>
+                            <th class="num">Days</th>
+                            <th class="num">Day in Cycle</th>
+                            <th class="num">Savings Interest</th>
+                            <th class="num">Cumulative</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for r in rows %}
+                        <tr class="{% if r.month_end %}me{% endif %}">
+                            <td>{{ r.date|date:"d M Y (D)" }}</td>
+                            <td class="num">{{ r.balance|floatformat:2|intcomma }}</td>
+                            <td class="num">{{ r.rate|floatformat:4 }}</td>
+                            <td class="num">{{ r.days }}</td>
+                            <td class="num">{{ r.days_in_cycle }}</td>
+                            <td class="num">{{ r.interest|floatformat:4 }}</td>
+                            <td class="num">{{ r.cumulative|floatformat:4 }}</td>
+                            <td>
+                                {% if r.month_end %}
+                                    <span class="badge-me">MONTH-END</span>
+                                    {% if r.applied %}
+                                        → applied {{ r.applied|floatformat:2 }}
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td>TOTAL</td>
+                        <td class="num">—</td>
+                        <td class="num">—</td>
+                        <td class="num">{{ totals.days }}</td>
+                        <td class="num">—</td>
+                        <td class="num">{{ totals.interest|floatformat:4 }}</td>
+                        <td class="num">{{ totals.interest|floatformat:4 }}</td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- FORMULA EXPLANATION -->
+            <div style="margin-top:14px; padding:12px 14px;
+                        background:#eff6ff; border-radius:6px;
+                        font-size:12px; color:#1e3a5f;">
+                <b>How each row is calculated:</b><br>
+                <code>daily_interest = balance × effective_rate ÷ 100 ÷ 365</code>
+                <br><br>
+                <b>Legend</b>
+                <ul style="margin:6px 0 0 20px;">
+                    <li><b>Balance</b> — the opening balance that day
+                        (tot_deposit + tot_deposit_withdrawal + tot_interest_accrued)</li>
+                    <li><b>Rate %</b> — effective annual rate applied for this member
+                        (member override, or CU default)</li>
+                    <li><b>Days</b> — 1 per daily row</li>
+                    <li><b>Day in Cycle</b> — how many days so far in the current month</li>
+                    <li><b>Savings Interest</b> — interest accrued that day</li>
+                    <li><b>Cumulative</b> — running total from period start</li>
+                </ul>
+            </div>
+            {% else %}
+                <div class="st-hint">
+                    No daily log entries for {{ selected_master.full_name }}
+                    between {{ start_date|date:"d M Y" }}
+                    and {{ end_date|date:"d M Y" }}.
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="st-card">
+            <div class="st-hint">
+                <i class="fas fa-search" style="font-size:32px; opacity:0.4;"></i>
+                <div style="margin-top:10px;">
+                    Search a member above to see their daily interest trace.
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

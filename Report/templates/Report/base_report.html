@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container" style="padding:20px; max-width:1200px;">
+
+    <!-- ======= Report header (org name + entity name) ======= -->
+    <div style="text-align:center; border-bottom:2px solid #1a56db;
+                padding-bottom:14px; margin-bottom:22px;">
+
+        {% if entity_config.logo %}
+            <img src="{{ entity_config.logo.url }}" alt=""
+                 style="max-height:60px; margin-bottom:6px;">
+        {% endif %}
+
+        <h2 style="margin:0; color:#1e3a5f; font-size:20px;">
+            {{ entity_config.organization_name|default:"Organization" }}
+        </h2>
+
+        {% if entity_config.report_subtitle %}
+            <div style="color:#6b7280; font-size:12px;">
+                {{ entity_config.report_subtitle }}
+            </div>
+        {% endif %}
+
+        <h3 style="margin-top:14px; margin-bottom:4px; font-size:16px; color:#1a56db;">
+            {% if entity_config.display_name %}
+                {{ entity_config.display_name }}
+            {% else %}
+                {{ entity.name }}
+            {% endif %}
+        </h3>
+
+        <h4 style="margin:0; font-size:15px;">
+            {% block report_title %}Report{% endblock %}
+        </h4>
+
+        <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+            {% block report_period %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- ======= Action bar (hidden on print) ======= -->
+    <div class="no-print"
+         style="display:flex; gap:8px; justify-content:flex-end;
+                margin-bottom:16px; flex-wrap:wrap;">
+        <a href="?{{ querystring }}&format=html" class="btn btn-primary">
+            <i class="fas fa-eye"></i> View
+        </a>
+        <a href="?{{ querystring }}&format=pdf" class="btn btn-danger" target="_blank">
+            <i class="fas fa-file-pdf"></i> PDF
+        </a>
+        <a href="?{{ querystring }}&format=excel" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> Excel
+        </a>
+        <button onclick="window.print()" class="btn btn-secondary">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <a href="{% url 'ChurchApp:church_dashboard' entity.slug %}"
+           class="btn btn-secondary">
+            <i class="fas fa-times"></i> Close
+        </a>
+    </div>
+
+    {% block report_body %}{% endblock %}
+</div>
+
+<style>
+@media print {
+    .no-print { display: none !important; }
+    body { background: white; }
+    .container { max-width: none; padding: 0; }
+    a { color: inherit; text-decoration: none; }
+}
+</style>
+{% endblock %}

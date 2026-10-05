@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mt-2 mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'FixedAssets:fixed_asset_list' entity.slug %}">
+                    <i class="fas fa-arrow-left"></i> Fixed Asset Register
+                </a>
+            </li>
+            <li class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+                <i class="fas fa-building"></i> {{ title }}
+            </h3>
+            <small>{{ entity.name }}</small>
+        </div>
+
+        <div class="card-body">
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="section-block">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle"></i> Basic Information
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    {{ form.category.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                    <div class="text-danger small">{{ form.category.errors|join:", " }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">GL accounts come from the category.</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    {{ form.asset_id.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.asset_id }}
+                                {% if form.asset_id.errors %}
+                                    <div class="text-danger small">{{ form.asset_id.errors|join:", " }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Unique per entity (e.g. FA-001, VEH-002).</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    {{ form.name.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small">{{ form.name.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ form.description.label }}</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger small">{{ form.description.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-title">
+                        <i class="fas fa-shopping-cart"></i> Acquisition Details
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    {{ form.acquisition_date.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.acquisition_date }}
+                                {% if form.acquisition_date.errors %}
+                                    <div class="text-danger small">{{ form.acquisition_date.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    {{ form.cost.label }} <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₵</span>
+                                    {{ form.cost }}
+                                </div>
+                                {% if form.cost.errors %}
+                                    <div class="text-danger small">{{ form.cost.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ form.salvage_value.label }}</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₵</span>
+                                    {{ form.salvage_value }}
+                                </div>
+                                {% if form.salvage_value.errors %}
+                                    <div class="text-danger small">{{ form.salvage_value.errors|join:", " }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Residual value at end of life.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-title">
+                        <i class="fas fa-chart-line"></i> Depreciation Parameters
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ form.useful_life_years.label }}</label>
+                                {{ form.useful_life_years }}
+                                {% if form.useful_life_years.errors %}
+                                    <div class="text-danger small">{{ form.useful_life_years.errors|join:", " }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">e.g. 5, 10, 40.</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ form.depreciation_method.label }}</label>
+                                {{ form.depreciation_method }}
+                                {% if form.depreciation_method.errors %}
+                                    <div class="text-danger small">{{ form.depreciation_method.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ form.override_depreciation_rate.label }}</label>
+                                {{ form.override_depreciation_rate }}
+                                {% if form.override_depreciation_rate.errors %}
+                                    <div class="text-danger small">{{ form.override_depreciation_rate.errors|join:", " }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Optional — leave blank for category default.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-title">
+                        <i class="fas fa-money-check-alt"></i> Payment & Seller Details
+                        <span class="badge bg-secondary" style="font-size:10px;">Optional</span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Payment Mode</label>
+                                {{ form.payment_mode }}
+                                {% if form.payment_mode.errors %}
+                                    <div class="text-danger small">{{ form.payment_mode.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Bank Name</label>
+                                {{ form.bank_name }}
+                                {% if form.bank_name.errors %}
+                                    <div class="text-danger small">{{ form.bank_name.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Bank Branch</label>
+                                {{ form.bank_branch }}
+                                {% if form.bank_branch.errors %}
+                                    <div class="text-danger small">{{ form.bank_branch.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Bank Account No</label>
+                                {{ form.bank_account_no }}
+                                {% if form.bank_account_no.errors %}
+                                    <div class="text-danger small">{{ form.bank_account_no.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Cheque No</label>
+                                {{ form.cheque_no }}
+                                {% if form.cheque_no.errors %}
+                                    <div class="text-danger small">{{ form.cheque_no.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Seller Name</label>
+                                {{ form.seller_name }}
+                                {% if form.seller_name.errors %}
+                                    <div class="text-danger small">{{ form.seller_name.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Seller Contact</label>
+                                {{ form.seller_contact }}
+                                {% if form.seller_contact.errors %}
+                                    <div class="text-danger small">{{ form.seller_contact.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Seller Address</label>
+                                {{ form.seller_address }}
+                                {% if form.seller_address.errors %}
+                                    <div class="text-danger small">{{ form.seller_address.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <div class="mt-3 d-flex justify-content-between">
+                    <a href="{% url 'FixedAssets:fixed_asset_list' entity.slug %}"
+                       class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Register Fixed Asset
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+        <div class="card-footer text-muted small">
+            <i class="fas fa-info-circle"></i>
+            Registering an asset saves the record. Posting to the journal is a separate step
+            done from the asset register, and requires supervisor approval.
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .form-label {
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+    .form-control, .form-select {
+        font-size: 0.95rem;
+    }
+    .input-group-text {
+        min-width: 40px;
+        justify-content: center;
+        background: #f8f9fa;
+    }
+
+    /* Section blocks */
+    .section-block {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px 18px;
+        margin-bottom: 18px;
+    }
+    .section-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #1e3a5f;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    .section-title i {
+        color: #1a56db;
+        margin-right: 6px;
+    }
+</style>
+{% endblock %}

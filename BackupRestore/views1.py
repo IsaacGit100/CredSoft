@@ -606,12 +606,12 @@ def restore_from_file(request):
         messages.info(request, f"DRY RUN – Would restore {table_name} from {filename}. No changes made.")
         return redirect('BackupRestore:backup_panel')
 
-    # Pre‑restore backup
+    # Pre-restore backup
     pre_backup_path = _create_pre_restore_backup(table_name)
     if not pre_backup_path:
         log_action(request.user, 'RESTORE', 'FAILURE', table_name=table_name, backup_file=filename,
-                   details="Failed to create pre‑restore backup", request=request)
-        messages.error(request, "Failed to create pre‑restore backup. Restore aborted.")
+                   details="Failed to create pre-restore backup", request=request)
+        messages.error(request, "Failed to create pre-restore backup. Restore aborted.")
         return redirect('BackupRestore:backup_panel')
 
     # Maintenance mode
@@ -633,7 +633,7 @@ def restore_from_file(request):
             if not restore_ok:
                 raise Exception("MySQL restore command failed.")
 
-        # Post‑restore validation
+        # Post-restore validation
         validation = _validate_restore(table_name)
         if validation['success']:
             messages.success(request, f"Restore successful. {validation['message']}")

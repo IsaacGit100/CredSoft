@@ -16,7 +16,7 @@ from django.db.models.functions import Coalesce
 from django.db import models
 from django.db.models import Sum, Avg, Count, Q, Value
 from django.db.models.functions import Coalesce
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 from django_ledger.models import EntityModel
 
@@ -212,7 +212,7 @@ class Master(models.Model):
     sav_min_bal_days = models.IntegerField(null=True, blank=True, default=0)
     
     tot_mnth_sav_int_accrued = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, default=0.00)
-    sav_int_accrued_days = models.IntegerField(null=True, blank=True, default=0)
+    mnth_int_accrued_days = models.IntegerField(null=True, blank=True, default=0)
 
     # ============ LOAN INFORMATION ===========================================#
     loan_int_rate = models.DecimalField(max_digits=6, decimal_places=4, default=0.0000)
@@ -220,16 +220,20 @@ class Master(models.Model):
     loan_int_rate_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='loan_int_rate')
 
     loan_last_disb_date = models.DateTimeField(null=True, blank=True, default=None)
-    loan_last_disb_princ = models.DecimalField(max_digits=6, decimal_places=4, default=0.00, blank=True, null=True)
-    loan_disb_tot_princ = models.DecimalField(max_digits=6, decimal_places=4, default=0.00, blank=True, null=True)
+    loan_last_disb_princ = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, blank=True, null=True)
+    loan_disb_tot_princ = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, blank=True, null=True)
     loan_disb_cnt = models.IntegerField(null=True, blank=True, default=0)
     loan_last_id = models.IntegerField(null=True, blank=True, default=0)
     #
-    loan_last_repayment = models.DecimalField(max_digits=6, decimal_places=4, default=0.00, blank=True, null=True)
+    loan_last_repayment = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, blank=True, null=True)
     loan_last_repayment_date = models.DateTimeField(null=True, blank=True, default=None)
-    loan_tot_repayment = models.DecimalField(max_digits=6, decimal_places=4, default=0.00, blank=True, null=True)
+    loan_tot_repayment = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, blank=True, null=True)
     loan_repayment_cnt = models.IntegerField(null=True, blank=True, default=0)
     loan_last_repayment_id = models.IntegerField(null=True, blank=True, default=0)
+    
+    # ===========GUARANTORS =============================================================
+    tot_gua_given = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, blank=True, null=True)
+    tot_gua_received = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, blank=True, null=True)
 
     # ========== FINANCIAL FIELDS ==========
     open_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0, blank=True, null=True)
@@ -265,6 +269,12 @@ class Master(models.Model):
     id_card_front = models.ImageField(upload_to='member_ids/%Y/%m/%d/', blank=True, null=True, help_text="Upload ID card front")
     id_card_back = models.ImageField(upload_to='member_ids/%Y/%m/%d/', blank=True, null=True, help_text="Upload ID card back")
 
+
+    # =========== tO MAKE THE SYSTEM WORK ==================
+  #  tot_loan_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0, blank=True, null=True)
+    active_loan_count = models.DecimalField(max_digits=15, decimal_places=2, default=0, blank=True, null=True)
+   # completed_loans_count = models.DecimalField(max_digits=15, decimal_places=2, default=0, blank=True, null=True)
+
     # ========== LOGIN HISTORY CAPTURE ======================
     # MembersApp/models.py
     class Meta:
@@ -288,15 +298,32 @@ class Master(models.Model):
 
     # ========== PROPERTIES ==========
     @property
-    def sav_effective_int_rate(self):
-        """Get effective interest rate (member rate or global default)"""
-        if self.master.sav_int_rate and self.master.sav_int_rate > 0:
-            return self.master.sav_int_rate
-        else:
-            from SysSetup.models import SystemSettings
-            settings = SystemSettings.objects.first()
-            return settings.savings_interest_rate if settings else Decimal('3.00')
+    def effective_sav_int_rate(self):
+        if self.sav_int_rate and self.sav_int_rate > 0:
+            return self.sav_int_rate
+        entity = getattr(self, "entity", None)
+        cu = getattr(entity, "cu_config", None) if entity else None
+        return cu.savings_interest_rate if cu else Decimal("0.00")
+    
+    
+    @property
+    def sav_interest(self):
+        """
+        One day's savings interest.
 
+        Formula:
+            balance * effective_sav_int_rate / 100 / 365
+
+        effective_sav_int_rate is the annual rate (percent), so:
+            /100  → decimal rate
+            /365  → one day's worth
+        """
+        balance = self.balance or Decimal("0.00")
+        rate = self.effective_sav_int_rate or Decimal("0.00")
+        return (balance * rate / Decimal("100") / Decimal("365")).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+    
     @property
     def sav_avail_bal(self):       
         deposits = self.tot_deposits or Decimal('0.00')
@@ -304,182 +331,158 @@ class Master(models.Model):
         accrued_int = self.tot_interest_accrued or Decimal(0.00)
         return deposits - withdrawals + accrued_int
 
+    
+    @property
+    def member_credit(self):
+        """Everything that increases borrowing power."""
+        return (
+            (self.tot_deposits or Decimal("0.00"))
+            + (self.tot_shares or Decimal("0.00"))
+            + (self.tot_sav_int or Decimal("0.00"))
+            + (self.tot_gua_received or Decimal("0.00"))
+        )
+
+    @property
+    def member_debit(self):
+        """Everything that reduces borrowing power."""
+        return (
+            (self.tot_deposit_withdrawal or Decimal("0.00"))
+            + (self.tot_shares_withdrawal or Decimal("0.00"))
+            + (self.total_loan_balance or Decimal("0.00"))
+            + (self.tot_gua_given or Decimal("0.00"))
+        )
+
+    @property
+    def available_balance(self):
+        return self.member_credit - self.member_debit
+
+    @property
+    def total_loan_balance(self):
+        """Sum of outstanding balances across all active loans."""
+        return self.loans.filter(
+            status__in=["New Loan", "Active", "Owing"]
+        ).aggregate(s=models.Sum("balance"))["s"] or Decimal("0.00")
+    
     @property
     def total_credits(self):
         return (self.tot_shares or 0) + (self.tot_deposits or 0) + \
-               (self.tot_dividend or 0) + (self.tot_interest_accrued or 0) + (self.tot_guaranteed or 0)
+               (self.tot_dividend or 0) + (self.tot_interest_accrued or 0) + (self.tot_gua_given or 0)
 
     @property
     def total_debits(self):
         return (self.tot_shares_withdrawal or 0) + (self.tot_deposit_withdrawal or 0) + \
-               (self.tot_dividend_withdrawal or 0) + (self.tot_loans or 0) + (self.tot_guaranted or 0)
+               (self.tot_dividend_withdrawal or 0) + (self.tot_loans or 0) + (self.tot_gua_received or 0)
 
-    @property
-    def available_balance(self):
-        return self.total_credits - self.total_debits
+   
 
     @property
     def is_active(self):
         return not self.is_deleted
 
-    @property
-    def tot_guaranteed(self):
-        """Total amount this member has guaranteed for others"""
-        from decimal import Decimal
-        total = self.guarantor_set.aggregate(
-            total=models.Sum('guaranteed_amount')
-        )['total']
-        return total or Decimal('0.00')
-
-    @property
-    def tot_guaranted(self):
-        """Total guarantee amount on this member's own loans (when they are the borrower)"""
-        from decimal import Decimal
-        total = 0
-        for loan in self.loans.all():
-            total += loan.total_guaranteed
-        return Decimal(str(total))
 
     @property
     def tot_redeemed(self):
         """Total amount that has been redeemed from this member's guarantees"""
-        from decimal import Decimal
-        total = self.guarantor_set.aggregate(
-            total=models.Sum('redeemed_amount')
-        )['total']
-        return total or Decimal('0.00')
+        """Sum of redeemed guarantees given by this member."""
+        result = self.guarantees_given.aggregate(s=models.Sum("released_amount"))["s"]
+        return result or Decimal("0.00")
 
     @property
     def tot_outstanding_guarantee(self):
         """Total amount still outstanding on this member's guarantees"""
-        return self.tot_guaranteed - self.tot_redeemed
+        return self.tot_gua_received - self.tot_redeemed
 
     @property
     def net_guarantee_position(self):
         """Net guarantee position (what they guaranteed for others minus what others guaranteed for them)"""
-        return self.tot_guaranteed - self.tot_guaranteed_as_borrower
+        return self.tot_gua_received - self.tot_gua_received_as_borrower
 
     # ## Loan Balances
-
     @property
     def tot_loan_balance(self):
-        """Total outstanding loan balance for this member"""
-        from decimal import Decimal
-        total = 0
-        for loan in self.loans.all():
-            total += loan.outstanding_balance
-        return Decimal(str(total))
+        """Sum of outstanding principal across all loans."""
+        result = self.loans.aggregate(s=models.Sum("balance"))["s"]
+        return result or Decimal("0.00")
 
     @property
     def tot_loans(self):
-        """Total principal of all loans for this member"""
-        from decimal import Decimal
-        total = self.loans.aggregate(
-            total=models.Sum('principal')
-        )['total']
-        return total or Decimal('0.00')
+        """Total principal borrowed (sum of all loans' original principal)."""
+        result = self.loans.aggregate(s=models.Sum("principal"))["s"]
+        return result or Decimal("0.00")
 
     @property
     def tot_loan_paid(self):
-        """Total amount paid on all loans by this member"""
-        from decimal import Decimal
-        total = 0
-        for loan in self.loans.all():
-            total += loan.total_paid
-        return Decimal(str(total))
+        """Total principal repaid across all loans."""
+        result = self.loans.aggregate(s=models.Sum("principal_paid"))["s"]
+        return result or Decimal("0.00")
 
     @property
     def tot_interest_paid(self):
-        """Total interest paid on all loans by this member"""
-        from decimal import Decimal
-        total = 0
-        for loan in self.loans.all():
-            total += loan.interest_accrued
-        return Decimal(str(total))
+        """Total interest paid across all loans."""
+        result = self.loans.aggregate(s=models.Sum("interest_paid"))["s"]
+        return result or Decimal("0.00")
+
+    @property
+    def tot_interest_accrued(self):
+        """Total interest accrued across all loans."""
+        result = self.loans.aggregate(s=models.Sum("interest_accrued"))["s"]
+        return result or Decimal("0.00")
+
+    @property
+    def tot_penalty_paid(self):
+        """Total penalties paid across all loans."""
+        result = self.loans.aggregate(s=models.Sum("penalty_paid"))["s"]
+        return result or Decimal("0.00")
 
     @property
     def active_loans_count(self):
-        """Number of active loans for this member"""
-        return self.loans.filter(status='Active').count()
+        return self.loans.filter(status__in=["NEW", "New Loan", "Active", "Owing"]).count()
 
     @property
     def completed_loans_count(self):
-        """Number of completed loans for this member"""
-        return self.loans.filter(status='Completed').count()
+        return self.loans.filter(status__in=["COMPLETED", "Completed"]).count()
 
     @property
     def overdue_loans_count(self):
-        """Number of overdue loans for this member"""
-        count = 0
-        for loan in self.loans.all():
-            if loan.is_overdue:
-                count += 1
-        return count
-
-    # MembersApp/models.py - Add to Master class
+        """Loans with a next_repayment_date in the past and balance > 0."""
+        today = timezone.now().date()
+        return self.loans.filter(
+            next_repayment_date__lt=today,
+            balance__gt=0,
+        ).count()
 
     @property
-    def tot_loan_repayment_overdue(self):
-        """Total repayment overdue across all loans"""
-        from decimal import Decimal
-        total = 0
-        for loan in self.loans.all():
-            total += loan.repayment_overdue or 0
-        return Decimal(str(total))
+    def total_gua_given(self):
+        """Sum of held guarantees this member has given to others."""
+        result = self.guarantees_given.aggregate(s=models.Sum("amount"))["s"]
+        return result or Decimal("0.00")
 
     @property
-    def tot_loan_interest_overdue(self):
-        """Total interest overdue across all loans"""
-        from decimal import Decimal
-        total = 0
-        for loan in self.loans.all():
-            total += loan.interest_overdue or 0
-        return Decimal(str(total))
-
-    @property
-    def tot_loan_penalty(self):
-        """Total penalty accrued across all loans"""
-        from decimal import Decimal
-        total = 0
-        for loan in self.loans.all():
-            total += loan.penalty_accrued or 0
-        return Decimal(str(total))
-
-    @property
-    def total_guaranteed_given(self):
-        """Total amount this member has guaranteed for others"""
-        from decimal import Decimal
-        total = self.guarantor_set.aggregate(
-            total=models.Sum('guaranteed_amount')
-        )['total']
-        return total or Decimal('0.00')
-
-    @property
-    def total_guaranteed_redeemed(self):
-        """Total amount redeemed from this member's guarantees"""
-        from decimal import Decimal
-        total = self.guarantor_set.aggregate(
-            total=models.Sum('redeemed_amount')
-        )['total']
-        return total or Decimal('0.00')
+    def total_gua_given_redeemed(self):
+        """Sum of redeemed guarantees given by this member."""
+        result = self.guarantees_given.aggregate(s=models.Sum("released_amount"))["s"]
+        return result or Decimal("0.00")
 
     @property
     def net_loan_position(self):
-        """Net loan position (loan balance vs savings)"""
-        return (self.tot_savings or 0) - self.tot_loan_balance
+        """Net position: savings/deposits/shares - outstanding loans."""
+        assets = (
+            (self.tot_deposits or Decimal("0.00"))
+            + (self.tot_shares or Decimal("0.00"))
+            + (self.tot_sav_int or Decimal("0.00"))
+        )
+        return assets - self.tot_loan_balance
 
     @property
     def loan_health_status(self):
-        """Overall loan health status for the member"""
         if self.overdue_loans_count > 0:
             return "Critical"
-        elif self.tot_loan_balance > (self.tot_savings or 0) * 0.7:
+        if self.tot_loan_balance > (self.tot_deposits or Decimal("0.00")) * Decimal("0.7"):
             return "High Risk"
-        elif self.tot_loan_balance > 0:
+        if self.tot_loan_balance > 0:
             return "Active"
-        else:
-            return "Clean"
-
+        return "Clean"
+    
     # ###### Savings Interest Calculation #####
     # MembersApp/models.py
 
@@ -557,3 +560,86 @@ class Sav_Int_Table(models.Model):
     next_update_date = models.DateField(blank=True, null=True, default=None) # from the system settings table, next date of update using update_type
     applied = models.BooleanField(default=False)
     applied_date = models.DateField(null=True, blank=True)  # optional, for audit
+
+
+class SavIntApplication(models.Model):
+    """
+    One row per member per application cycle (monthly/quarterly/yearly).
+    Created by the application service at period end.
+    Applied to Master only after the linked Trans is POSTED by supervisor.
+    """
+
+    FREQ = [
+        ("MONTHLY", "Monthly"),
+        ("QUARTERLY", "Quarterly"),
+        ("YEARLY", "Yearly"),
+        ("DAILY", "Daily"),
+    ]
+    STATUS = [("PENDING", "Pending"), ("POSTED", "Posted"), ("CANCELLED", "Cancelled")]
+
+    entity = models.ForeignKey("django_ledger.EntityModel", on_delete=models.CASCADE, related_name="sav_int_applications")
+    master = models.ForeignKey("MembersApp.Master", on_delete=models.CASCADE, related_name="sav_int_applications")
+    trans = models.OneToOneField("RecPayApp.Trans", null=True, blank=True, on_delete=models.SET_NULL, related_name="sav_int_application")
+
+    period_start = models.DateField()
+    period_end = models.DateField()
+    frequency = models.CharField(max_length=10, choices=FREQ, default="MONTHLY")
+    amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    days = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=10, choices=STATUS, default="PENDING")
+    applied_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-period_end", "-id"]
+        unique_together = ("master", "period_end", "frequency")
+        indexes = [models.Index(fields=["master", "-period_end"])]
+
+    def __str__(self):
+        return f"{self.master_id} {self.period_end} {self.amount}"
+
+
+class SavingsDailyLog(models.Model):
+    """
+    One row per member per day the daily savings run executed.
+
+    Idempotent: (master, date) is unique, so re-running the same day is a no-op.
+    Written by MembersApp.services.daily_sav_runs.
+    """
+
+    date = models.DateField(db_index=True)
+    entity = models.ForeignKey(
+        "django_ledger.EntityModel",
+        on_delete=models.CASCADE,
+        related_name="savings_daily_logs",
+    )
+    master = models.ForeignKey(
+        "MembersApp.Master",
+        on_delete=models.CASCADE,
+        related_name="savings_daily_logs",
+    )
+
+    # --- inputs (what was used to compute the interest) ---
+    old_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    effective_rate = models.DecimalField(max_digits=7, decimal_places=4, default=0)
+    daily_interest = models.DecimalField(max_digits=15, decimal_places=4, default=0)
+
+    # --- running totals after this step ---
+    new_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    mnth_accrued_after = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    mnth_days_after = models.PositiveIntegerField(default=0)
+
+    # --- end-of-month behaviour ---
+    was_month_end = models.BooleanField(default=False)
+    applied_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date", "-id"]
+        unique_together = ("master", "date")
+        indexes = [models.Index(fields=["master", "-date"])]
+
+    def __str__(self):
+        return f"{self.master_id} {self.date} +{self.daily_interest}"
+

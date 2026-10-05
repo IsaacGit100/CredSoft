@@ -17,7 +17,7 @@ def trans_create(request):
     """Transaction creation with AJAX - no page reload"""
     
     # Get members and accounts
-    members = Master.objects.filter(is_deleted=False).order_by('last_name', 'first_name')
+    members = Master.objects.filter(entity=entity, is_deleted=False).order_by('last_name', 'first_name')
     accounts = ChartOfAccounts.objects.filter(
         is_active=True,
         is_data_entry=True,

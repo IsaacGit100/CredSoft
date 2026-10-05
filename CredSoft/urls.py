@@ -54,28 +54,17 @@ urlpatterns = [
     path("ledger/", include("django_ledger.urls", namespace="django_ledger")),
     #    path('django-ledger/', include('django_ledger.urls', namespace='django_ledger')),  # <-- ADD THIS
     path("finance/", views.finance_dashboard, name="finance_dashboard"),
-    path(
-        "finance/switch-entity/<slug:slug>/", views.switch_entity, name="switch_entity"
-    ),
+    path("finance/switch-entity/<slug:slug>/", views.switch_entity, name="switch_entity"),
     path("church/", include("ChurchApp.urls", namespace="ChurchApp")),
     path("consolidated/", include("Consolidated.urls", namespace="Consolidated")),
-    # ... your other URLs ...
-    # Authentication URLs
-    #  path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
-    #  path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
-    #  path('password-change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
-    #  path('password-change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
-    # path('recpay/', include('RecPayApp.urls')),  # If this is the case
-    # path('finance/', include('FinanceApp.urls')),
-    path("CredApp/", include("CredApp.urls", namespace="CredApp")),
     path("pos/", include("POS.urls", namespace="pos")),
-    path("CreditUnion", include("CreditUnion.urls", namespace="CreditUnion")),
+    path("CreditUnion/", include("CreditUnion.urls", namespace="CreditUnion")),
     path("Dividend", include("Dividend.urls", namespace="Dividend")),
     path("Tech", include("Tech.urls", namespace="Tech")),
-    # path("", include("Tech.urls", namespace="Tech")),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("docs/", include("DocMgt.urls", namespace="DocMgt")),
     path("images/", include("Images.urls", namespace="Images")),
+    path("Report/", include("Report.urls", namespace="Report")),
 ]
 
 

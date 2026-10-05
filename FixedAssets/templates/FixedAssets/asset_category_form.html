@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0"><i class="fas fa-tags"></i> {{ title }}</h3>
+            <small>{{ entity.name }}</small>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <!-- Category Details -->
+                <h6 class="fw-bold text-primary mb-3">Category Details</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Category Name <span class="text-danger">*</span></label>
+                            {{ form.name }}{{ form.name.errors }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Useful Life (Years)</label>
+                            {{ form.useful_life_years }}{{ form.useful_life_years.errors }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Salvage Value (%)</label>
+                            {{ form.salvage_value_percent }}{{ form.salvage_value_percent.errors }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Depreciation Method</label>
+                            {{ form.depreciation_method }}{{ form.depreciation_method.errors }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Annual Rate (%)</label>
+                            {{ form.depreciation_rate }}{{ form.depreciation_rate.errors }}
+                            <small class="form-text text-muted">Used for reducing balance method.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- GL Accounts -->
+                <h6 class="fw-bold text-primary mb-3">General Ledger Accounts</h6>
+                <p class="text-muted small">
+                    <i class="fas fa-info-circle"></i>
+                    These accounts determine how assets and depreciation are posted to the journal.
+                </p>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-building"></i> Asset Account
+                            </label>
+                            {{ form.asset_account }}{{ form.asset_account.errors }}
+                            <small class="form-text text-muted">e.g., 1090 Fixed Assets – Cost</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-minus-circle"></i> Accumulated Depreciation
+                            </label>
+                            {{ form.accumulated_depreciation_account }}{{ form.accumulated_depreciation_account.errors }}
+                            <small class="form-text text-muted">e.g., 1099 Accumulated Depreciation (contra)</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-chart-line"></i> Depreciation Expense
+                            </label>
+                            {{ form.depreciation_expense_account }}{{ form.depreciation_expense_account.errors }}
+                            <small class="form-text text-muted">e.g., 6060 Depreciation Expense</small>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Category
+                </button>
+                <a href="{% url 'FixedAssets:asset_category_list' entity.slug %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

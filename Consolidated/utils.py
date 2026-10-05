@@ -1,165 +1,279 @@
-def user_can_access_entity(user, entity):
-    """Check if a user (normal or super_admin) can access the given entity."""
-    try:
-        profile = user.djan_led_profile
-        if profile.role == 'super_admin':
-            return True
-        if entity in profile.allowed_entities.all() or entity == profile.default_entity:
-            return True
-        return False
-    except:
-        return False
-    
-from django.db.models import Sum
-from django_ledger.models import AccountModel, TransactionModel
+"""
+Consolidated helpers — thin wrappers that reuse Report.utils.
+
+No duplicate calculations. Everything routes through Report/utils.get_*.
+"""
+
 from decimal import Decimal
 
-    
-from django.db.models import Sum
-from django_ledger.models import AccountModel, TransactionModel
-from decimal import Decimal
+from django_ledger.models import EntityModel
+
+from Report.utils import (
+    get_balance_sheet,
+    get_cash_flow,
+    get_income_statement,
+    get_trial_balance,
+)
 
 
-def get_entity_summary(entity, start_date, end_date):
-    """Get revenue, expenses, and net income for a single entity."""
-    revenue_accounts = AccountModel.objects.filter(coa_model__entity=entity, role='revenue')
-    expense_accounts = AccountModel.objects.filter(coa_model__entity=entity, role='expense')
+def get_church_entities():
+    """
+    Churches are entities whose EntityConfig.entity_type == 'church'.
+    Falls back to all entities if none are tagged yet.
+    """
+    qs = EntityModel.objects.filter(config__entity_type="church").order_by("name")
+    if not qs.exists():
+        qs = EntityModel.objects.all().order_by("name")
+    return qs
 
-    revenue = TransactionModel.objects.filter(
-        account__in=revenue_accounts,
-        tx_type='credit',
-        journal_entry__timestamp__range=[start_date, end_date]
-    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+def resolve_selected_entities(request):
+    """
+    Decide which entities a report applies to:
+      1. ?entities=slug1,slug2 in URL → those
+      2. session has consolidated_mode=True → all parishes (sum)
+      3. session has current_entity_slug → that single parish
+      4. NO selection → empty (nothing to show)
+    """
+    all_churches = get_church_entities()
 
-    expenses = TransactionModel.objects.filter(
-        account__in=expense_accounts,
-        tx_type='debit',
-        journal_entry__timestamp__range=[start_date, end_date]
-    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+    # 1. Explicit URL selection
+    raw = request.GET.get("entities", "").strip()
+    if raw:
+        slugs = [s for s in raw.split(",") if s]
+        selected = all_churches.filter(slug__in=slugs)
+        return selected, [e.slug for e in selected]
 
-    return {
-        'revenue': revenue,
-        'expenses': expenses,
-        'net_income': revenue - expenses,
+    # 2. Consolidated mode from session
+    if request.session.get("consolidated_mode"):
+        slugs = list(all_churches.values_list("slug", flat=True))
+        return all_churches, slugs
+
+    # 3. Single parish from session
+    session_slug = request.session.get("current_entity_slug")
+    if session_slug:
+        try:
+            entity = all_churches.get(slug=session_slug)
+            single = all_churches.filter(pk=entity.pk)
+            return single, [entity.slug]
+        except EntityModel.DoesNotExist:
+            pass
+
+    # 4. No selection — return empty
+    return all_churches.none(), []
+
+
+def get_consolidated_dashboard_data(entities, start=None, end=None):
+    """
+    Loop over entities, call Report.utils functions, return:
+        {
+          'per_entity':  [ {entity, cash, bank, total_cash, revenue, expense,
+                            net_income, assets, liabilities, equity,
+                            receipts, payments, net_flow}, ... ],
+          'totals':      { same keys, summed },
+        }
+    """
+    per_entity = []
+    totals = {
+        "cash": Decimal("0"),
+        "bank": Decimal("0"),
+        "total_cash": Decimal("0"),
+        "total_receipts": Decimal("0"),
+        "total_payments": Decimal("0"),
+        "net_flow": Decimal("0"),
+        "total_revenue": Decimal("0"),
+        "total_expense": Decimal("0"),
+        "net_income": Decimal("0"),
+        "total_assets": Decimal("0"),
+        "total_liabilities": Decimal("0"),
+        "total_equity": Decimal("0"),
     }
-
-def get_consolidated_summary(entities, start_date, end_date):
-    """Aggregate summary across multiple entities."""
-    total_revenue = Decimal('0')
-    total_expenses = Decimal('0')
-    entity_data = []
 
     for entity in entities:
-        summary = get_entity_summary(entity, start_date, end_date)
-        entity_data.append({
-            'name': entity.name,
-            'slug': entity.slug,
-            'revenue': summary['revenue'],
-            'expenses': summary['expenses'],
-            'net_income': summary['net_income'],
-        })
-        total_revenue += summary['revenue']
-        total_expenses += summary['expenses']
+        # Income statement
+        is_data = get_income_statement(entity, start, end)
+        # Balance sheet
+        bs_data = get_balance_sheet(entity, end)
+
+        # Cash position (as at end)
+        from Report.utils import _cash_balance, CASH_CODES
+        from django_ledger.models import TransactionModel
+        from django.db.models import Sum
+
+        def _bal(code):
+            qs = TransactionModel.objects.filter(
+                journal_entry__ledger__entity=entity,
+                journal_entry__posted=True,
+                account__code=code,
+            )
+            if end:
+                qs = qs.filter(journal_entry__timestamp__date__lte=end)
+            dr = qs.filter(tx_type="debit").aggregate(s=Sum("amount"))["s"] or Decimal(
+                "0"
+            )
+            cr = qs.filter(tx_type="credit").aggregate(s=Sum("amount"))["s"] or Decimal(
+                "0"
+            )
+            return dr - cr
+
+        cash = _bal("1010")
+        bank = _bal("1020")
+        total_cash = cash + bank
+
+        # Trans flows (receipts/payments) for the period
+        from RecPayApp.models import Trans
+
+        tq = Trans.objects.filter(entity=entity)
+        if start:
+            tq = tq.filter(date__gte=start)
+        if end:
+            tq = tq.filter(date__lte=end)
+        receipts = tq.filter(trans_type="Receipts").aggregate(s=Sum("amount"))[
+            "s"
+        ] or Decimal("0")
+        payments = tq.filter(trans_type="Payments").aggregate(s=Sum("amount"))[
+            "s"
+        ] or Decimal("0")
+
+        row = {
+            "entity": entity,
+            "cash": cash,
+            "bank": bank,
+            "total_cash": total_cash,
+            "total_receipts": receipts,
+            "total_payments": payments,
+            "net_flow": receipts - payments,
+            "total_revenue": is_data["total_revenue"],
+            "total_expense": is_data["total_expense"],
+            "net_income": is_data["net_income"],
+            "total_assets": bs_data["total_assets"],
+            "total_liabilities": bs_data["total_liabilities"],
+            "total_equity": bs_data["total_equity"],
+        }
+        per_entity.append(row)
+
+        for k in totals:
+            totals[k] += row[k]
+
+    return {"per_entity": per_entity, "totals": totals}
+
+
+def get_consolidated_trial_balance(entities, start=None, end=None):
+    """Sum trial-balance rows across entities by account code."""
+    combined = {}
+    total_dr = Decimal("0")
+    total_cr = Decimal("0")
+
+    for entity in entities:
+        rows, e_dr, e_cr = get_trial_balance(entity, start, end)
+        for r in rows:
+            key = r["code"]
+            if key not in combined:
+                combined[key] = {
+                    "code": r["code"],
+                    "name": r["name"],
+                    "dr": Decimal("0"),
+                    "cr": Decimal("0"),
+                }
+            combined[key]["dr"] += r["dr"]
+            combined[key]["cr"] += r["cr"]
+        total_dr += e_dr
+        total_cr += e_cr
+
+    rows = sorted(combined.values(), key=lambda r: r["code"])
+    return rows, total_dr, total_cr
+
+
+def get_consolidated_income_statement(entities, start=None, end=None):
+    """
+    Return the FULL consolidated income statement:
+    one row per account code, summed across all selected parishes.
+    """
+    from decimal import Decimal
+    from Report.utils import get_income_statement
+
+    revenue_map = {}
+    cogs_map = {}
+    expense_map = {}
+    total_revenue = Decimal("0")
+    total_cogs = Decimal("0")
+    total_expense = Decimal("0")
+    per_entity = []
+
+    for entity in entities:
+        d = get_income_statement(entity, start, end)
+
+        per_entity.append(
+            {
+                "entity": entity,
+                "revenue": d["total_revenue"],
+                "expense": d["total_expense"],
+                "net_income": d["net_income"],
+            }
+        )
+
+        for r in d["revenue_rows"]:
+            key = r["code"]
+            if key not in revenue_map:
+                revenue_map[key] = {
+                    "code": r["code"],
+                    "name": r["name"],
+                    "amount": Decimal("0"),
+                }
+            revenue_map[key]["amount"] += r["amount"]
+
+        for r in d["cogs_rows"]:
+            key = r["code"]
+            if key not in cogs_map:
+                cogs_map[key] = {
+                    "code": r["code"],
+                    "name": r["name"],
+                    "amount": Decimal("0"),
+                }
+            cogs_map[key]["amount"] += r["amount"]
+
+        for r in d["expense_rows"]:
+            key = r["code"]
+            if key not in expense_map:
+                expense_map[key] = {
+                    "code": r["code"],
+                    "name": r["name"],
+                    "amount": Decimal("0"),
+                }
+            expense_map[key]["amount"] += r["amount"]
+
+        total_revenue += d["total_revenue"]
+        total_cogs += d["total_cogs"]
+        total_expense += d["total_expense"]
+
+    revenue_rows = sorted(revenue_map.values(), key=lambda x: x["code"])
+    cogs_rows = sorted(cogs_map.values(), key=lambda x: x["code"])
+    expense_rows = sorted(expense_map.values(), key=lambda x: x["code"])
+
+    gross_profit = total_revenue - total_cogs
+    net_income = gross_profit - total_expense
 
     return {
-        'entity_data': entity_data,
-        'total_revenue': total_revenue,
-        'total_expenses': total_expenses,
-        'net_income': total_revenue - total_expenses,
-    }
-    
-def user_can_access_entity(user, entity):
-    try:
-        profile = user.djan_led_profile
-        if profile.role == 'super_admin':
-            return True
-        if entity in profile.allowed_entities.all() or entity == profile.default_entity:
-            return True
-    except:
-        pass
-    return False
-
-
-from decimal import Decimal
-from django.db.models import Sum
-from django_ledger.models import AccountModel, TransactionModel
-
-def get_entity_revenue_expense(entity, start_date, end_date):
-    """Get revenue and expenses for an entity in a date range."""
-    revenue_accounts = AccountModel.objects.filter(coa_model__entity=entity, role='revenue')
-    expense_accounts = AccountModel.objects.filter(coa_model__entity=entity, role='expense')
-
-    revenue = TransactionModel.objects.filter(
-        account__in=revenue_accounts,
-        tx_type='credit',
-        journal_entry__timestamp__range=[start_date, end_date]
-    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
-
-    expenses = TransactionModel.objects.filter(
-        account__in=expense_accounts,
-        tx_type='debit',
-        journal_entry__timestamp__range=[start_date, end_date]
-    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
-
-    return {'revenue': revenue, 'expenses': expenses, 'net_income': revenue - expenses}
-
-def get_entity_balance_sheet_balances(entity):
-    """Get total assets, liabilities, equity for an entity (all dates)."""
-    def get_account_balance(account):
-        debits = TransactionModel.objects.filter(account=account, tx_type='debit').aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
-        credits = TransactionModel.objects.filter(account=account, tx_type='credit').aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
-        if account.balance_type == 'debit':
-            return debits - credits
-        else:
-            return credits - debits
-
-    assets = AccountModel.objects.filter(coa_model__entity=entity, role='asset')
-    liabilities = AccountModel.objects.filter(coa_model__entity=entity, role='liability')
-    equity = AccountModel.objects.filter(coa_model__entity=entity, role='equity')
-
-    total_assets = sum(get_account_balance(acc) for acc in assets)
-    total_liabilities = sum(get_account_balance(acc) for acc in liabilities)
-    total_equity = sum(get_account_balance(acc) for acc in equity)
-
-    return {
-        'total_assets': total_assets,
-        'total_liabilities': total_liabilities,
-        'total_equity': total_equity,
+        "revenue_rows": revenue_rows,
+        "cogs_rows": cogs_rows,
+        "expense_rows": expense_rows,
+        "total_revenue": total_revenue,
+        "total_cogs": total_cogs,
+        "total_expense": total_expense,
+        "gross_profit": gross_profit,
+        "net_income": net_income,
+        "per_entity": per_entity,
     }
 
-def get_entity_cash_flow(entity, start_date, end_date):
-    """Simplified cash flow: sum of all debit/credit transactions to Cash accounts."""
-    cash_accounts = AccountModel.objects.filter(
-        coa_model__entity=entity,
-        role='asset',
-        code__in=['1010', '1020', '1211', '1212']  # common cash/bank codes
-    )
-    inflows = TransactionModel.objects.filter(
-        account__in=cash_accounts,
-        tx_type='debit',
-        journal_entry__timestamp__range=[start_date, end_date]
-    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
 
-    outflows = TransactionModel.objects.filter(
-        account__in=cash_accounts,
-        tx_type='credit',
-        journal_entry__timestamp__range=[start_date, end_date]
-    ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+def scope_title(base_name, entities, selected_slugs):
+    """Return e.g. 'St Patrick Parish Accounts' or 'Consolidated ...'."""
+    if len(selected_slugs) == 1:
+        entity = entities.first()
+        return f"{entity.name} — {base_name}"
+    return f"Consolidated {base_name}"
 
-    return {'inflows': inflows, 'outflows': outflows, 'net': inflows - outflows}
 
-def get_entity_trial_balance(entity):
-    """Get all accounts with debit and credit totals."""
-    accounts = AccountModel.objects.filter(coa_model__entity=entity).exclude(role='root').order_by('code')
-    trial_data = []
-    for acc in accounts:
-        debits = TransactionModel.objects.filter(account=acc, tx_type='debit').aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
-        credits = TransactionModel.objects.filter(account=acc, tx_type='credit').aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
-        if debits or credits:
-            trial_data.append({
-                'code': acc.code,
-                'name': acc.name,
-                'debit': debits,
-                'credit': credits,
-            })
-    return trial_data
+def scope_subtitle(entities, selected_slugs):
+    if len(selected_slugs) == 1:
+        return entities.first().name
+    return f"Sum of {len(selected_slugs)} parishes"

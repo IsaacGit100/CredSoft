@@ -1,0 +1,118 @@
+{% extends 'Consolidated/base_consolidated.html' %}
+{% load humanize %}
+
+{% block consolidated_content %}
+<div style="padding:20px; max-width:1200px; margin:0 auto;">
+
+    <div style="text-align:center; background:#fff; padding:20px;
+                border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.08);
+                margin-bottom:18px;">
+        <h2 style="margin:0; color:#1e3a5f; font-size:20px;">
+            {{ entity_config.organization_name|default:"Trial Balance" }}
+        </h2>
+        <h3 style="margin:12px 0 4px; color:#1a56db; font-size:16px;">
+            Diocese Trial Balance — All Parishes
+        </h3>
+
+        <div style="color:#6b7280; font-size:13px;">
+            {{ entity_count }} parish{{ entity_count|pluralize:"es" }}
+            {% if period_label %} — {{ period_label }}{% endif %}
+        </div>
+    </div>
+
+    <form method="get" style="background:#f9fafb; padding:12px 16px;
+                              border-radius:8px; margin-bottom:14px;
+                              display:flex; gap:12px; align-items:end;
+                              flex-wrap:wrap;">
+        <div>
+            <label style="display:block; font-size:12px; font-weight:600; color:#374151;">From</label>
+            <input type="text" name="start" value="{{ start }}" placeholder="dd/mm/yyyy"
+                   style="padding:6px 10px; border:1px solid #d1d5db; border-radius:6px;">
+        </div>
+        <div>
+            <label style="display:block; font-size:12px; font-weight:600; color:#374151;">To</label>
+            <input type="text" name="end" value="{{ end }}" placeholder="dd/mm/yyyy"
+                   style="padding:6px 10px; border:1px solid #d1d5db; border-radius:6px;">
+        </div>
+        <button type="submit" class="btn btn-primary">Apply</button>
+        <a href="?" class="btn btn-secondary">Reset</a>
+    </form>
+
+    <div style="display:flex; gap:8px; justify-content:flex-end;
+                margin-bottom:16px; flex-wrap:wrap;">
+        <a href="?{{ querystring }}&format=html"
+           style="background:#1a56db; color:#fff; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:600; font-size:13px;">
+            <i class="fas fa-eye"></i> View
+        </a>
+        <a href="?{{ querystring }}&format=pdf" target="_blank"
+           style="background:#dc2626; color:#fff; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:600; font-size:13px;">
+            <i class="fas fa-file-pdf"></i> PDF
+        </a>
+        <a href="?{{ querystring }}&format=excel"
+           style="background:#16a34a; color:#fff; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:600; font-size:13px;">
+            <i class="fas fa-file-excel"></i> Excel
+        </a>
+        <button onclick="window.print()"
+                style="background:#6b7280; color:#fff; padding:8px 16px; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px;">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <a href="{% url 'Consolidated:diocese_reports_home' %}"
+           style="background:#374151; color:#fff; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:600; font-size:13px;">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div style="background:#fff; border-radius:8px;
+                box-shadow:0 1px 3px rgba(0,0,0,0.08); overflow:hidden;">
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+                <tr style="background:#f3f4f6;">
+                    <th style="text-align:left; padding:10px 14px; border-bottom:2px solid #e5e7eb; width:90px;">Code</th>
+                    <th style="text-align:left; padding:10px 14px; border-bottom:2px solid #e5e7eb;">Account</th>
+                    <th style="text-align:right; padding:10px 14px; border-bottom:2px solid #e5e7eb; width:200px;">Debit</th>
+                    <th style="text-align:right; padding:10px 14px; border-bottom:2px solid #e5e7eb; width:200px;">Credit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in rows %}
+                <tr>
+                    <td style="padding:6px 14px; color:#6b7280;">{{ r.code }}</td>
+                    <td style="padding:6px 14px;">{{ r.name }}</td>
+                    <td style="padding:6px 14px; text-align:right;">
+                        {% if r.dr %}₵{{ r.dr|floatformat:2|intcomma }}{% endif %}
+                    </td>
+                    <td style="padding:6px 14px; text-align:right;">
+                        {% if r.cr %}₵{{ r.cr|floatformat:2|intcomma }}{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="padding:30px; text-align:center; color:#9ca3af;">
+                    No postings in this period.
+                </td></tr>
+                {% endfor %}
+            </tbody>
+            {% if rows %}
+            <tfoot>
+                <tr style="background:#f9fafb; font-weight:800; border-top:2px solid #1a56db;">
+                    <td colspan="2" style="padding:12px 14px;">TOTALS</td>
+                    <td style="padding:12px 14px; text-align:right;">₵{{ total_dr|floatformat:2|intcomma }}</td>
+                    <td style="padding:12px 14px; text-align:right;">₵{{ total_cr|floatformat:2|intcomma }}</td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+
+    {% if balanced %}
+    <div style="margin-top:12px; padding:10px 14px; background:#ecfdf5;
+                border:1px solid #a7f3d0; color:#065f46; border-radius:6px; font-weight:600;">
+        ✓ Balanced — Total Debits = Total Credits
+    </div>
+    {% else %}
+    <div style="margin-top:12px; padding:10px 14px; background:#fef2f2;
+                border:1px solid #fca5a5; color:#991b1b; border-radius:6px; font-weight:600;">
+        ⚠ Out of balance — DR ≠ CR
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

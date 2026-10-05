@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width:720px; margin:60px auto; padding:20px;">
+
+    <div style="background:#fff; border-radius:12px; padding:40px 32px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.08); text-align:center;">
+
+        <!-- Success icon -->
+        <div style="width:72px; height:72px; margin:0 auto 20px;
+                    background:#d1fae5; border-radius:50%;
+                    display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-check" style="font-size:32px; color:#065f46;"></i>
+        </div>
+
+        <!-- Title -->
+        <h2 style="margin:0 0 8px; color:#1e3a5f; font-size:22px;">
+            {{ count }} Account{{ count|pluralize }} {{ verb|capfirst }}
+        </h2>
+        <p style="color:#6b7280; font-size:14px; margin:0 0 24px;">
+            Your changes to <strong>{{ entity.name }}</strong>'s chart of accounts
+            have been saved successfully.
+        </p>
+
+        <!-- List of accounts changed -->
+        {% if chosen %}
+        <div style="background:#f9fafb; border-radius:8px; padding:16px;
+                    text-align:left; margin-bottom:24px;
+                    max-height:260px; overflow-y:auto;">
+            <div style="font-size:11px; text-transform:uppercase; color:#6b7280;
+                        font-weight:700; letter-spacing:0.5px; margin-bottom:10px;">
+                Accounts changed
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                {% for a in chosen %}
+                <tr>
+                    <td style="padding:5px 8px; color:#6b7280; width:90px;">{{ a.code }}</td>
+                    <td style="padding:5px 8px; color:#1f2937;">{{ a.name }}</td>
+                    <td style="padding:5px 8px; text-align:right; width:110px;">
+                        {% if verb == 'activated' %}
+                            <span style="padding:2px 8px; border-radius:10px;
+                                         background:#d1fae5; color:#065f46;
+                                         font-size:11px; font-weight:700;">Active</span>
+                        {% else %}
+                            <span style="padding:2px 8px; border-radius:10px;
+                                         background:#f3f4f6; color:#6b7280;
+                                         font-size:11px; font-weight:700;">Inactive</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <a href="{% url 'djan_led:account_visibility' entity.slug %}"
+               style="background:#1a56db; color:#fff; padding:10px 24px;
+                      border-radius:8px; text-decoration:none; font-weight:600;
+                      font-size:14px;">
+                <i class="fas fa-list"></i> Back to Visibility
+            </a>
+            <a href="{% url 'djan_led:chart_of_accounts' entity.slug %}"
+               style="background:#e5e7eb; color:#374151; padding:10px 24px;
+                      border-radius:8px; text-decoration:none; font-weight:600;
+                      font-size:14px;">
+                <i class="fas fa-book"></i> Full Chart
+            </a>
+            <a href="{% url 'djan_led:coa_home' entity.slug %}"
+               style="background:#e5e7eb; color:#374151; padding:10px 24px;
+                      border-radius:8px; text-decoration:none; font-weight:600;
+                      font-size:14px;">
+                <i class="fas fa-home"></i> COA Home
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

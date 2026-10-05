@@ -106,7 +106,7 @@ def post_trans_to_ledger(trans):
             print(" No entity found for transaction.")
             return None
 
-        # 2. Convert date → timezone‑aware datetime
+        # 2. Convert date → timezone-aware datetime
         if isinstance(trans.date, datetime):
             if timezone.is_naive(trans.date):
                 entry_datetime = timezone.make_aware(trans.date)
@@ -136,7 +136,7 @@ def post_trans_to_ledger(trans):
             except AccountModel.DoesNotExist:
                 print(f" Account with code '{trans.ledger_code}' not found, trying by name.")
         if not target_account and trans.ledger_name:
-            # Try to find by name (case‑insensitive)
+            # Try to find by name (case-insensitive)
             accounts = AccountModel.objects.filter(
                 coa_model__entity=entity,
                 name__icontains=trans.ledger_name

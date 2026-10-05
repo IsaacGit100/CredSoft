@@ -1,14 +1,20 @@
 <!-- ChurchApp/templates/ChurchApp/service_list.html -->
 
 {% extends "base.html" %}
-
+{% load humanize %}
 {% block content %}
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Services - {{ entity.name }}</h1>
-        <a href="{% url 'ChurchApp:service_create' entity.slug %}" class="btn btn-primary">
+        <a href="{% url 'ChurchApp:service_activity_create' entity.slug %}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Add Service
         </a>
+        <a href="{% url 'ChurchApp:church_dashboard' entity.slug %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Home
+        </a>
+         
+        
+
     </div>
 
     <div class="table-responsive">
@@ -30,7 +36,7 @@
                     <td>{{ service.date|date:"Y-m-d" }}</td>
                     <td>{{ service.name_of_service }}</td>
                     <td>{{ service.attendance }}</td>
-                    <td>₵{{ service.grand_total|floatformat:2 }}</td>
+                    <td>₵{{ service.grand_total|floatformat:2|intcomma }}</td>
                     <td>
                         {% for trans in service.trans_set.all %}
                             <span class="badge bg-info">{{ trans.rec_vou_no }}</span>
@@ -46,15 +52,14 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{% url 'ChurchApp:service_detail' entity.slug service.pk %}" class="btn btn-sm btn-outline-info">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{% url 'ChurchApp:service_update' entity.slug service.pk %}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a href="{% url 'ChurchApp:service_delete' entity.slug service.pk %}" class="btn btn-sm btn-outline-danger">
-                            <i class="fas fa-trash"></i>
-                        </a>
+                        <a href="{% url 'ChurchApp:service_activity_view' entity.slug service.id %}" class="btn btn-sm btn-outline-info">View</a>
+                        <a href="{% url 'ChurchApp:service_activity_edit' entity.slug service.id %}" class="btn btn-sm btn-outline-info">Edit</a>
+                        <a href="{% url 'ChurchApp:service_delete' entity.slug service.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        <a href="{% url 'ChurchApp:service_activity_pdf' entity.slug service.id %}" class="btn btn-sm btn-outline-info">PDF</a>
+                        <a href="{% url 'ChurchApp:service_activity_excel' entity.slug service.id %}" class="btn btn-sm btn-outline-info">Excel</a>
+                        <a href="{% url 'ChurchApp:service_post_to_trans' entity.slug service.id %}" class="btn btn-sm btn-outline-info">Post</a>
+
+
                     </td>
                 </tr>
                 {% empty %}

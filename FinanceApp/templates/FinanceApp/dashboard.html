@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-    <h1>💰 Finance Dashboard</h1>
+    <h1> Finance Dashboard</h1>
     <p><strong>Entity:</strong> {{ entity.name }}</p>
 
     <div class="row">
@@ -43,7 +43,7 @@
     <div class="row mt-4">
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">📋 Journal Entries</div>
+                <div class="card-header"> Journal Entries</div>
                 <div class="card-body">
                     <a href="{% url 'ledger:journal_entries' entity.slug %}" class="btn btn-primary">View All</a>
                     <a href="{% url 'ledger:add_journal_entry' entity.slug %}" class="btn btn-success">Add Entry</a>
@@ -52,7 +52,7 @@
         </div>
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">📊 Chart of Accounts</div>
+                <div class="card-header"> Chart of Accounts</div>
                 <div class="card-body">
                     <a href="{% url 'ledger:chart_of_accounts' entity.slug %}" class="btn btn-primary">View</a>
                 </div>
@@ -60,7 +60,7 @@
         </div>
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">🏛️ Switch Entity</div>
+                <div class="card-header"> Switch Entity</div>
                 <div class="card-body">
                     <select class="form-select" onchange="switchEntity(this.value)">
                         {% for e in user.userprofile.allowed_entities.all %}
@@ -89,7 +89,7 @@
                 <tr>
                     <td>{{ entry.date }}</td>
                     <td>{{ entry.description }}</td>
-                    <td>{% if entry.posted %}✅ Posted{% else %}📝 Draft{% endif %}</td>
+                    <td>{% if entry.posted %} Posted{% else %} Draft{% endif %}</td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="3">No journal entries yet.</td></tr>

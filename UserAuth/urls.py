@@ -19,7 +19,6 @@ urlpatterns = [
     
     # User Profile
     path('profile/', views.user_profile, name='user_profile'),
-    path('change-password/', views.change_password, name='change_password'),
     
     # Password Reset - Custom Views
     path('password-reset/', views.password_reset_request, name='password_reset'),
@@ -36,13 +35,12 @@ urlpatterns = [
     path('users/<int:pk>/toggle-status/', views.user_toggle_status, name='user_toggle_status'),
     path('users/<int:pk>/reset-password/', views.user_reset_password, name='user_reset_password'),
     
-    path('change-password/', CustomPasswordChangeView.as_view(), name='change_password'),
     path('password-changed/', PasswordChangeDoneView.as_view(template_name='registration/password_change_done.html'), name='password_change_done'),
-    
-    path('change-password/', views.change_password, name='change_password'),
     
     path('logout/', views.custom_logout, name='logout'), 
     path('logout/view/', views.logout_view, name='logout'),
     path('logout/confirm/', views.logout_confirm, name='logout_confirm'),
+    
+    path('change/password/', views.change_password, name='change_password')
     
 ]

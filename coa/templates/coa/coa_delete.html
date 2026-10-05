@@ -131,7 +131,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚠️ Confirm Deletion</h1>
+            <h1> Confirm Deletion</h1>
         </div>
 
         <div class="warning-box">
@@ -190,7 +190,7 @@
         {% with child_count=account.chartofaccounts_set.count %}
         {% if child_count > 0 %}
         <div class="alert alert-danger">
-            <strong>❌ Cannot Delete:</strong> This account has {{ child_count }} sub-account(s).
+            <strong> Cannot Delete:</strong> This account has {{ child_count }} sub-account(s).
             <div class="children-list">
                 {% for child in account.chartofaccounts_set.all %}
                 <div>• {{ child.accountno }} - {{ child.name }}</div>
@@ -208,7 +208,7 @@
         <!-- Check if account has any transactions (optional - add if you have transaction tracking) -->
         {% if account.transaction_count and account.transaction_count > 0 %}
         <div class="alert alert-warning">
-            <strong>⚠️ Warning:</strong> This account has {{ account.transaction_count }} transaction(s). 
+            <strong> Warning:</strong> This account has {{ account.transaction_count }} transaction(s). 
             Deleting it will affect historical records.
         </div>
         {% endif %}
@@ -220,7 +220,7 @@
                 <a href="{% url 'coa:coa_list' %}" class="btn-secondary">Cancel</a>
                 <button type="submit" class="btn-danger" 
                         onclick="return confirm('Are you ABSOLUTELY sure? This cannot be undone!');">
-                    🗑️ Yes, Delete Account
+                        Yes, Delete Account
                 </button>
             </div>
         </form>

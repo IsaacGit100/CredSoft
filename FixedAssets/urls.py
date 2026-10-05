@@ -1,60 +1,40 @@
-from django.urls import path
+from django.contrib import admin
+from django.urls import path, include
 from . import views
+from django_ledger.models import (EntityModel, LedgerModel, JournalEntryModel, AccountModel, TransactionModel,)
 
+app_name = "FixedAssets"
 
-app_name = 'FixedAssets'
 
 urlpatterns = [
-    path("entity/<slug:slug>/home/", views.fixed_assets_home, name="fixed_assets_home"),
-    path(
-        "entity/<slug:slug>/assets/dashboard/",
-        views.asset_dashboard,
-        name="asset_dashboard",
-    ),
-    # ===============================Assets Manage ==============================================
-    path(
-        "entity/<slug:slug>/assets/", views.asset_list_manage, name="asset_list_manage"
-    ),
-    path("entity/<slug:slug>/assets/add/", views.asset_add, name="asset_add"),
-    path(
-        "entity/<slug:slug>/assets/<int:pk>/edit/",
-        views.asset_edit,
-        name="asset_edit",
-    ),
-    path(
-        "entity/<slug:slug>/assets/<int:pk>/delete/",
-        views.asset_delete,
-        name="asset_delete",
-    ),
-    path(
-        "entity/<slug:slug>/register/",
-        views.fixed_asset_register,
-        name="fixed_asset_register",
-    ),
-    # ==============================depreciation ===================================================
-    # path('entity/<slug:slug>/depreciation/', views.fixed_asset_depreciation, name='fixed_asset_depreciation'),
-    path(
-        "entity/<slug:slug>/post-depreciation/",
-        views.post_depreciation,
-        name="post_depreciation",
-    ),
-    path("entity/<slug:slug>/depreciation_list_manage/", views.depreciation_list_manage, name="depreciation_list_manage"),
-    path("entity/<slug:slug>/excel/", views.depreciation_export_excel, name="depreciation_export_excel"),
-    path("entity/<slug:slug>/pdf/", views.depreciation_export_pdf, name="depreciation_export_pdf"),
-    # ============================= Category =======================================================
-    path("entity/<slug:slug>/category_list_manage", views.category_list_manage, name="category_list_manage"),
-    path("entity/<slug:slug>/category_create/", views.category_create, name="category_create"),
-    path("entity/<slug:slug>/category/<int:pk>/edit/", views.category_edit, name="category_edit"),
-    path("entity/<slug:slug>/categories/<int:pk>/delete/", views.category_delete, name="category_delete"),
-    path("entity/<slug:slug>/asset_list_manage", views.asset_list_manage, name="asset_list_manage"),
-    path("entity/<slug:slug>/post-depreciation/", views.post_depreciation, name="post_depreciation"),
-    path("entity/<slug:slug>/depreciation-schedule/", views.depreciation_schedule, name="depreciation_schedule"),
+    # Fixed Assets
+    path('entity/<slug:slug>/home/', views.fixed_asset_home, name='fixed_asset_home'),
     
-    #  path('assets/assets_list_manage/', views.assets_list_manage, name='assets_list_manage'),
-    #   path('assets/add/', views.asset_create, name='asset_create'),
-    #   path('assets/<int:pk>/edit/', views.asset_edit, name='asset_edit'),
-    #   path('assets/<int:pk>/delete/', views.asset_delete, name='asset_delete'),
-    path("entity/<slug:slug>/fixed-assets-registrar/", views.fixed_assets_register_list, name="fixed_assets_register_list"),
-    path("entity/<slug:slug>/fixed-assets-registrar/pdf/", views.fixed_assets_register_PDF, name="fixed_assets_register_PDF"),
-    path("entity/<slug:slug>/fixed-assets-registrar/excel/", views.fixed_assets_register_excel, name="fixed_assets_register_excel"),
+    path('entity/<slug:slug>/fixed_asset/list', views.fixed_asset_list, name='fixed_asset_list'),
+    path('entity/<slug:slug>/create/', views.fixed_asset_create, name='fixed_asset_create'),
+    path('entity/<slug:slug>/<int:pk>/edit/', views.fixed_asset_update, name='fixed_asset_update'),
+    path('entity/<slug:slug>/<int:pk>/delete/', views.fixed_asset_delete, name='fixed_asset_delete'),
+    path('entity/<slug:slug>/<int:pk>/post-to-trans/', views.fixed_asset_post_to_trans, name='fixed_asset_post_to_trans'),
+    path('entity/<slug:slug>/run-depreciation/', views.run_depreciation, name='run_depreciation'),
+
+    # Asset Categories
+    path('entity/<slug:slug>/asset-categories/', views.asset_category_list, name='asset_category_list'),
+    path('entity/<slug:slug>/asset-categories/create/', views.asset_category_create, name='asset_category_create'),
+    path('entity/<slug:slug>/asset-categories/<int:pk>/edit/', views.asset_category_update, name='asset_category_update'),
+    path('entity/<slug:slug>/asset-categories/<int:pk>/delete/', views.asset_category_delete, name='asset_category_delete'),
+    
+    path('entity/<slug:slug>/<int:pk>/edit/', views.fixed_asset_update, name='fixed_asset_update'),
+    path('entity/<slug:slug>/<int:pk>/delete/', views.fixed_asset_delete, name='fixed_asset_delete'),
+    path('entity/<slug:slug>/<int:pk>/post-to-trans/', views.fixed_asset_post_to_trans, name='fixed_asset_post_to_trans'),
+    
+    path('entity/<slug:slug>/<int:pk>/edit/', views.fixed_asset_update, name='fixed_asset_update'),
+    path('entity/<slug:slug>/<int:pk>/delete/', views.fixed_asset_delete, name='fixed_asset_delete'),
+    path('entity/<slug:slug>/<int:pk>/post-to-trans/', views.fixed_asset_post_to_trans, name='fixed_asset_post_to_trans'),
+    
+    path('entity/<slug:slug>/asset/list/pdf/', views.fixed_asset_list_pdf, name='fixed_asset_list_pdf'),
+    path('entity/<slug:slug>/asset/list/excel/', views.fixed_asset_list_excel, name='fixed_asset_list_excel'),
+    
+    path('entity/<slug:slug>/asset-categories/pdf/', views.asset_category_list_pdf, name='asset_category_list_pdf'),
+    path('entity/<slug:slug>/asset-categories/excel/', views.asset_category_list_excel, name='asset_category_list_excel'),
 ]
+

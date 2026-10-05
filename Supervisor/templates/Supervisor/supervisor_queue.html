@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>
+            <i class="fas fa-user-shield text-primary"></i>
+            Supervisor Queue New {{ entity.name }}
+        </h3>
+        <span class="badge bg-warning text-dark p-2">
+            {{ pending_count }} Pending
+        </span>
+    </div>
+    
+
+    <!-- Filters -->
+    <form method="get" class="card card-body mb-3">
+        <div class="row g-2">
+            <div class="col-md-2">
+                <label class="form-label small">Module</label>
+                <select name="module" class="form-select form-select-sm">
+                    <option value="">All Modules</option>
+                    {% for val, label in module_choices %}
+                        <option value="{{ val }}" {% if module_filter == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Type</label>
+                <select name="trans_type" class="form-select form-select-sm">
+                    <option value="">All Types</option>
+                    {% for val, label in type_choices %}
+                        <option value="{{ val }}" {% if trans_type_filter == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">From</label>
+                <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">To</label>
+                <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+            </div>
+            <div class="col-md-4 d-flex align-items-end flex-wrap gap-1">
+                <button class="btn btn-sm btn-primary me-1">Filter</button>
+                <a href="{% url 'RecPayApp:supervisor_queue' entity.slug %}" class="btn btn-sm btn-outline-secondary">Clear</a>      
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Main Form -->
+    <form method="post" id="queueForm">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th width="30"><input type="checkbox" id="selectAll"></th>
+                        <th>Voucher</th>
+                        <th>Date</th>
+                        <th>Module</th>
+                        <th>Type</th>
+                        <th>Member / Name</th>
+                        <th>Purpose</th>
+                        <th class="text-end">Amount</th>
+                        <th>Pay Mode</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transactions %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="selected_transactions" value="{{ t.pk }}" class="row-check">
+                        </td>
+                        <td><code>{{ t.rec_vou_no }}</code></td>
+                        <td>{{ t.date|date:"Y-m-d" }}</td>
+                        <td>
+                            <span class="badge bg-info">{{ t.get_module_display }}</span>
+                        </td>
+                        <td>
+                            <span class="badge {% if t.trans_type == 'Receipts' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ t.trans_type }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if t.church_member %}{{ t.church_member.full_name }}
+                            {% elif t.member %}{{ t.member.full_name }}
+                            {% elif t.non_member_name %}{{ t.non_member_name }}
+                            {% else %}<span class="text-muted">—</span>{% endif %}
+                        </td>
+                        <td>{{ t.purpose|default:"—"|truncatechars:25 }}</td>
+                        <td class="text-end">₵{{ t.amount|floatformat:2 }}</td>
+                        <td>{{ t.pay_mode }}</td>
+                        <td class="text-center">
+                            <a href="#" class="btn btn-sm btn-outline-secondary" title="View" disabled>
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4 text-muted">
+                            <i class="fas fa-check-circle fa-2x mb-2 d-block"></i>
+                            No pending transactions. Everything is up to date!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Action Buttons -->
+        {% if transactions %}
+        <div class="d-flex justify-content-between mt-3">
+            <div>
+                <button type="submit" formaction="{% url 'RecPayApp:supervisor_post_selected' entity.slug %}"
+                        class="btn btn-success"
+                        onclick="return confirm('Post selected transactions to the journal?')">
+                    <i class="fas fa-upload"></i> Post Selected to Journal
+                </button>
+                <button type="submit" formaction="{% url 'RecPayApp:supervisor_reject_selected' entity.slug %}"
+                        class="btn btn-danger"
+                        onclick="return confirm('Reject selected transactions?')">
+                    <i class="fas fa-times"></i> Reject Selected
+                </button>
+               
+                <a href="javascript:history.back()"
+                    class="btn btn-secondary"
+                    style="margin-left:auto;">
+                        <i class="fas fa-ban"></i> Cancel
+                </a>
+
+            </div>
+            <div>
+                <span id="selectedCount" class="text-muted">0 selected</span>
+            </div>
+        </div>
+        {% endif %}
+    </form>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.row-check');
+    const counter = document.getElementById('selectedCount');
+
+    function updateCount() {
+        const count = document.querySelectorAll('.row-check:checked').length;
+        if (counter) counter.textContent = count + ' selected';
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            updateCount();
+        });
+    }
+
+    checkboxes.forEach(cb => cb.addEventListener('change', updateCount));
+});
+</script>
+{% endblock %}

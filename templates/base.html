@@ -4,15 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Anglican Diocese Of Accra - ADOA-HuB{% endblock %}</title>
-    
+    <title>{% block title %} Hi-Waves Ventures {% endblock %}</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #66d0eaff 0%, #a24b8eff 100%);
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
@@ -116,6 +115,37 @@
             background: #5a6268;
 
         }
+
+        /* ===== Context banner ===== */
+        .ctx-banner {
+            background: linear-gradient(135deg, #1e3a5f, #1a56db);
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .ctx-banner-all {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+        }
+        .ctx-banner strong { color: #fff; margin: 0 4px; }
+        .ctx-change {
+            margin-left: auto;
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .ctx-change:hover {
+            background: rgba(255,255,255,0.28);
+            color: #fff;
+        }
+
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -126,7 +156,7 @@
     <nav class="navbar navbar-dark navbar-custom">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'userauth:dashboard' %}">
-                <i class="fas fa-hand-holding-usd me-2"></i>ADOA - Hub
+                <i class="fas fa-hand-holding-usd me-2"></i>CredSoft
             </a>
             <span class="navbar-text text-white">
                 <i class="fas fa-user me-1"></i>{{ request.user.username }}
@@ -135,6 +165,9 @@
     </nav>
 
     {% endif %}
+
+    {# ===== Context banner — shows current parish ===== #}
+    {% include 'Consolidated/_context_banner.html' %}
     
     <!-- Messages -->
     {% if messages %}

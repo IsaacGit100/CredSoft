@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid px-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="fas fa-tags text-primary"></i> Asset Categories  {{ entity.name }}</h3>
+        <a href="{% url 'FixedAssets:asset_category_create' entity.slug %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Add Category
+        </a>
+        <a href="{% url 'FixedAssets:asset_category_list_pdf' entity.slug %}" class="btn btn-danger">
+            <i class="fas fa-file-pdf"></i> PDF
+        </a>
+        <a href="{% url 'FixedAssets:asset_category_list_excel' entity.slug %}" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> Excel
+        </a>
+        <a href="{% url 'FixedAssets:fixed_asset_home' entity.slug %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Close
+        </a>
+       
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-sm table-bordered mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Category</th>
+                        <th>Method</th>
+                        <th class="text-end">Life (yrs)</th>
+                        <th class="text-end">Rate (%)</th>
+                        <th>Asset Account</th>
+                        <th>Accumulated Depreciation</th>
+                        <th>Depreciation Expense</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categories %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ cat.name }}</strong></td>
+                        <td>{{ cat.get_depreciation_method_display }}</td>
+                        <td class="text-end">{{ cat.useful_life_years }}</td>
+                        <td class="text-end">{{ cat.depreciation_rate }}</td>
+
+                        <td>
+                            {% if cat.asset_account %}
+                                <code>{{ cat.asset_account.code }}</code>
+                                <br><small class="text-muted">{{ cat.asset_account.name }}</small>
+                            {% else %}
+                                <span class="badge bg-danger">NOT SET</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if cat.accumulated_depreciation_account %}
+                                <code>{{ cat.accumulated_depreciation_account.code }}</code>
+                                <br><small class="text-muted">{{ cat.accumulated_depreciation_account.name }}</small>
+                            {% else %}
+                                <span class="badge bg-danger">NOT SET</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if cat.depreciation_expense_account %}
+                                <code>{{ cat.depreciation_expense_account.code }}</code>
+                                <br><small class="text-muted">{{ cat.depreciation_expense_account.name }}</small>
+                            {% else %}
+                                <span class="badge bg-danger">NOT SET</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center">
+                            <a href="{% url 'FixedAssets:asset_category_update' entity.slug cat.pk %}"
+                               class="btn btn-sm btn-outline-warning" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            No categories yet.
+                            <a href="{% url 'FixedAssets:asset_category_create' entity.slug %}">Create one</a>.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    code {
+        background: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 3px;
+        color: #d63384;
+        font-size: 0.9rem;
+    }
+    table th, table td {
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}

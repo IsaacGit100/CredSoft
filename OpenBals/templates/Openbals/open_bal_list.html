@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container-fluid px-3">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0">
+                <i class="fas fa-balance-scale text-primary"></i>
+                Opening Balances - {{ entity.name }}
+            </h3>
+            <small class="text-muted">All opening balance entries and their journal status</small>
+        </div>
+        <div>
+            <a href="{% url 'OpenBals:open_bal_create' entity.slug %}" class="btn btn-success">
+                <i class="fas fa-plus"></i> New Opening Balance
+            </a>
+             <a href="{% url 'OpenBals:open_bal_home' entity.slug %}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Close
+            </a>
+            <a href="{% url 'OpenBals:open_bal_pdf' entity.slug %}" class="btn btn-success">
+                <i class="fas fa-plus"></i> PDF
+            </a>
+            <a href="{% url 'OpenBals:open_bal_excel' entity.slug %}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Excel
+            </a>
+            {% if pending_count > 0 %}
+                <a href="{% url 'OpenBals:open_bal_post_all' entity.slug %}"
+                    class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                    Post {{ pending_count }} Opening Balances to Journal
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-2 mb-3">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body py-2">
+                    <div class="text-muted small">Total Debit</div>
+                    <h4 class="mb-0 text-primary">₵{{ total_debit|floatformat:2|intcomma }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body py-2">
+                    <div class="text-muted small">Total Credit</div>
+                    <h4 class="mb-0 text-success">₵{{ total_credit|floatformat:2|intcomma }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card {% if is_balanced %}border-success{% else %}border-danger{% endif %}">
+                <div class="card-body py-2">
+                    <div class="text-muted small">Difference</div>
+                    <h4 class="mb-0 {% if is_balanced %}text-success{% else %}text-danger{% endif %}">
+                        ₵{{ difference|floatformat:2|intcomma }}
+                        {% if is_balanced %}
+                            <i class="fas fa-check-circle"></i>
+                        {% else %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% endif %}
+                    </h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-secondary">
+                <div class="card-body py-2">
+                    <div class="text-muted small">Total Lines</div>
+                    <h4 class="mb-0">{{ total_count }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-3">
+        <div class="card-body py-2">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small">Search</label>
+                    <input type="text" name="search" class="form-control form-control-sm"
+                           placeholder="Code, name, description..." value="{{ search }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">From</label>
+                    <input type="date" name="start" class="form-control form-control-sm" value="{{ start_date }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">To</label>
+                    <input type="date" name="end" class="form-control form-control-sm" value="{{ end_date }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Status</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="posted" {% if status_filter == 'posted' %}selected{% endif %}>Posted</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <a href="{% url 'OpenBals:open_bal_list' entity.slug %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-redo"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lines Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="40">#</th>
+                            <th>Date</th>
+                            <th>Code</th>
+                            <th>Account</th>
+                            <th class="text-end">Debit (₵)</th>
+                            <th class="text-end">Credit (₵)</th>
+                            <th>Description</th>
+                            <th class="text-center">Status</th>
+                            <th>Voucher</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ line.date|date:"Y-m-d" }}</td>
+                            <td><code>{{ line.account_code }}</code></td>
+                            <td>{{ line.account_name }}</td>
+                            <td class="text-end">
+                                {% if line.debit_amount > 0 %}
+                                    <strong class="text-primary">₵{{ line.debit_amount|floatformat:2|intcomma }}</strong>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if line.credit_amount > 0 %}
+                                    <strong class="text-success">₵{{ line.credit_amount|floatformat:2|intcomma }}</strong>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ line.description|default:"—"|truncatechars:40 }}</td>
+                            <td class="text-center">
+                                {% if line.trans %}
+                                    {% if line.trans.journal_status == 'PENDING' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif line.trans.journal_status == 'APPROVED' %}
+                                        <span class="badge bg-info">Approved</span>
+                                    {% elif line.trans.journal_status == 'POSTED' %}
+                                        <span class="badge bg-success">Posted</span>
+                                    {% elif line.trans.journal_status == 'REJECTED' %}
+                                        <span class="badge bg-secondary">Rejected</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-light text-muted">No Trans</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if line.trans %}
+                                    <code>{{ line.trans.rec_vou_no }}</code>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    {% if line.trans %}
+                                        <a href="{% url 'RecPayApp:trans_view' entity.slug line.trans.pk %}"
+                                           class="btn btn-outline-info" title="View Transaction">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if line.trans.can_edit %}
+                                            <a href="{% url 'RecPayApp:trans_edit' entity.slug line.trans.pk %}"
+                                               class="btn btn-outline-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'RecPayApp:trans_delete' entity.slug line.trans.pk %}"
+                                               class="btn btn-outline-danger" title="Delete"
+                                               onclick="return confirm('Delete this opening balance line?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-outline-secondary" disabled
+                                                    title="Locked: {{ line.trans.lock_reason }}">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center py-4 text-muted">
+                                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                No opening balance lines found.
+                                <br>
+                                <a href="{% url 'OpenBals:open_bal_create' entity.slug %}" class="btn btn-sm btn-success mt-2">
+                                    <i class="fas fa-plus"></i> Create Opening Balances
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if lines %}
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="4" class="text-end">TOTALS:</td>
+                            <td class="text-end text-primary">₵{{ total_debit|floatformat:2|intcomma }}</td>
+                            <td class="text-end text-success">₵{{ total_credit|floatformat:2|intcomma }}</td>
+                            <td colspan="4" class="text-center">
+                                {% if is_balanced %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Balanced
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-exclamation-triangle"></i> Out of balance by ₵{{ difference|floatformat:2|intcomma }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if lines.has_other_pages %}
+    <nav class="mt-3">
+        <ul class="pagination pagination-sm">
+            {% if lines.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1&search={{ search }}&start={{ start_date }}&end={{ end_date }}&status={{ status_filter }}"> First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ lines.previous_page_number }}&search={{ search }}&start={{ start_date }}&end={{ end_date }}&status={{ status_filter }}">Previous</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">{{ lines.number }} / {{ lines.paginator.num_pages }}</span>
+            </li>
+
+            {% if lines.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ lines.next_page_number }}&search={{ search }}&start={{ start_date }}&end={{ end_date }}&status={{ status_filter }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ lines.paginator.num_pages }}&search={{ search }}&start={{ start_date }}&end={{ end_date }}&status={{ status_filter }}">Last </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+</div>
+
+<style>
+    .table th, .table td {
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+    code {
+        background: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 3px;
+        color: #d63384;
+        font-size: 0.85rem;
+    }
+    .card .card-body h4 {
+        font-weight: 700;
+    }
+</style>
+{% endblock %}

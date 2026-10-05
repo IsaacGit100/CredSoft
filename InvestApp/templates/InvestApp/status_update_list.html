@@ -62,7 +62,7 @@
                             <td>{{ inv.discounted|yesno:"Yes,No" }} </td>
                             <td>{{ inv.discounted_date|date:"d/m/Y"|default:"-" }}</td>
                             <td>
-                                <a href="{% url 'InvestApp:investment_status_update_pk' inv.pk %}" class="btn btn-sm btn-warning">Update Status</a>
+                                <a href="{% url 'InvestApp:investment_status_update_pk' entity.slug inv.pk %}" class="btn btn-sm btn-warning">Update Status</a>
                             </td>
                         </tr>
                         {% empty %}

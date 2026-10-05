@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supervisor Menu - St. Andrews Credit Union</title>
+    <title>{% block title %}{{ entity_config.organization_name }}{% endblock %}</title>
     <style>
         * {
             margin: 0;
@@ -179,20 +179,16 @@
         
         <!-- Header -->
         <div class="header">
-            <h1>Anglican Church Of Accounts</h1>
-            <p>Chart of Accounts Home Menu</p>
+            <h1>{{ entity_config.organization_name }}</h1>
+            <h1> {{ entity.name }} </h1>
+            <h1>Chart Of Accounts Menu</h1>
         </div>
 
         <!-- Menu Grid - 2 columns with annotations -->
         <div class="menu-grid">
 
-            
-           
 
-
-
-            
-            <!-- User Management -->
+             <!-- System Dashboard -->
             <a href="{% url 'djan_led:chart_of_accounts' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
                     <i class="fas fa-users"></i>
@@ -203,12 +199,9 @@
                 </div>
             </a>
 
-            
-
-            <!-- Member Settings -->
             <a href="{% url 'djan_led:add_account' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
-                    <i class="fas fa-sliders-h"></i>
+                    <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
                     <h3>Add Additional Accounts to the Chart of Accounts</h3>
@@ -216,21 +209,21 @@
                 </div>
             </a>
 
+             <!-- System Dashboard -->
             <a href="{% url 'djan_led:coa_list_manage' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
-                    <i class="fas fa-sliders-h"></i>
+                    <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
-                    <h3>Edit, View, Delete Chart Of Accounts </h3>
-                    <p>Edit, View, Delet Chart Of Accounts Records </p>
+                    <h3>Manage Chart Of Accounts </h3>
+                    <p>Edit, View, Delete, Print, PDF, Excel Chart Of Accounts Records </p>
                 </div>
             </a>
 
 
-            <!-- Delete A Member -->
-            <a href="{% url 'djan_led:account_visibility' entity.slug %}" class="menu-btn">
+            <a href="{% url 'djan_led:account_preferences' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
-                    <i class="fas fa-trash-alt"></i>
+                    <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
                     <h3>Account Visibility</h3>
@@ -238,40 +231,29 @@
                 </div>
             </a>
 
-           
-            <!-- Delete History -->
+             <!-- System Dashboard -->
             <a href="{% url 'djan_led:account_preferences' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
-                    <i class="fas fa-history"></i>
+                    <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
-                    <h3>Selected Accounts Visible</h3>
+                    <h3>Account Preferences</h3>
                     <p>Selected Accounts to be used in the Transaction Form</p>
                 </div>
             </a>
 
-            <!-- Delete History -->
-            <a href="{% url 'djan_led:chart_of_accounts_pdf' entity.slug %}" class="menu-btn">
-                <div class="menu-icon">
-                    <i class="fas fa-history"></i>
-                </div>
-                <div class="menu-text">
-                    <h3>Generate Chart of Accounts PDF</h3>
-                    <p>Generate Chart Of accounts for Printing and Sending</p>
-                </div>
-            </a>
 
-            <!-- Login History -->
-            <a href="{% url 'djan_led:chart_of_accounts_excel' entity.slug %}" class="menu-btn">
-                <div class="menu-icon">
-                    <i class="fas fa-sign-in-alt"></i>
-                </div>
-                <div class="menu-text">
-                    <h3>Transfer Chart of Accounts To Excel</h3>
-                    <p>Generate Chart of Accounts in Excel and Check Downloads</p>
-                </div>
-            </a>
+          
 
+
+        </div>
+
+        <!-- Footer with Main Menu Button -->
+        <div class="footer">
+            <a href="{% url 'djan_led:back_to_home' entity.slug %}" class="btn-main-menu">
+                <i class="fas fa-home me-2"></i> Back to Home
+            </a>
+        </div>
 
     </div>
 </body>

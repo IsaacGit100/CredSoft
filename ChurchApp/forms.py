@@ -1,9 +1,10 @@
 from django import forms
-from .models import Service
+from django.utils import timezone
+initial = timezone.localdate
 
 
 from django import forms
-from .models import Member
+from .models import Member, Clergy, Service, Guild, Role, MemberRole, ChurchConfig
 from django_ledger.models import (EntityModel, JournalEntryModel, TransactionModel, AccountModel)
 
 # ChurchApp/forms.py
@@ -12,12 +13,6 @@ from django_ledger.models import EntityModel
 from .models import Member  # adjust import if Guild is in a different app
 from RecPayApp.models import Trans
 from MembersApp.models import Master
-
-
-# ChurchApp/forms.py
-
-from django import forms
-from .models import Member
 
 
 class MemberForm(forms.ModelForm):
@@ -135,23 +130,6 @@ class MemberForm(forms.ModelForm):
                 self.initial["names_of_children"] = "\n".join(children_list)
 
 
-# ChurchApp/forms.py
-from django import forms
-from django_ledger.models import EntityModel
-from .models import Member
-
-
-# ChurchApp/forms.py
-from django import forms
-from django.utils import timezone
-
-# ChurchApp/forms.py
-
-from django import forms
-from .models import Service, Clergy, Member
-from django_ledger.models import EntityModel
-
-
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
@@ -190,75 +168,6 @@ class ServiceForm(forms.ModelForm):
             # We'll use JSON fields instead of direct selection
             pass
 
-class ServiceForm1(forms.ModelForm):
-    # Ask user whether to post to ledger (must confirm)
-    post_to_ledger = forms.BooleanField(
-        required=False,
-        initial=True,
-        label="Post to accounting ledger",
-        help_text="Uncheck to save without creating journal entries.",
-        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
-    )
-
-    class Meta:
-        model = Service
-        fields = "__all__"
-        exclude = [
-            "grand_total",
-            "journal_entry_id",
-            "posted_to_ledger",
-            "created_by",
-            "created_at",
-            "updated_at",
-        ]
-        widgets = {
-            "date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-            "name_of_service": forms.TextInput(attrs={"class": "form-control"}),
-            "officiant": forms.Select(attrs={"class": "form-select"}),
-            "attendance": forms.NumberInput(attrs={"class": "form-control"}),
-            "communicants": forms.NumberInput(attrs={"class": "form-control"}),
-            "general_offertory": forms.NumberInput(
-                attrs={"class": "form-control", "step": "0.01"}
-            ),
-            "dues": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
-            "tithes": forms.NumberInput(
-                attrs={"class": "form-control", "step": "0.01"}
-            ),
-            # JSON fields are hidden – we will manage them with custom widgets
-            "clergy": forms.HiddenInput(),
-            "ushers": forms.HiddenInput(),
-            "day_born_offerings": forms.HiddenInput(),
-            "guild_offerings": forms.HiddenInput(),
-            "special_thank_offering": forms.HiddenInput(),
-            "easter_offering": forms.HiddenInput(),
-            "christmas_offering": forms.HiddenInput(),
-            "harvest_offering": forms.HiddenInput(),
-            "other_collections": forms.HiddenInput(),
-        }
-
-    def __init__(self, *args, **kwargs):
-        self.entity = kwargs.pop("entity", None)
-        super().__init__(*args, **kwargs)
-        # Filter officiant choices by entity
-        if self.entity:
-            self.fields["officiant"].queryset = Officiant.objects.filter(
-                entity=self.entity
-            )
-        else:
-            self.fields["officiant"].queryset = Officiant.objects.none()
-
-
-# ChurchApp/forms.py
-from django import forms
-from .models import Clergy, Member
-
-
-# ChurchApp/forms.py
-
-from django import forms
-from .models import Clergy, Member
-
-
 class ClergyForm(forms.ModelForm):
     class Meta:
         model = Clergy
@@ -279,7 +188,7 @@ class ClergyForm(forms.ModelForm):
             "date_depart": forms.DateInput(
                 attrs={"type": "date", "class": "form-control"}
             ),
-            "member": forms.Select(attrs={"class": "form-select"}),
+           
         }
         labels = {
             "email_address": "Email Address",
@@ -292,20 +201,19 @@ class ClergyForm(forms.ModelForm):
         self.entity = kwargs.pop("entity", None)
         super().__init__(*args, **kwargs)
 
-        if self.entity:
-            self.fields["member"].queryset = Member.objects.filter(
-                entity=self.entity, is_deleted=False
-            ).order_by("full_name")
-            self.fields["member"].empty_label = "---------"
-            self.fields["member"].required = False  # ⬅️ Make it optional
-        else:
-            self.fields["member"].queryset = Member.objects.none()
+class MemberRoleForm(forms.Form):   
+    
+    date_assigned = forms.DateField(
+        required=True, label="Date Assigned", initial=timezone.localdate,
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}))
 
+    date_removed = forms.DateField(
+        required=False, label="Date Removed",
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}))
+  
+    is_active = forms.BooleanField(
+        required=False, initial=True, label="Is Active", widget=forms.CheckboxInput(attrs={"class": "form-check-input"}))
 
-class MemberRoleForm(forms.Form):
-    """
-    Form to assign roles to a member (checkboxes).
-    """
 
     def __init__(self, *args, **kwargs):
         self.entity = kwargs.pop("entity", None)
@@ -332,31 +240,59 @@ class MemberRoleForm(forms.Form):
             )
 
     def save(self, member):
-        """Save the selected roles."""
-        for field_name, value in self.cleaned_data.items():
-            if field_name.startswith("role_"):
-                role_id = int(field_name.split("_")[1])
-                role = Role.objects.get(id=role_id)
+        """Save selected roles as role-assignment history."""
 
-                if value:
-                    # Add role if not already assigned
-                    MemberRole.objects.get_or_create(
+        date_assigned = self.cleaned_data.get("date_assigned")
+        date_removed = self.cleaned_data.get("date_removed")
+        is_active = self.cleaned_data.get("is_active", True)
+
+        for field_name, value in self.cleaned_data.items():
+
+            if not field_name.startswith("role_"):
+                continue
+
+            role_id = int(field_name.split("_")[1])
+            role = Role.objects.get(
+                id=role_id,
+                entity=member.entity,
+                is_active=True,
+            )
+
+            if value:
+                # Only look for a CURRENT active assignment.
+                active_assignment = MemberRole.objects.filter(
+                    member=member,
+                    role=role,
+                    entity=member.entity,
+                    is_active=True,
+                ).first()
+
+                if not active_assignment:
+                    # Create a NEW history record.
+                    MemberRole.objects.create(
                         member=member,
                         role=role,
                         entity=member.entity,
-                        defaults={"is_active": True},
-                    )
-                else:
-                    # Remove role (soft delete)
-                    MemberRole.objects.filter(member=member, role=role).update(
-                        is_active=False, date_removed=timezone.now().date()
+                        date_assigned=date_assigned,
+                        date_removed=None,
+                        is_active=is_active,
                     )
 
+            else:
+                # Ending the CURRENT assignment.
+                active_assignment = MemberRole.objects.filter(
+                    member=member,
+                    role=role,
+                    entity=member.entity,
+                    is_active=True,
+                ).first()
 
-# ChurchApp/forms.py
-
-from django import forms
-from .models import Member, Role, MemberRole
+                if active_assignment:
+                    active_assignment.is_active = False
+                    active_assignment.date_removed = date_removed
+                    active_assignment.save(
+                        update_fields=["is_active", "date_removed"]
+                    )
 
 
 class RoleAssignmentForm(forms.Form):
@@ -417,16 +353,6 @@ class RoleAssignmentForm(forms.Form):
                         is_active=False, date_removed=timezone.now().date()
                     )
 
-# ChurchApp/forms.py
-
-
-# ChurchApp/forms.py
-
-from django import forms
-from django.utils import timezone
-from RecPayApp.models import Trans
-from ChurchApp.models import Member
-
 
 class DuesTitheTransactionForm(forms.ModelForm):
     payment_type = forms.ChoiceField(
@@ -480,6 +406,7 @@ class DuesTitheTransactionForm(forms.ModelForm):
             ).order_by("full_name")
             self.fields["church_member"].empty_label = "Select Member"
             self.fields["church_member"].label_from_instance = lambda obj: obj.full_name
+            self.fields["church_member"].required = True 
 
         self.fields["date"].initial = timezone.now().date()
 
@@ -489,111 +416,15 @@ class DuesTitheTransactionForm(forms.ModelForm):
             rec_no = rec_no.replace("REC-", "").replace("REC", "").strip()
             return f"REC-{rec_no}"
         return rec_no
-
-    # ChurchApp/forms.py
-
-
-def save(self, commit=True):
-    trans = super().save(commit=False)
-
-    # ⬇️ CRITICAL: Set module to 'church'
-    trans.module = "church"
-    trans.trans_type = "Receipts"
-    trans.status = "DRAFT"
-    trans.journal_status = "PENDING"
-    trans.pay_mode = "Cash"
-
-    # Get payment type
-    payment_type = self.cleaned_data.get("payment_type", "Dues")
-
-    # ⬇️ CRITICAL: Set ledger_code and purpose
-    if payment_type == "Tithe":
-        trans.ledger_code = "4012"
-        trans.ledger_name = "Tithe"
-    else:
-        trans.ledger_code = "4011"
-        trans.ledger_name = "Dues"
-
-    trans.purpose = payment_type
-
-    # ChurchApp/forms.py
-
-from django import forms
-from django.utils import timezone
-from RecPayApp.models import Trans
-from ChurchApp.models import Member
-
-
-class DuesTitheTransactionForm(forms.ModelForm):
-    payment_type = forms.ChoiceField(
-        choices=[("Dues", "Dues"), ("Tithe", "Tithe")],
-        widget=forms.Select(attrs={"class": "form-select"}),
-        initial="Dues",
-        label="Payment Type",
-        required=True,
-    )
-
-    class Meta:
-        model = Trans
-        fields = [
-            "date",
-            "rec_vou_no",
-            "church_member",
-            "amount",
-            "details",
-            "purpose",
-            "payment_type",
-        ]
-        widgets = {
-            "date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
-            "rec_vou_no": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Enter receipt number"}
-            ),
-            "church_member": forms.Select(attrs={"class": "form-select"}),
-            "amount": forms.NumberInput(
-                attrs={"class": "form-control", "step": "0.01"}
-            ),
-            "details": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "e.g., January Dues"}
-            ),
-            "purpose": forms.HiddenInput(),  # Hidden, auto-set in save()
-        }
-        labels = {
-            "rec_vou_no": "Receipt Number",
-            "church_member": "Member",
-            "amount": "Amount (₵)",
-            "details": "Description/Notes",
-        }
-
-    def __init__(self, *args, **kwargs):
-        self.entity = kwargs.pop("entity", None)
-        self.user = kwargs.pop("user", None)
-        super().__init__(*args, **kwargs)
-
-        if self.entity:
-            self.fields["church_member"].queryset = Member.objects.filter(
-                entity=self.entity, is_deleted=False
-            ).order_by("full_name")
-            self.fields["church_member"].empty_label = "Select Member"
-            self.fields["church_member"].label_from_instance = lambda obj: obj.full_name
-
-        self.fields["date"].initial = timezone.now().date()
-
-    def clean_rec_vou_no(self):
-        rec_no = self.cleaned_data.get("rec_vou_no")
-        if rec_no:
-            rec_no = rec_no.replace("REC-", "").replace("REC", "").strip()
-            return f"REC-{rec_no}"
-        return rec_no
-
-    # ChurchApp/forms.py
-
 
     def save(self, commit=True):
         trans = super().save(commit=False)
 
-        # ⬇️ CRITICAL: Set module to 'church'
+        #  CRITICAL: Set module to 'church'
+        trans.entity = self.entity
         trans.module = "church"
+        trans.sub_module = "dues_tithe"
+        #    trans.sub_module = "tithe" if (trans.purpose or "").lower() == "tithe" else "dues"
         trans.trans_type = "Receipts"
         trans.status = "DRAFT"
         trans.journal_status = "PENDING"
@@ -602,23 +433,22 @@ class DuesTitheTransactionForm(forms.ModelForm):
         # Get payment type
         payment_type = self.cleaned_data.get("payment_type", "Dues")
 
-        # ⬇️ CRITICAL: Set ledger_code and purpose
+        #  CRITICAL: Set ledger_code and purpose
+        
         if payment_type == "Tithe":
-            trans.ledger_code = "4012"
-            trans.ledger_name = "Tithe"
+            trans.ledger_code = "4014"
+            trans.ledger_name = "Tithes"
         else:
-            trans.ledger_code = "4011"
+            trans.ledger_code = "4013"
             trans.ledger_name = "Dues"
 
         trans.purpose = payment_type
 
-    # ... rest of save method ...
-
-    
         # Set created_by
         if self.user:
             trans.created_by = self.user
-            trans.created_by_name = self.user.username
+            trans.created_by_name = self.user.get_full_name()
+            #    trans.created_by_name = self.user.username
             trans.created_by_username = self.user.username
 
         # Set member name if church_member selected
@@ -626,36 +456,10 @@ class DuesTitheTransactionForm(forms.ModelForm):
             trans.member_name = trans.church_member.full_name
             trans.member_no = 0  # Church members don't have Master ID
 
-        # Auto-generate receipt number if empty
-        if not trans.rec_vou_no or trans.rec_vou_no == "REC-":
-            prefix = "REC"
-            last_trans = (
-                Trans.objects.filter(trans_type="Receipts", module="church")
-                .order_by("-id")
-                .first()
-            )
-
-            if last_trans and last_trans.rec_vou_no:
-                try:
-                    last_num = int(last_trans.rec_vou_no.split("-")[-1])
-                    new_num = last_num + 1
-                except (ValueError, IndexError):
-                    new_num = 1
-            else:
-                new_num = 1
-            trans.rec_vou_no = f"{prefix}-{new_num:04d}"
-            trans.trans_no = trans.rec_vou_no
-
         if commit:
             trans.save()
 
         return trans
-
-# ChurchApp/forms.py
-
-from django import forms
-from django.utils import timezone
-from .models import Service, Clergy, Member, Guild
 
 
 class ServiceActivityForm(forms.ModelForm):
@@ -691,13 +495,6 @@ class ServiceActivityForm(forms.ModelForm):
             self.fields['officiant'].empty_label = "Select Officiant"
         
         self.fields['date'].initial = timezone.now().date()
-
-# ChurchApp/forms.py
-
-from django import forms
-from .models import ChurchConfig
-
-
 class ChurchConfigForm(forms.ModelForm):
     class Meta:
         model = ChurchConfig
@@ -755,12 +552,6 @@ class ChurchConfigForm(forms.ModelForm):
             'default_guild_ledger': 'Guild Ledger Code',
             'default_special_ledger': 'Special Offering Ledger Code',
         }
-
-# ChurchApp/forms.py
-
-from django import forms
-from .models import Guild
-
 
 class GuildForm(forms.ModelForm):
     class Meta:

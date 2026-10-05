@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid px-3">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+                <i class="fas fa-balance-scale"></i> {{ title }}
+            </h3>
+            <small>{{ entity.name }}</small>
+        </div>
+
+        <div class="card-body">
+            <form method="post" id="obForm">
+                {% csrf_token %}
+                <input type="hidden" name="lines_json" id="lines_json" value="[]">
+
+                <!-- Date -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="fw-bold">Date:</label>
+                        <input type="date" name="date" class="form-control"
+                               value="{{ today|date:'Y-m-d' }}" required>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Entry row -->
+                <div class="row g-2 align-items-end mb-3">
+                    <div class="col-md-5">
+                        <label class="fw-bold">Account:</label>
+                        <select id="account_select" class="form-select">
+                            <option value="">-- Select Account --</option>
+                            {% for acc in accounts %}
+                                <option value="{{ acc.pk }}"
+                                        data-code="{{ acc.code }}"
+                                        data-name="{{ acc.name }}">
+                                    {{ acc.code }} – {{ acc.name }}
+                                </option>
+                            {% empty %}
+                                <option value="" disabled>No accounts available</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="fw-bold">Debit (₵):</label>
+                        <input type="number" id="debit_input" class="form-control" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="fw-bold">Credit (₵):</label>
+                        <input type="number" id="credit_input" class="form-control" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="fw-bold">Description:</label>
+                        <input type="text" id="description_input" class="form-control" placeholder="Optional">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-outline-primary w-100" id="addLineBtn">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Lines table -->
+                <h6 class="fw-bold">Entered Lines</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="15%">Code</th>
+                                <th width="25%">Account</th>
+                                <th width="15%" class="text-end">Debit (₵)</th>
+                                <th width="15%" class="text-end">Credit (₵)</th>
+                                <th width="20%">Description</th>
+                                <th width="10%" class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lines_body">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No lines added yet.</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold table-light">
+                                <td colspan="2" class="text-end">TOTALS:</td>
+                                <td class="text-end" id="totalDebit">₵0.00</td>
+                                <td class="text-end" id="totalCredit">₵0.00</td>
+                                <td colspan="2"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="6" class="text-center">
+                                    <span id="balanceStatus" class="badge bg-secondary">Balanced: ₵0.00</span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <hr>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save Opening Balances
+                    </button>
+                    <a href="{% url 'OpenBals:open_bal_list' entity.slug %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<script>
+console.log('=== OB Script Loaded ===');
+
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('=== DOM Ready ===');
+
+    const accountSelect    = document.getElementById('account_select');
+    const debitInput       = document.getElementById('debit_input');
+    const creditInput      = document.getElementById('credit_input');
+    const descriptionInput = document.getElementById('description_input');
+    const addBtn           = document.getElementById('addLineBtn');
+    const linesBody        = document.getElementById('lines_body');
+    const linesJsonInput   = document.getElementById('lines_json');
+    const totalDebitEl     = document.getElementById('totalDebit');
+    const totalCreditEl    = document.getElementById('totalCredit');
+    const balanceStatusEl  = document.getElementById('balanceStatus');
+
+    console.log('addBtn found:', !!addBtn);
+    console.log('accountSelect found:', !!accountSelect);
+
+    let lines = [];
+
+    if (addBtn) {
+        addBtn.addEventListener('click', function () {
+            console.log('Add clicked');
+
+            const accountId = accountSelect ? accountSelect.value : '';
+            if (!accountId) {
+                alert('Please select an account.');
+                return;
+            }
+
+            const opt = accountSelect.options[accountSelect.selectedIndex];
+            const accountCode = opt.getAttribute('data-code');
+            const accountName = opt.getAttribute('data-name');
+
+            const debit  = parseFloat(debitInput.value)  || 0;
+            const credit = parseFloat(creditInput.value) || 0;
+
+            if (debit <= 0 && credit <= 0) {
+                alert('Enter a Debit or Credit amount.');
+                return;
+            }
+            if (debit > 0 && credit > 0) {
+                alert('Enter either Debit OR Credit, not both.');
+                return;
+            }
+
+            lines.push({
+                account_id: accountId,
+                account_code: accountCode,
+                account_name: accountName,
+                debit: debit,
+                credit: credit,
+                description: (descriptionInput.value || '').trim(),
+            });
+
+            accountSelect.value = '';
+            debitInput.value = '';
+            creditInput.value = '';
+            descriptionInput.value = '';
+
+            render();
+        });
+    }
+
+    function render() {
+        if (!linesBody) return;
+        linesBody.innerHTML = '';
+
+        if (lines.length === 0) {
+            linesBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No lines added yet.</td></tr>';
+        } else {
+            lines.forEach(function (line, i) {
+                const tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + line.account_code + '</td>' +
+                    '<td>' + line.account_name + '</td>' +
+                    '<td class="text-end">' + (line.debit  > 0 ? '₵' + line.debit.toFixed(2)  : '—') + '</td>' +
+                    '<td class="text-end">' + (line.credit > 0 ? '₵' + line.credit.toFixed(2) : '—') + '</td>' +
+                    '<td>' + (line.description || '—') + '</td>' +
+                    '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger" data-index="' + i + '"><i class="fas fa-times"></i></button></td>';
+                tr.querySelector('button').addEventListener('click', function () {
+                    lines.splice(i, 1);
+                    render();
+                });
+                linesBody.appendChild(tr);
+            });
+        }
+
+        const totalDebit  = lines.reduce(function (s, l) { return s + (l.debit  || 0); }, 0);
+        const totalCredit = lines.reduce(function (s, l) { return s + (l.credit || 0); }, 0);
+
+        if (totalDebitEl)  totalDebitEl.textContent  = '₵' + totalDebit.toFixed(2);
+        if (totalCreditEl) totalCreditEl.textContent = '₵' + totalCredit.toFixed(2);
+
+        if (balanceStatusEl) {
+            const diff = totalDebit - totalCredit;
+            if (Math.abs(diff) < 0.01) {
+                balanceStatusEl.className = 'badge bg-success';
+                balanceStatusEl.textContent = ' Balanced: ₵' + totalDebit.toFixed(2);
+            } else {
+                balanceStatusEl.className = 'badge bg-danger';
+                balanceStatusEl.textContent = ' Out of balance by ₵' + Math.abs(diff).toFixed(2);
+            }
+        }
+
+        if (linesJsonInput) linesJsonInput.value = JSON.stringify(lines);
+    }
+
+    render();
+});
+</script>
+
+{% endblock %}

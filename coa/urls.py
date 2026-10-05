@@ -12,7 +12,6 @@ app_name = 'coa'
 urlpatterns = [
     ##
     path('coa/home/', views.coa_home, name='coa_home'),
-    path('back/home/', views.back_to_home, name='back_to_home'),
     
  #   path('api/next-accountno/', views.next_accountno_api, name='next_accountno'),
     path('chart-of-accounts/', views.coa_list, name='coa_list'),

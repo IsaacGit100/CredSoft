@@ -181,4 +181,4 @@ class Command(BaseCommand):
         )
         self.stdout.write(f"Level 4: {target.accountno} - {target.name}")
         
-        self.stdout.write(self.style.SUCCESS("\n✅ Chart of Accounts initialized successfully!"))
+        self.stdout.write(self.style.SUCCESS("\n Chart of Accounts initialized successfully!"))

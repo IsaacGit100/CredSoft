@@ -1,0 +1,1229 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+<style>
+    .service-page {
+        background: #f5f7fa;
+        min-height: calc(100vh - 60px);
+        padding: 24px 0 40px;
+    }
+
+    .service-card {
+        border: 0;
+        border-radius: 12px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .service-header {
+        background: #ffffff;
+        border-bottom: 1px solid #e9ecef;
+        padding: 20px 24px;
+    }
+
+    .section-card {
+        background: #ffffff;
+        border: 0;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        margin-bottom: 18px;
+    }
+
+    .section-title {
+        font-weight: 700;
+        font-size: 15px;
+        color: #343a40;
+        border-bottom: 1px solid #e9ecef;
+        padding: 14px 18px;
+        margin: 0;
+    }
+
+    .section-body {
+        padding: 18px;
+    }
+
+    .info-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #6c757d;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .info-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .person-list {
+        line-height: 1.8;
+    }
+
+    .person-badge {
+        display: inline-block;
+        margin: 2px 4px 2px 0;
+        padding: 5px 9px;
+        border-radius: 5px;
+        background: #f1f3f5;
+        font-size: 13px;
+    }
+
+    .finance-card {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 14px;
+        background: #ffffff;
+        height: 100%;
+    }
+
+    .finance-label {
+        font-size: 12px;
+        color: #6c757d;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .finance-value {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .grand-total {
+        border-radius: 10px;
+        padding: 18px 20px;
+        background: #198754;
+        color: #ffffff;
+    }
+
+    .grand-total-label {
+        font-size: 13px;
+        text-transform: uppercase;
+        font-weight: 700;
+        opacity: 0.9;
+    }
+
+    .grand-total-value {
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    .table thead th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+    }
+
+    .audit-info {
+        font-size: 12px;
+        color: #6c757d;
+    }
+</style>
+
+<div class="service-page">
+
+```
+<div class="container-fluid px-3 px-md-4">
+
+    <!-- ===================================================== -->
+    <!-- SERVICE HEADER -->
+    <!-- ===================================================== -->
+
+    <div class="service-card mb-4">
+
+        <div class="service-header">
+
+            <div class="d-flex flex-column flex-md-row
+                        justify-content-between
+                        align-items-md-center gap-3">
+
+                <div>
+
+                    <div class="d-flex align-items-center gap-2 mb-1">
+
+                        <i class="fas fa-church text-primary"></i>
+
+                        <h4 class="mb-0 fw-bold">
+                            {{ service.name_of_service }}
+                        </h4>
+
+                    </div>
+
+                    <div class="text-muted small">
+
+                        <i class="far fa-calendar-alt me-1"></i>
+                        {{ service.date|date:"Y-m-d" }}
+
+                        <span class="mx-2">|</span>
+
+                        {{ entity.name }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="d-flex align-items-center gap-2">
+
+                    {% if service.posted_to_ledger %}
+
+                        <span class="badge bg-success px-3 py-2">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Posted
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge bg-warning text-dark px-3 py-2">
+                            <i class="fas fa-clock me-1"></i>
+                            Pending
+                        </span>
+
+                    {% endif %}
+
+
+                    <a
+                        href="{% url 'ChurchApp:service_activity_edit' entity.slug service.id %}"
+                        class="btn btn-sm btn-outline-primary"
+                    >
+                        <i class="fas fa-edit me-1"></i>
+                        Edit
+                    </a>
+
+
+                    <a
+                        href="{% url 'ChurchApp:service_list_manage' entity.slug %}"
+                        class="btn btn-sm btn-outline-secondary"
+                    >
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Back
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- BASIC SERVICE INFORMATION -->
+    <!-- ===================================================== -->
+
+    <div class="section-card">
+
+        <h6 class="section-title">
+            <i class="fas fa-info-circle text-primary me-2"></i>
+            Service Information
+        </h6>
+
+        <div class="section-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-3">
+
+                    <div class="info-label">
+                        Service
+                    </div>
+
+                    <div class="info-value">
+                        {{ service.name_of_service }}
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <div class="info-label">
+                        Date
+                    </div>
+
+                    <div class="info-value">
+                        {{ service.date|date:"Y-m-d" }}
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <div class="info-label">
+                        Attendance
+                    </div>
+
+                    <div class="info-value">
+                        {{ service.attendance }}
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <div class="info-label">
+                        Communicants
+                    </div>
+
+                    <div class="info-value">
+                        {{ service.communicants }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- MINISTRY TEAM -->
+    <!-- ===================================================== -->
+
+    <div class="section-card">
+
+        <h6 class="section-title">
+            <i class="fas fa-users text-primary me-2"></i>
+            Ministry Team
+        </h6>
+
+        <div class="section-body">
+
+            <div class="row g-4">
+
+                <!-- CLERGY -->
+
+                <div class="col-md-3">
+
+                    <div class="info-label">
+                        Clergy
+                    </div>
+
+                    <div class="person-list">
+
+                        {% for clergy in service.clergy.all %}
+
+                            <span class="person-badge">
+                                <i class="fas fa-user-tie me-1"></i>
+                                {{ clergy.full_name }}
+                            </span>
+
+                        {% empty %}
+
+                            <span class="text-muted">
+                                None
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- OFFICIANT -->
+
+                <div class="col-md-3">
+
+                    <div class="info-label">
+                        Officiant
+                    </div>
+
+                    {% if service.officiant %}
+
+                        <span class="person-badge">
+                            <i class="fas fa-user me-1"></i>
+                            {{ service.officiant.full_name }}
+                        </span>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            None
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- USHERS -->
+
+                <div class="col-md-3">
+
+                    <div class="info-label">
+                        Ushers
+                    </div>
+
+                    <div class="person-list">
+
+                        {% for usher in service.ushers.all %}
+
+                            <span class="person-badge">
+                                <i class="fas fa-user me-1"></i>
+                                {{ usher.full_name }}
+                            </span>
+
+                        {% empty %}
+
+                            <span class="text-muted">
+                                None
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- CHALICE ASSISTANTS -->
+
+                <div class="col-md-3">
+
+                    <div class="info-label">
+                        Chalice Assistants
+                    </div>
+
+                    <div class="person-list">
+
+                        {% for assistant in service.chalice_assistants.all %}
+
+                            <span class="person-badge">
+                                <i class="fas fa-wine-glass-alt me-1"></i>
+                                {{ assistant.full_name }}
+                            </span>
+
+                        {% empty %}
+
+                            <span class="text-muted">
+                                None
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- CHURCH OFFICERS -->
+    <!-- ===================================================== -->
+
+    <div class="section-card">
+
+        <h6 class="section-title">
+            <i class="fas fa-landmark text-primary me-2"></i>
+            Church Officers
+        </h6>
+
+        <div class="section-body">
+
+            <div class="row g-4">
+
+                <div class="col-md-4 col-lg-3">
+
+                    <div class="info-label">
+                        Priest Warden
+                    </div>
+
+                    <div class="info-value">
+                        {% if service.priest_warden %}
+                            {{ service.priest_warden }}
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4 col-lg-3">
+
+                    <div class="info-label">
+                        People's Warden
+                    </div>
+
+                    <div class="info-value">
+                        {% if service.peoples_warden %}
+                            {{ service.peoples_warden }}
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4 col-lg-3">
+
+                    <div class="info-label">
+                        Verger
+                    </div>
+
+                    <div class="info-value">
+                        {% if service.verger %}
+                            {{ service.verger }}
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4 col-lg-3">
+
+                    <div class="info-label">
+                        Parish-Clerk
+                    </div>
+
+                    <div class="info-value">
+                        {% if service.parish_clerk %}
+                            {{ service.parish_clerk }}
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4 col-lg-3">
+
+                    <div class="info-label">
+                        Accounts-Clerk
+                    </div>
+
+                    <div class="info-value">
+                        {% if service.accounts_clerk %}
+                            {{ service.accounts_clerk }}
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- PCC MEMBERS -->
+    <!-- ===================================================== -->
+
+    <div class="section-card">
+
+        <h6 class="section-title">
+            <i class="fas fa-users-cog text-primary me-2"></i>
+            PCC Members
+        </h6>
+
+        <div class="section-body">
+
+            {% if service.pcc_members %}
+
+                <div class="person-list">
+
+                    {% for member in service.pcc_members %}
+
+                        <span class="person-badge">
+                            <i class="fas fa-user me-1"></i>
+                            {{ member }}
+                        </span>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <span class="text-muted">
+                    No PCC members recorded.
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- BASIC FINANCIAL COLLECTIONS -->
+    <!-- ===================================================== -->
+
+    <div class="section-card">
+
+        <h6 class="section-title">
+            <i class="fas fa-coins text-primary me-2"></i>
+            Main Collections
+        </h6>
+
+        <div class="section-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-4">
+
+                    <div class="finance-card">
+
+                        <div class="finance-label">
+                            General Offertory
+                        </div>
+
+                        <div class="finance-value">
+                            ₵{{ service.general_offertory|floatformat:2|intcomma }}
+                        </div>
+
+                        <small class="text-muted">
+                            GL 4010
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="finance-card">
+
+                        <div class="finance-label">
+                            Dues
+                        </div>
+
+                        <div class="finance-value">
+                            ₵{{ service.dues|floatformat:2|intcomma }}
+                        </div>
+
+                        <small class="text-muted">
+                            GL 4011
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="finance-card">
+
+                        <div class="finance-label">
+                            Tithes
+                        </div>
+
+                        <div class="finance-value">
+                            ₵{{ service.tithes|floatformat:2|intcomma }}
+                        </div>
+
+                        <small class="text-muted">
+                            GL 4012
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- DAY BORN + GUILD -->
+    <!-- ===================================================== -->
+
+    <div class="row">
+
+        <div class="col-lg-6">
+
+            <div class="section-card h-100">
+
+                <h6 class="section-title">
+                    <i class="fas fa-calendar-day text-primary me-2"></i>
+                    Day-Born Offerings
+                </h6>
+
+                <div class="section-body">
+
+                    <div class="table-responsive">
+
+                        <table class="table table-sm table-bordered mb-0">
+
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Day</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                
+                                {% for day, amount in service.ordered_day_born_offerings %}
+                                    <tr>
+                                        <td>{{ day }}</td>
+                                        <td class="text-end">
+                                            ₵{{ amount|floatformat:2|intcomma }}
+                                        </td>
+                                    </tr>
+
+                                {% empty %}
+
+                                    <tr>
+                                        <td colspan="2"
+                                            class="text-muted text-center">
+                                            None
+                                        </td>
+                                    </tr>
+
+                                {% endfor %}
+
+                                <tr class="fw-bold">
+
+                                    <td>Total</td>
+
+                                    <td class="text-end">
+                                        ₵{{ service.day_born_total|floatformat:2|intcomma}}
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-lg-6">
+
+            <div class="section-card h-100">
+
+                <h6 class="section-title">
+                    <i class="fas fa-users text-primary me-2"></i>
+                    Guild Offerings
+                </h6>
+
+                <div class="section-body">
+
+                    <div class="table-responsive">
+
+                        <table class="table table-sm table-bordered mb-0">
+
+                            <thead class="table-light">
+
+                                <tr>
+                                    <th>Guild</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {% for item in service.guild_offerings %}
+
+                                    <tr>
+
+                                        <td>
+                                            {{ item.guild_name }}
+                                        </td>
+
+                                        <td class="text-end">
+                                            ₵{{ item.amount|floatformat:2|intcomma }}
+                                        </td>
+
+                                    </tr>
+
+                                {% empty %}
+
+                                    <tr>
+                                        <td colspan="2"
+                                            class="text-muted text-center">
+                                            None
+                                        </td>
+                                    </tr>
+
+                                {% endfor %}
+
+                                <tr class="fw-bold">
+
+                                    <td>Total</td>
+
+                                    <td class="text-end">
+                                        ₵{{ service.guild_total|floatformat:2|intcomma }}
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- SPECIAL COLLECTIONS -->
+    <!-- ===================================================== -->
+
+    <div class="section-card">
+
+        <h6 class="section-title">
+            <i class="fas fa-hand-holding-heart text-primary me-2"></i>
+            Special Collections
+        </h6>
+
+        <div class="section-body">
+
+            <div class="row g-4">
+
+                <!-- SPECIAL THANK -->
+
+                <div class="col-md-6 col-lg-3">
+
+                    <div class="finance-card">
+
+                        <div class="finance-label">
+                            Special Thank
+                        </div>
+
+                        {% for item in service.special_thank_offering %}
+
+                            <div class="d-flex justify-content-between
+                                        align-items-center mb-1">
+
+                                <span class="small">
+                                    {{ item.description|default:"Special" }}
+                                </span>
+
+                                <strong>
+                                    ₵{{ item.amount|floatformat:2|intcomma }}
+                                </strong>
+
+                            </div>
+
+                        {% empty %}
+
+                            <span class="text-muted small">
+                                None
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- EASTER -->
+
+                <div class="col-md-6 col-lg-3">
+
+                    <div class="finance-card">
+
+                        <div class="finance-label">
+                            Easter
+                        </div>
+
+                        {% for item in service.easter_offering %}
+
+                            <div class="d-flex justify-content-between
+                                        align-items-center mb-1">
+
+                                <span class="small">
+                                    {{ item.name|default:"Easter" }}
+                                </span>
+
+                                <strong>
+                                    ₵{{ item.amount|floatformat:2|intcomma }}
+                                </strong>
+
+                            </div>
+
+                        {% empty %}
+
+                            <span class="text-muted small">
+                                None
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- CHRISTMAS -->
+
+                <div class="col-md-6 col-lg-3">
+
+                    <div class="finance-card">
+
+                        <div class="finance-label">
+                            Christmas
+                        </div>
+
+                        {% for item in service.christmas_offering %}
+
+                            <div class="d-flex justify-content-between
+                                        align-items-center mb-1">
+
+                                <span class="small">
+                                    {{ item.name|default:"Christmas" }}
+                                </span>
+
+                                <strong>
+                                    ₵{{ item.amount|floatformat:2|intcomma }}
+                                </strong>
+
+                            </div>
+
+                        {% empty %}
+
+                            <span class="text-muted small">
+                                None
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- HARVEST -->
+
+                <div class="col-md-6 col-lg-3">
+
+                    <div class="finance-card">
+
+                        <div class="finance-label">
+                            Harvest
+                        </div>
+
+                        {% for item in service.harvest_offering %}
+
+                            <div class="d-flex justify-content-between
+                                        align-items-center mb-1">
+
+                                <span class="small">
+                                    {{ item.description|default:"Harvest" }}
+                                </span>
+
+                                <strong>
+                                    ₵{{ item.amount|floatformat:2|intcomma }}
+                                </strong>
+
+                            </div>
+
+                        {% empty %}
+
+                            <span class="text-muted small">
+                                None
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- OTHER COLLECTIONS -->
+
+            <div class="mt-4">
+
+                <div class="info-label mb-2">
+                    Other Collections
+                </div>
+
+                {% for item in service.other_collections %}
+
+                    <div class="d-flex justify-content-between
+                                border-bottom py-2">
+
+                        <span>
+                            {{ item.name|default:"Other" }}
+                        </span>
+
+                        <strong>
+                            ₵{{ item.amount|floatformat:2|intcomma }}
+                        </strong>
+
+                    </div>
+
+                {% empty %}
+
+                    <span class="text-muted">
+                        None
+                    </span>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- ACCOUNTING SUMMARY -->
+    <!-- ===================================================== -->
+
+    <div class="section-card">
+
+        <h6 class="section-title">
+            <i class="fas fa-file-invoice-dollar text-primary me-2"></i>
+            Accounting Summary
+        </h6>
+
+        <div class="section-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-sm mb-3">
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>
+                                Collection
+                            </th>
+
+                            <th>
+                                General Ledger Code
+                            </th>
+
+                            <th class="text-end">
+                                Amount
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+                            <td>General Offertory</td>
+                            <td><code>4010</code></td>
+                            <td class="text-end">
+                                ₵{{ service.general_offertory|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Dues</td>
+                            <td><code>4011</code></td>
+                            <td class="text-end">
+                                ₵{{ service.dues|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Tithes</td>
+                            <td><code>4012</code></td>
+                            <td class="text-end">
+                                ₵{{ service.tithes|floatformat:2|intcomma}}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Day-Born Collection</td>
+                            <td><code>4013</code></td>
+                            <td class="text-end">
+                                ₵{{ service.day_born_total|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Guild Collection</td>
+                            <td><code>4014</code></td>
+                            <td class="text-end">
+                                ₵{{ service.guild_total|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Special Thank Offering</td>
+                            <td><code>4015</code></td>
+                            <td class="text-end">
+                                ₵{{ service.special_thank_offering_total|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Easter Thank Offering</td>
+                            <td><code>4016</code></td>
+                            <td class="text-end">
+                                ₵{{ service.easter_total|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Christmas Thank Offering</td>
+                            <td><code>4017</code></td>
+                            <td class="text-end">
+                                ₵{{ service.christmas_total|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Harvest Thank Offering</td>
+                            <td><code>4018</code></td>
+                            <td class="text-end">
+                                ₵{{ service.harvest_total|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Other Collections</td>
+                            <td><code>4019</code></td>
+                            <td class="text-end">
+                                ₵{{ service.other_collections_total|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- GRAND TOTAL -->
+
+            <div class="grand-total">
+
+                <div class="d-flex flex-column flex-md-row
+                            justify-content-between
+                            align-items-md-center">
+
+                    <div>
+
+                        <div class="grand-total-label">
+                            Total Collections for the Day
+                        </div>
+
+                        <div class="small mt-1">
+                            Service financial total
+                        </div>
+
+                    </div>
+
+                    <div class="grand-total-value">
+                        ₵{{ service.grand_total|intcomma:2 }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- AUDIT INFORMATION -->
+    <!-- ===================================================== -->
+
+    <div class="section-card">
+
+        <h6 class="section-title">
+            <i class="fas fa-history text-primary me-2"></i>
+            Record Information
+        </h6>
+
+        <div class="section-body">
+
+            <div class="row audit-info">
+
+                <div class="col-md-4">
+                    <strong>Created:</strong>
+                    {{ service.created_at|date:"Y-m-d H:i" }}
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Last Updated:</strong>
+                    {{ service.updated_at|date:"Y-m-d H:i" }}
+                </div>
+
+                <div class="col-md-4">
+
+                    <strong>Status:</strong>
+
+                    {% if service.posted_to_ledger %}
+
+                        <span class="text-success fw-bold">
+                            Posted
+                        </span>
+
+                    {% else %}
+
+                        <span class="text-warning fw-bold">
+                            Pending
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+{% endblock %}

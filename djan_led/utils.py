@@ -1,5 +1,48 @@
 # djan_led/utils.py
+# djan_led/utils.py  (or core/utils.py)
 
+from django.urls import reverse
+from django_ledger.models import EntityModel
+
+# Map entity_type → URL name of that module's dashboard
+ENTITY_TYPE_DASHBOARD = {
+    "church": "ChurchApp:church_dashboard",
+    "school": "SchoolApp:school_dashboard",
+    "credit_union": "CreditUnion:credit_union_dashboard",
+    "pos": "POS:dashboard",
+    "hospital": "HospitalApp:dashboard",
+    "hotel": "HotelApp:dashboard",
+    "business": "BusinessApp:dashboard",
+    "ngo": "NGOApp:dashboard",
+    "other": "Tech:entity_management",
+}
+
+
+def get_module_home_url(entity):
+    """
+    Return the dashboard URL for the given entity based on its entity_type.
+    Falls back to the entity management page if the type is unknown.
+    """
+    if not entity:
+        return reverse("Tech:entity_management")
+
+    # Try to read entity_type from EntityConfig
+    entity_type = None
+    try:
+        entity_type = entity.config.entity_type
+    except Exception:
+        pass
+
+    if entity_type and entity_type in ENTITY_TYPE_DASHBOARD:
+        try:
+            return reverse(
+                ENTITY_TYPE_DASHBOARD[entity_type], kwargs={"slug": entity.slug}
+            )
+        except Exception:
+            pass
+
+    # Fallback
+    return reverse("Tech:entity_management")
 
 
 def user_can_access_entity(user, entity):
@@ -26,9 +69,11 @@ def get_visible_accounts(user, entity):
     if not coa:
         return AccountModel.objects.none()
 
-    base_qs = AccountModel.objects.filter(
-        coa_model=coa, active=True, depth__gt=1
-    ).order_by("code")
+    base_qs = (
+        AccountModel.objects.filter(coa_model=coa)
+        .exclude(role__startswith="root_")
+        .order_by("code")
+    )
 
     try:
         profile = user.djan_led_profile
@@ -120,6 +165,7 @@ def get_accounts_for_type(account_type, root_nodes):
             ("2020", "Accrued Expenses", "liability", "credit", root_liabilities),
             ("2030", "Bank Loans", "liability", "credit", root_liabilities),
             ("3010", "Owner's Equity", "equity", "credit", root_capital),
+            ("3099", "Opening Balance Equity", "equity", "credit", root_capital),
             ("3020", "Retained Earnings", "equity", "credit", root_capital),
             
             
@@ -155,7 +201,7 @@ def get_accounts_for_type(account_type, root_nodes):
             ("6112", "Depreciation Expense - Buildings", "expense", "debit", root_expenses),
             ("6113", "Depreciation Expense - Vehicles",  "expense", "debit", root_expenses),
             ("6114", "Depreciation Expense - Furniture & Equipment", "expense", "debit", root_expenses),
-            # Accumulated Depreciation (contra‑assets)
+            # Accumulated Depreciation (contra-assets)
             ("1115", "Accumulated Depreciation - Land", "asset", "credit", root_assets),
             ("1116", "Accumulated Depreciation - Buildings", "asset", "credit", root_assets),
             ("1117", "Accumulated Depreciation - Vehicles", "asset", "credit", root_assets),
@@ -175,6 +221,7 @@ def get_accounts_for_type(account_type, root_nodes):
             ("2020", "Accrued Expenses", "liability", "credit", root_liabilities),
             ("2030", "Bank Loans", "liability", "credit", root_liabilities),
             ("3010", "Owner's Equity", "equity", "credit", root_capital),
+            ("3099", "Opening Balance Equity", "equity", "credit", root_capital),
             ("3020", "Retained Earnings", "equity", "credit", root_capital),
             ("4010", "Tuition Revenue", "revenue", "credit", root_income),
             ("4020", "Donations", "revenue", "credit", root_income),
@@ -197,62 +244,114 @@ def get_accounts_for_type(account_type, root_nodes):
             ("6111", "Depreciation Expense - Land", "expense", "debit", root_expenses),
             ("6112", "Depreciation Expense - Buildings", "expense", "debit", root_expenses),
             ("6113", "Depreciation Expense - Vehicles", "expense", "debit", root_expenses),
-            ("6114", "Depreciation Expense - Furniture & Equipment", "expense", "debit", root_expenses),
-            # Accumulated Depreciation (contra‑assets)
+            ("6114", "Depreciation Expense - Furniture & Equipment",
+                "expense",
+                "debit",
+                root_expenses,
+            ),
+            # Accumulated Depreciation (contra-assets)
             ("1115", "Accumulated Depreciation - Land", "asset", "credit", root_assets),
-            ("1116", "Accumulated Depreciation - Buildings", "asset", "credit", root_assets),
-            ("1117", "Accumulated Depreciation - Vehicles", "asset", "credit", root_assets),
-            ("1118", "Accumulated Depreciation - Furniture & Equipment", "asset", "credit", root_assets),
+            (
+                "1116",
+                "Accumulated Depreciation - Buildings",
+                "asset",
+                "credit",
+                root_assets,
+            ),
+            (
+                "1117",
+                "Accumulated Depreciation - Vehicles",
+                "asset",
+                "credit",
+                root_assets,
+            ),
+            (
+                "1118",
+                "Accumulated Depreciation - Furniture & Equipment",
+                "asset",
+                "credit",
+                root_assets,
+            ),
         ]
 
-    elif account_type == 'credit_union':
+    elif account_type == "credit_union":
         return [
-            ("1010", "Cash", "asset", "debit", root_assets),
-            ("1020", "Bank", "asset", "debit", root_assets),
-            ("1030", "Accounts Receivable", "asset", "debit", root_assets),
-            ("1040", "Inventory", "asset", "debit", root_assets),
-            ("1050", "Prepaid Expenses", "asset", "debit", root_assets),
-            ("1060", "Office Equipment", "asset", "debit", root_assets),
-            ("1070", "Buildings", "asset", "debit", root_assets),
-            ("1080", "Loan Portfolio", "asset", "debit", root_assets),
-            ("1080", "Loan Portfolio", "asset", "debit", root_assets),
-            #
-            ("2010", "Accounts Payable", "liability", "credit", root_liabilities),
-            ("2020", "Member Deposits", "liability", "credit", root_liabilities),
-            ("2030", "Bank Loans", "liability", "credit", root_liabilities),
-            #
-            ("3010", "Owner's Equity", "equity", "credit", root_capital),
-            ("3011", "Share Capital", "equity", "credit", root_capital),
-            ("3020", "Retained Earnings", "equity", "credit", root_capital),
-            #
-            ("4010", "Interest Income", "revenue", "credit", root_income),
-            ("4020", "Donations", "revenue", "credit", root_income),
-            ("5010", "Interest Expense", "expense", "debit", root_expenses),
-            #
-            ("6010", "Salaries Expense", "expense", "debit", root_expenses),
-            ("6020", "Rent Expense", "expense", "debit", root_expenses),
-            ("6030", "Utilities Expense", "expense", "debit", root_expenses),
-            ("6040", "Office Supplies Expense", "expense", "debit", root_expenses),
-            ("6050", "Insurance Expense", "expense", "debit", root_expenses),
-            ("1090", "Fixed Assets - Cost", "asset", "debit", root_assets),
-            ("1099", "Accumulated Depreciation", "asset", "credit", root_assets),
-            ("6060", "Depreciation Expense", "expense", "debit", root_expenses),
-            
-            ("1110", "Property, Plant & Equipment", "asset", "debit", root_assets),
-            ("1111", "Land", "asset", "debit", root_assets),
-            ("1112", "Buildings", "asset", "debit", root_assets),
-            ("1113", "Vehicles", "asset", "debit", root_assets),
-            ("1114", "Furniture & Equipment", "asset", "debit", root_assets),
-            # ... existing expense accounts ...
-            ("6111", "Depreciation Expense - Land", "expense", "debit", root_expenses),
-            ("6112", "Depreciation Expense - Buildings", "expense", "debit", root_expenses),
-            ("6113", "Depreciation Expense - Vehicles",  "expense", "debit", root_expenses),
-            ("6114", "Depreciation Expense - Furniture & Equipment", "expense", "debit", root_expenses),
-            # Accumulated Depreciation (contra‑assets)
-            ("1115", "Accumulated Depreciation - Land", "asset", "credit", root_assets),
-            ("1116", "Accumulated Depreciation - Buildings", "asset", "credit", root_assets),
-            ("1117", "Accumulated Depreciation - Vehicles", "asset", "credit", root_assets),
+            # ===== ASSETS (1xxx) =====
+            ("1010", "Cash",                                "asset",     "debit",  root_assets),
+            ("1020", "Bank",                                "asset",     "debit",  root_assets),
+            ("1030", "Accounts Receivable",                 "asset",     "debit",  root_assets),
+            ("1040", "Inventory",                           "asset",     "debit",  root_assets),
+            ("1050", "Prepaid Expenses",                    "asset",     "debit",  root_assets),
+            ("1060", "Office Equipment",                    "asset",     "debit",  root_assets),
+            ("1070", "Buildings",                           "asset",     "debit",  root_assets),
+
+            # Loan book
+            ("1080", "Loan Portfolio",                      "asset",     "debit",  root_assets),
+            ("1081", "Allowance for Loan Losses",           "asset",     "credit", root_assets),  # NEW
+            ("1082", "Interest Receivable on Loans",        "asset",     "debit",  root_assets),  # NEW
+
+            # Investments
+            ("1100", "Investments",                         "asset",     "debit",  root_assets),  # NEW
+            ("1101", "Investment Income Receivable",        "asset",     "debit",  root_assets),  # NEW
+
+            # Fixed assets
+            ("1090", "Fixed Assets - Cost",                 "asset",     "debit",  root_assets),
+            ("1099", "Accumulated Depreciation",            "asset",     "credit", root_assets),
+            ("1110", "Property, Plant & Equipment",         "asset",     "debit",  root_assets),
+            ("1111", "Land",                                "asset",     "debit",  root_assets),
+            ("1112", "Buildings",                           "asset",     "debit",  root_assets),
+            ("1113", "Vehicles",                            "asset",     "debit",  root_assets),
+            ("1114", "Furniture & Equipment",               "asset",     "debit",  root_assets),
+            ("1115", "Accumulated Depreciation - Land",     "asset",     "credit", root_assets),
+            ("1116", "Accumulated Depreciation - Buildings", "asset",    "credit", root_assets),
+            ("1117", "Accumulated Depreciation - Vehicles", "asset",     "credit", root_assets),
             ("1118", "Accumulated Depreciation - Furniture & Equipment", "asset", "credit", root_assets),
+
+            # ===== LIABILITIES (2xxx) =====
+            ("2010", "Accounts Payable",                    "liability", "credit", root_liabilities),
+            ("2020", "Member Shares",                       "liability", "credit", root_liabilities),   # renamed
+            ("2021", "Member Savings",                      "liability", "credit", root_liabilities),   # NEW
+            ("2022", "Interest Payable on Savings",         "liability", "credit", root_liabilities),   # NEW
+            ("2023", "Dividend Payable",                    "liability", "credit", root_liabilities),   # NEW
+            ("2024", "Susu Savings",                        "liability", "credit", root_liabilities),   # NEW (optional)
+            ("2030", "Bank Loans",                          "liability", "credit", root_liabilities),
+
+            # ===== EQUITY (3xxx) =====
+            ("3010", "Owner's Equity",                      "equity",    "credit", root_capital),
+            ("3011", "Share Capital",                       "equity",    "credit", root_capital),
+            ("3012", "Statutory Reserve",                   "equity",    "credit", root_capital),   # NEW
+            ("3013", "Dividend Paid",                       "equity",    "debit",  root_capital),   # NEW (contra-equity)
+            ("3099", "Opening Balance Equity",              "equity",    "credit", root_capital),   # NEW
+            ("3020", "Retained Earnings",                   "equity",    "credit", root_capital),
+
+            # ===== REVENUE (4xxx) =====
+            ("4010", "Interest Income on Loans",            "revenue",   "credit", root_income),
+            ("4011", "Penalty / Late Fee Income",           "revenue",   "credit", root_income),   # NEW
+            ("4012", "Loan Processing Fee Income",          "revenue",   "credit", root_income),   # NEW
+            ("4013", "Membership Fee Income",               "revenue",   "credit", root_income),   # NEW
+            ("4014", "Investment Income",                   "revenue",   "credit", root_income),   # NEW
+            ("4015", "Other Operating Income",              "revenue",   "credit", root_income),   # NEW
+            ("4020", "Donations",                           "revenue",   "credit", root_income),
+
+            # ===== EXPENSES (6xxx) =====
+            ("6010", "Salaries Expense",                    "expense",   "debit",  root_expenses),
+            ("6020", "Rent Expense",                        "expense",   "debit",  root_expenses),
+            ("6030", "Utilities Expense",                   "expense",   "debit",  root_expenses),
+            ("6040", "Office Supplies Expense",             "expense",   "debit",  root_expenses),
+            ("6050", "Insurance Expense",                   "expense",   "debit",  root_expenses),
+            ("6060", "Depreciation Expense",                "expense",   "debit",  root_expenses),
+
+            # Loan loss
+            ("6100", "Loan Loss Provision",                 "expense",   "debit",  root_expenses),   # NEW (was 5010)
+
+            # Savings cost
+            ("6110", "Interest Expense on Savings",         "expense",   "debit",  root_expenses),   # NEW
+
+            # Depreciation breakdown
+            ("6111", "Depreciation Expense - Land",         "expense",   "debit",  root_expenses),
+            ("6112", "Depreciation Expense - Buildings",    "expense",   "debit",  root_expenses),
+            ("6113", "Depreciation Expense - Vehicles",     "expense",   "debit",  root_expenses),
+            ("6114", "Depreciation Expense - Furniture & Equipment", "expense", "debit", root_expenses),
         ]
 
     elif account_type == 'pos':
@@ -263,6 +362,7 @@ def get_accounts_for_type(account_type, root_nodes):
             ("1060", "Office Equipment", "asset", "debit", root_assets),
             ("2010", "Accounts Payable", "liability", "credit", root_liabilities),
             ("3010", "Owner's Equity", "equity", "credit", root_capital),
+            ("3099", "Opening Balance Equity", "equity", "credit", root_capital),
             ("4010", "Sales Revenue", "revenue", "credit", root_income),
             ("5010", "Cost of Goods Sold", "expense", "debit", root_expenses),
             ("6010", "Salaries Expense", "expense", "debit", root_expenses),
@@ -281,7 +381,7 @@ def get_accounts_for_type(account_type, root_nodes):
             ("6112", "Depreciation Expense - Buildings", "expense", "debit", root_expenses),
             ("6113", "Depreciation Expense - Vehicles", "expense", "debit", root_expenses),
             ("6114", "Depreciation Expense - Furniture & Equipment", "expense", "debit", root_expenses),
-            # Accumulated Depreciation (contra‑assets)
+            # Accumulated Depreciation (contra-assets)
             ("1115", "Accumulated Depreciation - Land", "asset", "credit", root_assets),
             ("1116", "Accumulated Depreciation - Buildings", "asset", "credit", root_assets),
             ("1117", "Accumulated Depreciation - Vehicles", "asset", "credit", root_assets),
@@ -297,6 +397,7 @@ def get_accounts_for_type(account_type, root_nodes):
             ("1060", "Office Equipment", "asset", "debit", root_assets),
             ("2010", "Accounts Payable", "liability", "credit", root_liabilities),
             ("3010", "Owner's Equity", "equity", "credit", root_capital),
+            ("3099", "Opening Balance Equity", "equity", "credit", root_capital),
             ("4010", "Revenue", "revenue", "credit", root_income),
             ("5010", "Cost of Goods Sold", "expense", "debit", root_expenses),
             ("6010", "Salaries Expense", "expense", "debit", root_expenses),
@@ -315,7 +416,7 @@ def get_accounts_for_type(account_type, root_nodes):
             ("6112", "Depreciation Expense - Buildings", "expense", "debit", root_expenses),
             ("6113", "Depreciation Expense - Vehicles", "expense", "debit", root_expenses),
             ("6114", "Depreciation Expense - Furniture & Equipment", "expense", "debit", root_expenses),
-            # Accumulated Depreciation (contra‑assets)
+            # Accumulated Depreciation (contra-assets)
             ("1115", "Accumulated Depreciation - Land", "asset", "credit", root_assets),
             ("1116", "Accumulated Depreciation - Buildings", "asset", "credit", root_assets),
             ("1117", "Accumulated Depreciation - Vehicles", "asset", "credit", root_assets),

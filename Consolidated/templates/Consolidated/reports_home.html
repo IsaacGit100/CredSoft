@@ -1,0 +1,111 @@
+{% extends 'Consolidated/base_consolidated.html' %}
+
+{% block consolidated_content %}
+<div class="rh-page">
+
+    <!-- Header -->
+    <div class="rh-header">
+        <h2>{{ entity_config.organization_name|default:"Consolidated Reports" }}</h2>
+        <h3>Reports Home</h3>
+        <div class="rh-sub">
+            {% if current_entity %}
+                Viewing: <strong>{{ current_entity.name }}</strong>
+            {% elif consolidated_mode %}
+                Viewing: <strong>All Parishes</strong>
+            {% else %}
+                No parish selected — <a href="{% url 'Consolidated:select_context' %}">select one</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick links to change selection -->
+    <div style="text-align:center; margin-bottom:24px;">
+        <a href="{% url 'Consolidated:select_context' %}" class="btn btn-outline-primary">
+            <i class="fas fa-exchange-alt"></i> Change Parish Selection
+        </a>
+    </div>
+
+    <!-- FINANCIAL -->
+    <h4 class="rh-section">Financial Reports</h4>
+    <div class="rh-grid">
+        <a href="{% url 'Consolidated:consolidated_trial_balance' %}" class="rh-tile">
+            <div class="rh-icon"><i class="fas fa-balance-scale"></i></div>
+            <div class="rh-title">Trial Balance</div>
+            <div class="rh-desc">DR = CR proof across all parishes.</div>
+        </a>
+        <a href="{% url 'Consolidated:consolidated_income_statement' %}" class="rh-tile">
+            <div class="rh-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="rh-title">Income Statement</div>
+            <div class="rh-desc">Revenue, expenses and net income.</div>
+        </a>
+        <a href="{% url 'Consolidated:consolidated_balance_sheet' %}" class="rh-tile">
+            <div class="rh-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div class="rh-title">Balance Sheet</div>
+            <div class="rh-desc">Assets, liabilities and equity.</div>
+        </a>
+        <a href="{% url 'Consolidated:consolidated_cash_flow' %}" class="rh-tile">
+            <div class="rh-icon"><i class="fas fa-water"></i></div>
+            <div class="rh-title">Cash Flow</div>
+            <div class="rh-desc">Operating, investing, financing.</div>
+        </a>
+    </div>
+
+    <!-- MEMBERSHIP & OPERATIONS -->
+    <h4 class="rh-section">Membership &amp; Operations</h4>
+    <div class="rh-grid">
+        <a href="{% url 'Consolidated:report_members' %}" class="rh-tile">
+            <div class="rh-icon"><i class="fas fa-users"></i></div>
+            <div class="rh-title">Members</div>
+            <div class="rh-desc">List across parishes with search.</div>
+        </a>
+        <a href="{% url 'Consolidated:report_clergy' %}" class="rh-tile">
+            <div class="rh-icon"><i class="fas fa-user-tie"></i></div>
+            <div class="rh-title">Clergy</div>
+            <div class="rh-desc">All clergy and their postings.</div>
+        </a>
+        <a href="{% url 'Consolidated:report_services' %}" class="rh-tile">
+            <div class="rh-icon"><i class="fas fa-church"></i></div>
+            <div class="rh-title">Services</div>
+            <div class="rh-desc">Service registrations and collections.</div>
+        </a>
+        <a href="{% url 'Consolidated:report_assets' %}" class="rh-tile">
+            <div class="rh-icon"><i class="fas fa-hand-holding-usd"></i></div>
+            <div class="rh-title">Fixed Assets</div>
+            <div class="rh-desc">Land, Buildings, Vehicles, Equipment.</div>
+        </a>
+    </div>
+
+</div>
+
+<style>
+    .rh-page       { padding: 24px; max-width: 1200px; margin: 0 auto; }
+    .rh-header     { background: #fff; padding: 20px; border-radius: 10px;
+                     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                     text-align: center; margin-bottom: 20px; }
+    .rh-header h2  { margin: 0; color: #1e3a5f; font-size: 20px; }
+    .rh-header h3  { margin: 12px 0 4px; color: #1a56db; font-size: 16px; }
+    .rh-sub        { color: #6b7280; font-size: 13px; }
+    .rh-sub a      { color: #1a56db; }
+
+    .rh-section    { color: #374151; font-size: 13px; font-weight: 700;
+                     text-transform: uppercase; letter-spacing: 0.6px;
+                     margin: 24px 0 12px; }
+
+    .rh-grid       { display: grid;
+                     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                     gap: 12px; }
+
+    .rh-tile       { display: block; background: #fff; padding: 18px;
+                     border-radius: 10px; text-decoration: none;
+                     color: inherit;
+                     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                     border-left: 4px solid #1a56db;
+                     transition: transform 0.12s, box-shadow 0.12s; }
+    .rh-tile:hover { transform: translateY(-2px);
+                     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+                     color: inherit; text-decoration: none; }
+    .rh-icon       { font-size: 22px; color: #1a56db; margin-bottom: 8px; }
+    .rh-title      { font-size: 14px; font-weight: 700; color: #1e3a5f; }
+    .rh-desc       { color: #6b7280; font-size: 12px; margin-top: 4px; }
+</style>
+{% endblock %}

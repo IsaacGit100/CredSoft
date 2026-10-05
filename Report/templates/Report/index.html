@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container" style="max-width:1000px; padding:24px;">
+
+    <!-- Header -->
+    <div style="text-align:center; border-bottom:2px solid #1a56db;
+                padding-bottom:14px; margin-bottom:24px;">
+        {% if entity_config.logo %}
+            <img src="{{ entity_config.logo.url }}" alt=""
+                 style="max-height:60px; margin-bottom:6px;">
+        {% endif %}
+        <h2 style="margin:0; color:#1e3a5f;">
+            {{ entity_config.organization_name|default:"Organization" }}
+        </h2>
+        <h3 style="margin-top:14px; margin-bottom:0; font-size:16px; color:#1a56db;">
+            {{ entity_config.display_name|default:entity.name }}
+        </h3>
+        <div style="color:#6b7280; font-size:13px; margin-top:4px;">
+            Financial Reports
+        </div>
+    </div>
+
+    <!-- Tiles -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;">
+
+        <a href="{% url 'Report:finance_dashboard' entity.slug %}" style="text-decoration:none;">
+            <div style="background:white; border-left:4px solid #1a56db; padding:16px 18px;
+                        border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                <div style="font-weight:700; color:#1e3a5f; font-size:15px;">
+                    <i class="fas fa-chart-pie"></i> Finance Dashboard
+                </div>
+                <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                    One-page overview of cash, income and balance position.
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'Report:trial_balance' entity.slug %}" style="text-decoration:none;">
+            <div style="background:white; border-left:4px solid #1a56db; padding:16px 18px;
+                        border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                <div style="font-weight:700; color:#1e3a5f; font-size:15px;">
+                    <i class="fas fa-balance-scale"></i> Trial Balance
+                </div>
+                <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                    Prove DR = CR for a period.
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'Report:journal_list' entity.slug %}" style="text-decoration:none;">
+            <div style="background:white; border-left:4px solid #1a56db; padding:16px 18px;
+                        border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                <div style="font-weight:700; color:#1e3a5f; font-size:15px;">
+                    <i class="fas fa-book"></i> Journal List
+                </div>
+                <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                    All posted journal lines for a period.
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'Report:income_statement' entity.slug %}" style="text-decoration:none;">
+            <div style="background:white; border-left:4px solid #16a34a; padding:16px 18px;
+                        border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                <div style="font-weight:700; color:#1e3a5f; font-size:15px;">
+                    <i class="fas fa-chart-line"></i> Income Statement
+                </div>
+                <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                    Revenue - Expenses = Net Income.
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'Report:balance_sheet' entity.slug %}" style="text-decoration:none;">
+            <div style="background:white; border-left:4px solid #0891b2; padding:16px 18px;
+                        border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                <div style="font-weight:700; color:#1e3a5f; font-size:15px;">
+                    <i class="fas fa-file-invoice-dollar"></i> Balance Sheet
+                </div>
+                <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                    Assets = Liabilities + Equity as at a date.
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'Report:cash_flow' entity.slug %}" style="text-decoration:none;">
+            <div style="background:white; border-left:4px solid #f59e0b; padding:16px 18px;
+                        border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                <div style="font-weight:700; color:#1e3a5f; font-size:15px;">
+                    <i class="fas fa-water"></i> Cash Flow Statement
+                </div>
+                <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                    Operating, Investing, Financing movements.
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'Report:trans_records' entity.slug %}" style="text-decoration:none;">
+            <div style="background:white; border-left:4px solid #7c3aed; padding:16px 18px;
+                        border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                <div style="font-weight:700; color:#1e3a5f; font-size:15px;">
+                    <i class="fas fa-receipt"></i> Transaction Records
+                </div>
+                <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                    All Trans rows in a date range.
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'Report:journal_records' entity.slug %}" style="text-decoration:none;">
+            <div style="background:white; border-left:4px solid #dc2626; padding:16px 18px;
+                        border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                <div style="font-weight:700; color:#1e3a5f; font-size:15px;">
+                    <i class="fas fa-search-dollar"></i> Journal Records
+                </div>
+                <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                    Journal lines by account code/name + date.
+                </div>
+            </div>
+        </a>
+
+    </div>
+
+    <div style="text-align:center; margin-top:30px;">
+        <a href="{% url 'ChurchApp:church_dashboard' entity.slug %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

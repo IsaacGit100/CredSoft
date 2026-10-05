@@ -1,102 +1,175 @@
-<!DOCTYPE html>
-<html>
+{% extends 'base.html' %}
 {% load humanize %}
-<head>
-    <title>All Loans</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .guarantee-amount {
-            font-weight: bold;
-            color: #28a745;
-        }
-        .member-id {
-            font-size: 0.85em;
-            color: #6c757d;
-        }
-        .no-guarantors {
-            color: #6c757d;
-            font-style: italic;
-        }
-        .debug-info {
-            font-size: 0.7em;
-            color: #dc3545;
-        }
-    </style>
-</head>
-<body>
-    <div class="container mt-4">
-        <h1>All Loans</h1>
-        
-        <div class="mb-3">
-            <a href="{% url 'LoanApp:create_loan' entity.slug %}" class="btn btn-primary">New Loan Application</a>
-            <a href="{% url 'LoanApp:loans_home' entity.slug %}" class = "btn btn-primary">Exit<a/a>
-        </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Loans ({{ total_loans }})</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Loan ID</th>
-                                <th>Mast ID</th>
-                                <th>Master Name</th>
-                                <th>Balance</th>
-                                <th>Guaranteed Amount</th>
-                                <th>Purpose</th>
-                                <th>Mon Ded</th>
-                                <th>Int Ded</th>        
-                                <th>Due Date</th>
-                                <th>Due Days</th>
-                                <th>OverDue Days</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for loan in loans %}
-                            <tr>
-                                <td> {{ loan.id }}</td>
-                                <td> {{ loan.master_id }}</td>
-                                <td> {{ loan.master_name }}</td>                          
-                                <td>₵{{ loan.loan_balance|intcomma:2 }}</td>
-                                <td>
-                                    {% if loan.total_guaranteed > 0 %}
-                                        <span class="guarantee-amount">
-                                            ₵{{ loan.total_guaranteed|intcomma:2 }}
-                                        </span>
-                                        <br>
-                                        <small class="text-muted">
-                                            ({{ loan.guarantor_count }} guarantor{{ loan.guarantor_count|pluralize }})
-                                        </small>
-                                    {% else %}
-                                        <span class="no-guarantors">No guarantors</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ loan.purpose|default:"-" }}</td>
-                                <td>₵{{ loan.due_repayment|intcomma:2 }}</td>
-                                <td>₵{{ loan.due_interest|intcomma:2 }}</td>
-                                <td>{{ loan.due_date }}</td>
-                                <td>{{ loan.due_days }}</td>
-                                <td>{{ loan.overdue_days }}
-                                <td>{{ loan.status }}</td>
-                                <td>
-                                    <a href="{% url 'LoanApp:loan_detail' entity.slug loan.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="8" class="text-center">No loans found.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+{% block content %}
+<style>
+    .ll-page { padding:20px; max-width:1400px; margin:0 auto; }
+    .ll-header { display:flex; justify-content:space-between; align-items:center;
+                 margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+    .ll-header h2 { margin:0; color:#1e3a5f; font-size:20px; }
+    .ll-card { background:#fff; border-radius:10px;
+               box-shadow:0 1px 3px rgba(0,0,0,0.08); margin-bottom:16px; overflow:hidden; }
+    .ll-tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
+                margin-bottom:16px; }
+    .ll-tile { background:#fff; border-radius:8px; padding:14px 18px;
+               box-shadow:0 1px 3px rgba(0,0,0,0.08); border-left:4px solid #1a56db; }
+    .ll-tile .lbl { font-size:11px; text-transform:uppercase;
+                    color:#6b7280; font-weight:700; letter-spacing:0.4px; }
+    .ll-tile .val { font-size:20px; font-weight:700; color:#1e3a5f; margin-top:4px; }
+    .ll-filter { display:flex; gap:10px; padding:14px; background:#f9fafb;
+                 border-bottom:1px solid #e5e7eb; flex-wrap:wrap; align-items:end; }
+    .ll-filter .grow { flex:1; min-width:200px; }
+    .ll-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .ll-table th { text-align:left; padding:10px 12px; background:#f3f4f6;
+                   font-size:11px; font-weight:700; color:#374151;
+                   border-bottom:2px solid #e5e7eb; text-transform:uppercase;
+                   letter-spacing:0.3px; }
+    .ll-table td { padding:8px 12px; border-bottom:1px solid #f3f4f6; }
+    .ll-table td.num { text-align:right; font-family:monospace; }
+    .ll-table tr:hover td { background:#f9fafb; }
+    .ll-badge { padding:2px 8px; border-radius:10px; font-size:10px;
+                font-weight:700; text-transform:uppercase; }
+    .ll-empty { padding:40px; text-align:center; color:#9ca3af; }
+</style>
+
+<div class="ll-page">
+
+    <div class="ll-header">
+        <div>
+            <h2><i class="fas fa-list"></i> Loan Register</h2>
+            <div style="color:#6b7280; font-size:13px;">{{ entity.name }}</div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a href="{% url 'LoanApp:loan_list_pdf' entity.slug %}"
+               class="btn btn-outline-danger" target="_blank">
+                <i class="fas fa-file-pdf"></i> PDF
+            </a>
+            <a href="{% url 'LoanApp:loan_list_excel' entity.slug %}"
+               class="btn btn-outline-success">
+                <i class="fas fa-file-excel"></i> Excel
+            </a>
+            <a href="{% url 'LoanApp:loan_application' entity.slug %}"
+               class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Application
+            </a>
+            <a href="{% url 'CreditUnion:credit_union_dashboard' entity.slug %}"
+               class="btn btn-secondary">
+                <i class="fas fa-times"></i> Close
+            </a>
         </div>
     </div>
-</body>
-</html>
+
+    <!-- Tiles -->
+    <div class="ll-tiles">
+        <div class="ll-tile">
+            <div class="lbl">Total Loans</div>
+            <div class="val">{{ count }}</div>
+        </div>
+        <div class="ll-tile" style="border-left-color:#1a56db;">
+            <div class="lbl">Total Principal</div>
+            <div class="val">₵{{ totals.total_principal|default:0|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="ll-tile" style="border-left-color:#dc2626;">
+            <div class="lbl">Outstanding Balance</div>
+            <div class="val">₵{{ totals.total_balance|default:0|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="ll-tile" style="border-left-color:#16a34a;">
+            <div class="lbl">Principal Repaid</div>
+            <div class="val">₵{{ totals.total_principal_paid|default:0|floatformat:2|intcomma }}</div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="ll-card">
+        <form method="get" class="ll-filter">
+            <div class="grow">
+                <label style="display:block; font-size:12px; font-weight:600; color:#374151;">Search</label>
+                <input type="text" name="q" value="{{ search }}"
+                       placeholder="Loan number, member, purpose..."
+                       style="width:100%; padding:8px 12px; border:1px solid #d1d5db; border-radius:6px;">
+            </div>
+            <div style="width:180px;">
+                <label style="display:block; font-size:12px; font-weight:600; color:#374151;">Status</label>
+                <select name="status" style="width:100%; padding:8px 12px; border:1px solid #d1d5db; border-radius:6px;">
+                    <option value="">All Statuses</option>
+                    {% for value, label in statuses %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Filter</button>
+            {% if search or status_filter %}
+                <a href="{% url 'LoanApp:loan_list' entity.slug %}" class="btn btn-secondary">Clear</a>
+            {% endif %}
+        </form>
+
+        <table class="ll-table">
+            <thead>
+                <tr>
+                    <th style="width:10%;">Loan No.</th>
+                    <th style="width:10%;">Date</th>
+                    <th style="width:20%;">Member</th>
+                    <th style="width:11%; text-align:right;">Principal</th>
+                    <th style="width:11%; text-align:right;">Balance</th>
+                    <th style="width:9%; text-align:right;">Rate</th>
+                    <th style="width:11%; text-align:center;">Guarantors</th>
+                    <th style="width:10%;">Status</th>
+                    <th style="width:8%; text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in loans %}
+                <tr>
+                    <td><code>{{ l.loan_no }}</code></td>
+                    <td>{{ l.date_applied|date:"d/m/Y" }}</td>
+                    <td>{{ l.member.full_name }}</td>
+                    <td class="num">₵{{ l.principal|floatformat:2|intcomma }}</td>
+                    <td class="num">₵{{ l.balance|floatformat:2|intcomma }}</td>
+                    <td class="num">{{ l.interest_rate|floatformat:2 }}%</td>
+                    <td style="text-align:center;">
+                        {% with gc=l.guarantors.count %}
+                            {% if gc > 0 %}
+                                <span class="ll-badge" style="background:#dbeafe; color:#1e40af;">
+                                    {{ gc }}
+                                </span>
+                            {% else %}
+                                <span style="color:#9ca3af;">—</span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% if l.status == "NEW" %}
+                            <span class="ll-badge" style="background:#fef3c7; color:#92400e;">{{ l.status }}</span>
+                        {% elif l.status == "ACTIVE" %}
+                            <span class="ll-badge" style="background:#d1fae5; color:#065f46;">{{ l.status }}</span>
+                        {% elif l.status == "COMPLETED" %}
+                            <span class="ll-badge" style="background:#e5e7eb; color:#374151;">{{ l.status }}</span>
+                        {% else %}
+                            <span class="ll-badge" style="background:#fee2e2; color:#991b1b;">{{ l.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:center; white-space:nowrap;">
+                        <a href="{% url 'LoanApp:loan_detail' entity.slug l.id %}"
+                           class="btn btn-sm btn-outline-primary" title="View">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{% url 'LoanApp:loan_edit' entity.slug l.id %}"
+                           class="btn btn-sm btn-outline-warning" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'LoanApp:loan_delete' entity.slug l.id %}"
+                           class="btn btn-sm btn-outline-danger" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="ll-empty">
+                    No loans found. <a href="{% url 'LoanApp:loan_application' entity.slug %}">Create one</a>.
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

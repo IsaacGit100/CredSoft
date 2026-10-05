@@ -1,8 +1,10 @@
 from django.apps import AppConfig
 
-class RecpayappConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'RecPayApp'  # Must match the app name in INSTALLED_APPS
+
+class RecPayAppConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "RecPayApp"
 
     def ready(self):
-        import RecPayApp.signals  # noqa
+        # import RecPayApp.signals  # noqa    ← delete or comment this line
+        pass

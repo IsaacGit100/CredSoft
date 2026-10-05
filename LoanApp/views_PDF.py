@@ -1,5 +1,3 @@
-
-# Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
@@ -106,7 +104,7 @@ def generate_loan_PDF(request, slug, loan_id):
     # Header Section - Right aligned address
     header_data = [
         [Paragraph("", normal_style), Paragraph("C/o St Andrews Ang. Church", right_aligned_style)],
-        [Paragraph("", normal_style), Paragraph("Abbosey Okai – Accra", right_aligned_style)],
+        [Paragraph("", normal_style), Paragraph("Abbosey Okai Accra", right_aligned_style)],
         [Paragraph("", normal_style), Paragraph(f"{loan.date_approved}", right_aligned_style)],
     ]
     
@@ -133,7 +131,7 @@ def generate_loan_PDF(request, slug, loan_id):
     
     # Main content
     content_text = f"""
-    This is to inform you that an amount of <b>¢{loan.principal:,.2f}</b> has been approved for you on 
+    This is to inform you that an amount of <b>{loan.principal:,.2f}</b> has been approved for you on 
     <b>{loan.date_approved}</b> based on the following conditions:
     """
     story.append(Paragraph(content_text, normal_style))
@@ -166,24 +164,24 @@ def generate_loan_PDF(request, slug, loan_id):
     
     # Approval details table with BOLD LABELS
     approval_data = [
-        [Paragraph('<b>Principal</b>', bold_style), Paragraph(f'¢{loan.principal:,.2f}', right_aligned_style),
+        [Paragraph('<b>Principal</b>', bold_style), Paragraph(f'₵{loan.principal:,.2f}', right_aligned_style),
         Paragraph('<b>Purpose</b>', bold_style), loan.purpose or 'Not specified'],
         
         
-        [Paragraph('<b>Process Fee (1%)</b>', bold_style), Paragraph(f'¢{processing_fee:,.2f}', right_aligned_style),
+        [Paragraph('<b>Process Fee (1%)</b>', bold_style), Paragraph(f'₵{processing_fee:,.2f}', right_aligned_style),
         Paragraph('<b>Moratorium</b>', bold_style), Paragraph(f'{loan.moratorium} months', right_aligned_style)],
         
-        [Paragraph('<b>Monthly Deduction</b>', bold_style), Paragraph(f'¢{loan.monthly_repayment:,.2f}', right_aligned_style),
+        [Paragraph('<b>Monthly Deduction</b>', bold_style), Paragraph(f'₵{loan.monthly_repayment:,.2f}', right_aligned_style),
         Paragraph('<b>Date Applied</b>', bold_style), Paragraph(str(loan.date_applied), right_aligned_style),],
         
         [Paragraph('<b>Interest Rate-Month</b>', bold_style), Paragraph(f'{loan.interest_rate}%', right_aligned_style), 
         Paragraph('<b>Disburse Date</b>', bold_style), Paragraph(str(loan.disbursement_date), right_aligned_style),],
         
-        [Paragraph('<b>Monthly Interest</b>', bold_style), Paragraph(f'¢{monthly_interest:,.2f}', right_aligned_style), 
+        [Paragraph('<b>Monthly Interest</b>', bold_style), Paragraph(f'₵{monthly_interest:,.2f}', right_aligned_style), 
         Paragraph('<b>Next repay date</b>', bold_style), Paragraph(str(loan.next_repayment_date), right_aligned_style),],
         
         [Paragraph('<b>No. Of Months</b>', bold_style), Paragraph(str(loan.loan_term), right_aligned_style), 
-        Paragraph('<b>Amount Guaranteed</b>', bold_style), Paragraph(f'¢{total_guaranteed:,.2f}', right_aligned_style),],
+        Paragraph('<b>Amount Guaranteed</b>', bold_style), Paragraph(f'₵{total_guaranteed:,.2f}', right_aligned_style),],
     ]
     
     approval_table = Table(approval_data, colWidths=[1.5*inch, 1.5*inch, 1.2*inch, 1.8*inch])
@@ -252,11 +250,11 @@ def generate_loan_PDF(request, slug, loan_id):
             schedule_data.append([
                 str(payment['month']),
                 str(payment['date']),
-                f"¢{payment.get('balance', 0):,.2f}",
-                f"¢{payment.get('principal', 0):,.2f}",
-                f"¢{payment.get('interest', 0):,.2f}",
-                f"¢{payment.get('total_payment', 0):,.2f}",
-                f"¢{payment.get('balance', 0) - payment.get('principal', 0):,.2f}",
+                f"₵{payment.get('balance', 0):,.2f}",
+                f"₵{payment.get('principal', 0):,.2f}",
+                f"₵{payment.get('interest', 0):,.2f}",
+                f"₵{payment.get('total_payment', 0):,.2f}",
+                f"₵{payment.get('balance', 0) - payment.get('principal', 0):,.2f}",
             ])
            
     except:
@@ -283,11 +281,11 @@ def generate_loan_PDF(request, slug, loan_id):
             schedule_data.append([
                 str(month),
                 next_date.strftime('%Y-%m-%d'),
-                f"¢{balance:,.2f}",
-                f"¢{principal_payment:,.2f}",
-                f"¢{interest:,.2f}",
-                f"¢{total_payment:,.2f}",
-                f"¢{ending_balance:,.2f}",
+                f"₵{balance:,.2f}",
+                f"₵{principal_payment:,.2f}",
+                f"₵{interest:,.2f}",
+                f"₵{total_payment:,.2f}",
+                f"₵{ending_balance:,.2f}",
             ])
             
             balance = ending_balance
@@ -356,12 +354,12 @@ def gua_list_pdf(request, slug):
         data.append([
             loan.id,
             f"{loan.master_name} (ID: {loan.master_id})",
-            f"¢{loan.loan_balance}",
+            f"₵{loan.loan_balance}",
             f"{loan.interest_rate}%",
             f"{loan.loan_term} months",
-            f"¢{loan.shortfall}",
+            f"₵{loan.shortfall}",
             guarantor_info,
-            f"¢{loan.total_guaranteed}"
+            f"₵{loan.total_guaranteed}"
         ])
     
     # Create table

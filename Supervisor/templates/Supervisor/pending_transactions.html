@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-
+{% load humanize %}
 {% block content %}
 <div class="container-fluid">
-    <h1>📋 Pending Transactions</h1>
+    <h1> Pending Transactions</h1>
     <p><strong>Entity:</strong> {{ entity.name }}</p>
     <p class="text-muted">Select transactions you want to post to the ledger.</p>
 
@@ -32,9 +32,9 @@
                         <td>{{ trans.date|date:"Y-m-d" }}</td>
                         <td>{{ trans.rec_vou_no }}</td>
                         <td>{{ trans.trans_type }}</td>
-                        <td>{{ trans.amount|floatformat:2 }}</td>
+                        <td>{{ trans.amount|floatformat:2|intcomma }}</td>
                         <td>{{ trans.ledger_code }} - {{ trans.ledger_name }}</td>
-                        <td>{{ trans.member.full_name|default:"Non‑member" }}</td>
+                        <td>{{ trans.member.full_name|default:"Non - member" }}</td>
                         <td>{{ trans.details|truncatechars:30 }}</td>
                         <td>
                         <a href="{% url 'RecPayApp:trans_view_pending' entity.slug trans.id %}" class="btn btn-sm btn-outline-info">View</a>   
@@ -52,7 +52,7 @@
 
         <div class="mt-3">
             <button type="submit" class="btn btn-success" onclick="return confirm('Post selected transactions to the ledger?')">
-                📤 Post Selected
+                 Post Selected
             </button>
             <a href="{% url 'Supervisor:super_home' entity.slug %}" class="btn btn-secondary">Cancel</a>
         </div>

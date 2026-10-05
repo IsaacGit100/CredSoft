@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container-fluid px-3">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>
+            <i class="fas fa-building text-primary"></i>
+            Fixed Asset Register  {{ entity.name }}
+        </h3>
+        <div class="d-flex gap-2">
+            <a href="{% url 'FixedAssets:run_depreciation' entity.slug %}"
+               class="btn btn-outline-primary">
+                <i class="fas fa-calculator"></i> Run Depreciation
+            </a>
+            <a href="{% url 'FixedAssets:asset_category_list' entity.slug %}"
+               class="btn btn-outline-secondary">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            <a href="{% url 'FixedAssets:fixed_asset_create' entity.slug %}"
+               class="btn btn-success">
+                <i class="fas fa-plus"></i> Register New Asset
+            </a>
+             <a href="{% url 'FixedAssets:fixed_asset_list_pdf' entity.slug %}"
+               class="btn btn-success">
+                <i class="fas fa-plus"></i> PDF
+            </a>
+
+             <a href="{% url 'FixedAssets:fixed_asset_list_excel' entity.slug %}"
+               class="btn btn-success">
+                <i class="fas fa-plus"></i> Excel
+            </a>
+
+
+             <a href="{% url 'FixedAssets:fixed_asset_home' entity.slug %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Close
+        </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-2 mb-3">
+        <div class="col-md-4">
+            <div class="card border-primary">
+                <div class="card-body py-2">
+                    <div class="text-muted small">Total Acquisition Cost</div>
+                    <h4 class="mb-0 text-primary">₵{{ total_cost|floatformat:2|intcomma }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-warning">
+                <div class="card-body py-2">
+                    <div class="text-muted small">Accumulated Depreciation</div>
+                    <h4 class="mb-0 text-warning">₵{{ total_accum_dep|floatformat:2|intcomma }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body py-2">
+                    <div class="text-muted small">Net Book Value</div>
+                    <h4 class="mb-0 text-success">₵{{ total_nbv|floatformat:2|intcomma }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="card card-body mb-3">
+        <div class="row g-2">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control form-control-sm"
+                       placeholder="Search by asset ID, name..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select form-select-sm">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}"
+                                {% if category_filter == cat.id|stringformat:"s" %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-sm btn-primary">Filter</button>
+                <a href="{% url 'FixedAssets:fixed_asset_list' entity.slug %}"
+                   class="btn btn-sm btn-outline-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Assets Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Acquired</th>
+                            <th>Payment</th>
+                            <th>Seller</th>
+                            <th class="text-end">Cost</th>
+                            <th class="text-end">Accum. Dep</th>
+                            <th class="text-end">NBV</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                                            <tbody>
+                        {% for a in assets %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><code>{{ a.asset_id }}</code></td>
+                            <td>
+                                <strong>{{ a.name }}</strong>
+                                {% if a.description %}
+                                    <br><small class="text-muted">{{ a.description|truncatechars:40 }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ a.category.name }}</td>
+                            <td>{{ a.acquisition_date|date:"Y-m-d" }}</td>
+                            <td>{{ a.payment_mode }}</td>
+                                {% if a.payment_mode %}
+                                    {{ a.get_payment_mode_display }}
+                                    {% if a.payment_mode == "cheque" and a.cheque_no %}
+                                        <br><small class="text-muted">Cheque: {{ a.cheque_no }}</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">N/A</span>
+                                {% endif %}
+                            <td>
+                                {% if a.seller_name %}
+                                    {{ a.seller_name }}
+                                    {% if a.seller_contact %}
+                                        <br><small class="text-muted">{{ a.seller_contact }}</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">N/A</span>
+                                {% endif %} 
+                            </td>
+                            <td class="text-end">₵{{ a.cost|floatformat:2|intcomma }}</td>
+                            <td class="text-end">₵{{ a.accumulated_depreciation|floatformat:2|intcomma }}</td>
+                            <td class="text-end">
+                                <strong>₵{{ a.book_value|floatformat:2|intcomma }}</strong>
+                            </td>
+                            <td class="text-center">
+                                {% if a.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Disposed</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if a.trans %}
+                                    {# Posted to Trans — lock everything #}
+                                    <span class="badge bg-success" title="Posted as {{ a.trans.rec_vou_no }}">
+                                        <i class="fas fa-lock"></i> Posted
+                                    </span>
+                                    <small class="d-block text-muted">{{ a.trans.rec_vou_no }}</small>
+                                {% else %}
+                                    {# Not posted — full access #}
+                                    <a href="{% url 'FixedAssets:fixed_asset_update' entity.slug a.pk %}"
+                                       class="btn btn-sm btn-outline-warning" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'FixedAssets:fixed_asset_delete' entity.slug a.pk %}"
+                                       class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    <a href="{% url 'FixedAssets:fixed_asset_post_to_trans' entity.slug a.pk %}"
+                                       class="btn btn-sm btn-primary" title="Post to Trans"
+                                       onclick="return confirm('Post this asset to Trans? Once posted it cannot be edited.')">
+                                        <i class="fas fa-upload"></i> Post
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center py-5 text-muted">
+                                <i class="fas fa-building fa-3x mb-3 d-block"></i>
+                                No fixed assets registered yet.
+                                <br><br>
+                                <a href="{% url 'FixedAssets:fixed_asset_create' entity.slug %}"
+                                   class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Register Your First Asset
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer count -->
+    {% if assets %}
+    <div class="text-muted small mt-2">
+        Showing {{ assets|length }} asset{{ assets|length|pluralize }}.
+    </div>
+    {% endif %}
+
+</div>
+
+<style>
+    code {
+        background: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 3px;
+        color: #d63384;
+        font-size: 0.85rem;
+    }
+    .table th, .table td {
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+    .card .card-body h4 {
+        font-weight: 700;
+    }
+</style>
+{% endblock %}

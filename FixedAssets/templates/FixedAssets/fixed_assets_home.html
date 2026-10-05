@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supervisor Menu - St. Andrews Credit Union</title>
+    <title>{% block title %}{{ entity_config.organization_name }}{% endblock %}</title>
     <style>
         * {
             margin: 0;
@@ -179,111 +179,63 @@
         
         <!-- Header -->
         <div class="header">
-            <h1>St. Andrews Credit Union</h1>
-            <p>Supervisor Control Panel</p>
+            <h1>{{ entity_config.organization_name }}</h1>
+            <h1> {{ entity.name }}
+            <p>Fixed Assets Menu</p>
         </div>
 
         <!-- Menu Grid - 2 columns with annotations -->
         <div class="menu-grid">
 
-
-             <!-- System Dashboard -->
-            <a href="{% url 'FixedAssets:asset_dashboard' entity.slug %}" class="menu-btn">
-                <div class="menu-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="menu-text">
-                    <h3>Fixed Assets Dashboard</h3>
-                    <p>Dashboard for Fixed Assets</p>
-                </div>
-            </a>
-
-            
             <!-- User Management -->
-            <a href="{% url 'FixedAssets:asset_list_manage' entity.slug %}" class="menu-btn">
+            <a href="{% url 'FixedAssets:fixed_asset_list' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="menu-text">
-                    <h3>Fixed Assets List Manage</h3>
+                    <h3>Fixed Assets List/Create/PDF/Excel</h3>
                     <p>Manage Fixed Assets</p>
                 </div>
             </a>
 
-            <!-- Member Settings -->
-            <a href="{% url 'FixedAssets:category_list_manage' entity.slug %}" class="menu-btn">
-                <div class="menu-icon">
-                    <i class="fas fa-sliders-h"></i>
-                </div>
-                <div class="menu-text">
-                    <h3>Fixed Assets Category Manage</h3>
-                    <p>Create, Edit, Delete Fixed Assets Category</p>
-                </div>
-            </a>
-
             <!-- Delete A Member -->
-            <a href="{% url 'FixedAssets:depreciation_list_manage' entity.slug %}" class="menu-btn">
+            <a href="{% url 'FixedAssets:asset_category_list' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
                     <i class="fas fa-trash-alt"></i>
                 </div>
                 <div class="menu-text">
-                    <h3>Fixed Assets Depreciation List</h3>
-                    <p>Fixed Assets Depreciations</p>
+                    <h3>Fixed Assets Category Entry/Lists/PDF/Excel</h3>
+                    <p>Fixed Assets Category List</p>
                 </div>
             </a>
 
-           
-
-            <!-- Delete History -->
-            <a href="{% url 'FixedAssets:fixed_asset_register' entity.slug  %}" class="menu-btn">
+            <!-- Member Settings -->
+            <a href="{% url 'FixedAssets:fixed_asset_create' entity.slug %}" class="menu-btn">
                 <div class="menu-icon">
-                    <i class="fas fa-history"></i>
+                    <i class="fas fa-sliders-h"></i>
                 </div>
                 <div class="menu-text">
-                    <h3>Fixed Asset Register</h3>
-                    <p>Fixed Asset Register</p>
+                    <h3>Create Fixed Assets</h3>
+                    <p>Create, Edit, Delete Fixed Assets Category</p>
                 </div>
             </a>
 
-            <!-- System Backup -->
             
-            <a href="{% url 'FixedAssets:post_depreciation' entity.slug %}" class="menu-btn">
+
+
+            <a href="{% url 'FixedAssets:run_depreciation' entity.slug %}" class="menu-btn">
                 <div class="menu-icon"><i class="fas fa-database"></i></div>
-                <div class="menu-text"><h3>Post Depreciation</h3>
-                    <p>Post Depreciation to Balance Sheet and Income & Expense Accounts</p></div>
+                <div class="menu-text">
+                    <h3>Update Depreciation to the Ledgers</h3>
+                    <p>Update Depreciation Schedule to the Ledgers</p></div>
             </a>
-
-            <a href="{% url 'FixedAssets:depreciation_schedule' entity.slug %}" class="menu-btn">
-                <div class="menu-icon"><i class="fas fa-database"></i></div>
-                <div class="menu-text"><h3>Depreciation Schedule</h3>
-                    <p>Depreciation Schedule Details</p></div>
-            </a>
-
-             <a href="{% url 'FixedAssets:fixed_assets_register_list' entity.slug %}" class="menu-btn">
-                <div class="menu-icon"><i class="fas fa-database"></i></div>
-                <div class="menu-text"><h3>Fixed Assets Registrar - List</h3>
-                    <p>Fixed Assets Registrar List</p></div>
-            </a>
-
-             <a href="{% url 'FixedAssets:fixed_assets_register_PDF' entity.slug %}" class="menu-btn">
-                <div class="menu-icon"><i class="fas fa-database"></i></div>
-                <div class="menu-text"><h3>Fixed Assets Registrar - PDF</h3>
-                    <p>Generate PDF of the Fixed Assets Registrar</p></div>
-            </a>
-
-             <a href="{% url 'FixedAssets:fixed_assets_register_excel' entity.slug %}" class="menu-btn">
-                <div class="menu-icon"><i class="fas fa-database"></i></div>
-                <div class="menu-text"><h3>Fixed Assets Registrar - Excel</h3>
-                    <p>Generate Excel of The Fixed Assets Registrar</p></div>
-            </a>
-
-
         </div>
+
 
         <!-- Footer with Main Menu Button -->
         <div class="footer">
-            <a href="{% url 'CreditUnion:union_dashboard' entity.slug %}" class="btn-main-menu">
-                <i class="fas fa-home me-2"></i> Back to Main Menu
+            <a href="{% url 'djan_led:back_to_home' entity.slug %}" class="btn-main-menu">
+                <i class="fas fa-home me-2"></i> Back to Home
             </a>
         </div>
 

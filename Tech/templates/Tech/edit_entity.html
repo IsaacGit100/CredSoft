@@ -18,6 +18,20 @@
                             {{ form.name }}
                             {{ form.name.errors }}
                         </div>
+                        <!-- Entity Type -->
+                        <div class="mb-3">
+                            <label for="{{ form.entity_type.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-tag"></i> {{ form.entity_type.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.entity_type }}
+                            {% if form.entity_type.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.entity_type.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.entity_type.help_text }}</small>
+                        </div>
                         <div class="mb-3">
                             {{ form.slug.label_tag }}
                             {{ form.slug }}

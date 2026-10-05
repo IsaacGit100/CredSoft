@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .sr-page { padding:20px; max-width:1400px; margin:0 auto; }
+    .sr-head { display:flex; justify-content:space-between; align-items:center;
+               margin-bottom:16px; }
+    .sr-head h2 { margin:0; color:#1e3a5f; font-size:20px; }
+
+    .sr-stats { display:grid; grid-template-columns:repeat(6, 1fr);
+                gap:10px; margin-bottom:16px; }
+    .sr-stat { padding:12px 14px; border-radius:8px; }
+    .sr-stat .lbl { font-size:10px; font-weight:700;
+                    text-transform:uppercase; letter-spacing:0.5px; }
+    .sr-stat .val { font-size:20px; font-weight:700; margin-top:4px;
+                    font-family:monospace; }
+    .sr-stat.total { background:#eff6ff; color:#1e40af; }
+    .sr-stat.ok    { background:#ecfdf5; color:#065f46; }
+    .sr-stat.warn  { background:#fef3c7; color:#92400e; }
+    .sr-stat.fail  { background:#fef2f2; color:#991b1b; }
+    .sr-stat.coa   { background:#f0f9ff; color:#075985; }
+    .sr-stat.users { background:#ede9fe; color:#5b21b6; }
+
+    .sr-toolbar { display:flex; gap:10px; align-items:center;
+                  margin-bottom:14px; flex-wrap:wrap; }
+    .sr-toolbar select, .sr-toolbar input {
+        padding:6px 10px; border:1px solid #d1d5db; border-radius:6px;
+        font-size:13px; }
+
+    table.sr { width:100%; border-collapse:collapse; font-size:13px;
+               background:#fff; border-radius:10px; overflow:hidden;
+               box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    table.sr th { background:#f3f4f6; padding:10px 12px; text-align:left;
+                  font-size:11px; text-transform:uppercase;
+                  letter-spacing:0.4px; color:#374151;
+                  border-bottom:2px solid #e5e7eb; }
+    table.sr td { padding:10px 12px; border-bottom:1px solid #f3f4f6;
+                  vertical-align:middle; }
+    table.sr tr:last-child td { border-bottom:none; }
+
+    .badge-check { display:inline-flex; align-items:center; justify-content:center;
+                   width:26px; height:26px; border-radius:6px;
+                   font-size:13px; font-weight:700; color:#fff; }
+    .badge-check.ok   { background:#10b981; }
+    .badge-check.no   { background:#ef4444; }
+    .badge-check.warn { background:#f59e0b; }
+
+    .pill { display:inline-block; padding:2px 8px; border-radius:10px;
+            font-size:10px; font-weight:700; text-transform:uppercase; }
+    .pill.ok   { background:#ecfdf5; color:#065f46; }
+    .pill.warn { background:#fef3c7; color:#92400e; }
+    .pill.fail { background:#fef2f2; color:#991b1b; }
+    .pill.dim  { background:#f3f4f6; color:#6b7280; }
+
+    .type-tag { display:inline-block; padding:3px 8px; border-radius:6px;
+                background:#ede9fe; color:#5b21b6;
+                font-size:10px; font-weight:700; text-transform:uppercase; }
+    .type-tag.church       { background:#fef3c7; color:#92400e; }
+    .type-tag.credit_union { background:#dbeafe; color:#1e40af; }
+    .type-tag.pos          { background:#e0e7ff; color:#4338ca; }
+    .type-tag.school       { background:#dcfce7; color:#166534; }
+    .type-tag.other        { background:#f3f4f6; color:#374151; }
+
+    .entity-name { font-weight:600; color:#111827; }
+    .entity-slug { color:#6b7280; font-size:11px;
+                   font-family:monospace; margin-top:2px; }
+    .summary { color:#6b7280; font-size:11px; margin-top:2px; }
+    .last-visit { color:#4b5563; font-size:12px; font-family:monospace; }
+</style>
+
+<div class="sr-page">
+
+    <div class="sr-head">
+        <div>
+            <h2><i class="fas fa-clipboard-check"></i> System Readiness</h2>
+            <div style="color:#6b7280; font-size:13px;">
+                Every entity with its COA, config, users and last activity.
+            </div>
+        </div>
+        <a href="{{ request.path }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </a>
+    </div>
+
+    <!-- summary tiles -->
+    <div class="sr-stats">
+        <div class="sr-stat total">
+            <div class="lbl">Total entities</div>
+            <div class="val">{{ totals.total }}</div>
+        </div>
+        <div class="sr-stat ok">
+            <div class="lbl">Fully configured</div>
+            <div class="val">{{ totals.ok }}</div>
+        </div>
+        <div class="sr-stat warn">
+            <div class="lbl">Partial</div>
+            <div class="val">{{ totals.warn }}</div>
+        </div>
+        <div class="sr-stat fail">
+            <div class="lbl">Not configured</div>
+            <div class="val">{{ totals.fail }}</div>
+        </div>
+        <div class="sr-stat coa">
+            <div class="lbl">COA created</div>
+            <div class="val">{{ totals.coa_ok }}/{{ totals.total }}</div>
+        </div>
+        <div class="sr-stat users">
+            <div class="lbl">Total users</div>
+            <div class="val">{{ totals.users }}</div>
+        </div>
+    </div>
+
+    <!-- filters -->
+    <form method="get" class="sr-toolbar">
+        <label style="font-size:12px; font-weight:600; color:#374151;">Type:</label>
+        <select name="type" onchange="this.form.submit()">
+            <option value="">All types</option>
+            {% for t in types %}
+                <option value="{{ t }}" {% if ftype == t %}selected{% endif %}>
+                    {{ t|title }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label style="font-size:12px; font-weight:600; color:#374151;
+                      margin-left:10px;">Show:</label>
+        <select name="show" onchange="this.form.submit()">
+            <option value="all"        {% if fshow == 'all' %}selected{% endif %}>All</option>
+            <option value="incomplete" {% if fshow == 'incomplete' %}selected{% endif %}>Incomplete only</option>
+            <option value="complete"   {% if fshow == 'complete' %}selected{% endif %}>Complete only</option>
+        </select>
+
+        {% if ftype or fshow != 'all' %}
+            <a href="{{ request.path }}" class="btn btn-sm btn-outline-secondary">
+                Clear
+            </a>
+        {% endif %}
+    </form>
+
+    <!-- the table -->
+    <table class="sr">
+        <thead>
+            <tr>
+                <th style="width:140px;">Type</th>
+                <th>Name</th>
+                <th style="width:70px; text-align:center;">COA</th>
+                <th style="width:70px; text-align:center;">Config</th>
+                <th style="width:80px; text-align:right;">Users</th>
+                <th style="width:130px;">Last Visit</th>
+                <th style="width:110px; text-align:right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for r in rows %}
+            <tr>
+                <td>
+                    <span class="type-tag {{ r.type_code }}">
+                        {{ r.type_label|default:"Unknown" }}
+                    </span>
+                </td>
+                <td>
+                    <div class="entity-name">{{ r.name }}</div>
+                    <div class="entity-slug">{{ r.slug }}</div>
+                    {% if r.config_summary %}
+                        <div class="summary">{{ r.config_summary }}</div>
+                    {% endif %}
+                </td>
+                <td style="text-align:center;">
+                    {% if r.has_coa %}
+                        <span class="badge-check ok" title="COA created">✓</span>
+                    {% else %}
+                        <span class="badge-check no" title="No ledger">✗</span>
+                    {% endif %}
+                </td>
+                <td style="text-align:center;">
+                    {% if r.has_config %}
+                        <span class="badge-check ok" title="Config set">✓</span>
+                    {% else %}
+                        <span class="badge-check no" title="No config">✗</span>
+                    {% endif %}
+                </td>
+                <td style="text-align:right; font-family:monospace;">
+                    {{ r.user_count }}
+                </td>
+                <td>
+                    {% if r.last_visit %}
+                        <span class="last-visit">{{ r.last_visit|date:"d/m/Y H:i" }}</span>
+                    {% else %}
+                        <span style="color:#9ca3af; font-size:12px;">—</span>
+                    {% endif %}
+                </td>
+                <td style="text-align:right; white-space:nowrap;">
+                    {% if not r.has_coa and r.coa_url %}
+                        <a href="{{ r.coa_url }}" class="btn btn-sm btn-outline-warning"
+                           title="Create COA">
+                            COA
+                        </a>
+                    {% endif %}
+                    {% if not r.has_config and r.config_url %}
+                        <a href="{{ r.config_url }}" class="btn btn-sm btn-primary"
+                           title="Configure entity">
+                            Configure
+                        </a>
+                    {% endif %}
+                    {% if r.has_coa and r.has_config %}
+                        <span class="pill ok">Ready</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7" style="padding:40px; text-align:center;
+                                       color:#9ca3af;">
+                    No entities match the current filter.
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- row summary -->
+    <div style="margin-top:14px; display:flex; gap:16px;
+                font-size:12px; color:#6b7280;">
+        <span>
+            <span class="badge-check ok" style="width:16px;height:16px;
+                  font-size:10px;">✓</span>
+            = present
+        </span>
+        <span>
+            <span class="badge-check no" style="width:16px;height:16px;
+                  font-size:10px;">✗</span>
+            = missing — click <b>Configure</b> or <b>COA</b> to fix
+        </span>
+        <span style="margin-left:auto;">
+            Type registry: <code>Tech/services/entity_status.py</code> → <code>TYPE_CHECKS</code>
+        </span>
+    </div>
+</div>
+{% endblock %}

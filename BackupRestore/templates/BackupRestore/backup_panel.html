@@ -54,10 +54,10 @@
             <h4>Restore from Backup File</h4>
             <div>
                 <button id="refreshBackupListBtn" class="btn btn-light btn-sm me-2">
-                    🔄 Refresh list
+                     Refresh list
                 </button>
                 <a href="{% url 'Supervisor:super_home' %}" class="btn btn-secondary btn-sm">
-                    ❌ Close
+                     Close
                 </a>
                 <a href="{% url 'BackupRestore:cleanup_temp' %}" class="btn btn-warning btn-sm"> <i class="fas fa-broom"></i> Clean Up Temp Objects</a>
             </div>
@@ -87,7 +87,7 @@
                                     </button>
                                     <button class="btn btn-sm btn-info safe-restore-btn"
                                             data-file="{{ backup.filename }}">
-                                        Safe Restore (2‑step)
+                                        Safe Restore (2 - step)
                                     </button>
                                     <div class="restore-progress" style="display:none;">
                                         <span class="spinner-border spinner-border-sm"></span> Running...

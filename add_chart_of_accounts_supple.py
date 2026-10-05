@@ -61,13 +61,13 @@ for code, name, role, balance_type, parent in accounts_to_add:
     # Check if account already exists
     existing = AccountModel.objects.filter(coa_model=coa, code=code).first()
     if existing:
-        print(f"⏳ Already exists: {code} - {name}")
+        print(f" Already exists: {code} - {name}")
         continue
 
     # Create the account as root first, then move under parent
     acc = AccountModel.add_root(coa_model=coa, code=code, name=name, role=role, balance_type=balance_type)
     acc.move(parent, pos='last-child')
-    print(f"✅ Created: {code} - {name}")
+    print(f" Created: {code} - {name}")
     created_count += 1
 
-print(f"\n📊 Summary: {created_count} new accounts created.")
+print(f"\n Summary: {created_count} new accounts created.")

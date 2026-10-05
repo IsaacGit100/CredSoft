@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load humanize %} 
+
+{% block content %}
+<div class="container-fluid px-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="fas fa-list text-primary"></i> Transactions Report - {{ entity.name }}</h3>
+        <div class="d-flex gap-2">
+            <a href="{% url 'Supervisor:trans_report_pdf' entity.slug %}?{{ request.GET.urlencode }}"
+               class="btn btn-danger"><i class="fas fa-file-pdf"></i> PDF</a>
+            <a href="{% url 'Supervisor:trans_report_excel' entity.slug %}?{{ request.GET.urlencode }}"
+               class="btn btn-success"><i class="fas fa-file-excel"></i> Excel</a>
+            <a href="{% url 'djan_led:back_to_home' entity.slug %}?{{ request.GET.urlencode }}"
+               class="btn btn-success"><i class="fas fa-file-excel"></i> Close</a>
+            
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="card card-body mb-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label small">From</label>
+                <input type="date" name="date_from" class="form-control form-control-sm"
+                       value="{{ filters.date_from }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">To</label>
+                <input type="date" name="date_to" class="form-control form-control-sm"
+                       value="{{ filters.date_to }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="ALL" {% if filters.status == '' %}selected{% endif %}>All statuses</option>
+                    {% for v, l in status_choices %}
+                        <option value="{{ v }}" {% if filters.status == v %}selected{% endif %}>{{ l }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Module</label>
+                <select name="sub_module" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    {% for v, l in sub_module_choices %}
+                        <option value="{{ v }}" {% if filters.sub_module == v %}selected{% endif %}>{{ l }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-sm btn-primary"><i class="fas fa-filter"></i> Filter</button>
+                <a href="{% url 'Supervisor:trans_report' entity.slug %}"
+                   class="btn btn-sm btn-outline-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Summary -->
+    <div class="row g-2 mb-3">
+        <div class="col-md-6">
+            <div class="card border-primary"><div class="card-body py-2">
+                <div class="text-muted small">Records</div>
+                <h4 class="mb-0 text-primary">{{ total_count }}</h4>
+            </div></div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-success"><div class="card-body py-2">
+                <div class="text-muted small">Total Amount</div>
+                <h4 class="mb-0 text-success">₵{{ total_amount|floatformat:2|intcomma }}</h4>
+            </div></div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Voucher</th>
+                            <th>Date</th>
+                            <th>Sub-Module</th>
+                            <th>Type</th>
+                            <th>DR Code</th>
+                            <th>DR Name</th>
+                            <th>CR Code</th>
+                            <th>CR Name</th>
+                            <th class="text-end">Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in trans_list %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><code>{{ t.rec_vou_no }}</code></td>
+                            <td>{{ t.date|date:"Y-m-d" }}</td>
+                            <td>{{ t.get_sub_module_display }}</td>
+                            <td>
+                                {% if t.trans_type == 'Receipts' %}<span class="badge bg-success">R</span>
+                                {% elif t.trans_type == 'Payments' %}<span class="badge bg-danger">P</span>
+                                {% else %}<span class="badge bg-secondary">J</span>{% endif %}
+                            </td>
+                            <td>
+                                {% if t.trans_type == 'Receipts' %}1010
+                                {% elif t.trans_type == 'Payments' %}{{ t.ledger_code }}
+                                {% else %}{{ t.debit_account_code }}{% endif %}
+                            </td>
+                            <td>
+                                {% if t.trans_type == 'Receipts' %}Cash
+                                {% elif t.trans_type == 'Payments' %}{{ t.ledger_name }}
+                                {% else %}{{ t.debit_account_name }}{% endif %}
+                            </td>
+                            <td>
+                                {% if t.trans_type == 'Receipts' %}{{ t.ledger_code }}
+                                {% elif t.trans_type == 'Payments' %}1010
+                                {% else %}{{ t.credit_account_code }}{% endif %}
+                            </td>
+                            <td>
+                                {% if t.trans_type == 'Receipts' %}{{ t.ledger_name }}
+                                {% elif t.trans_type == 'Payments' %}Cash
+                                {% else %}{{ t.credit_account_name }}{% endif %}
+                            </td>
+                            <td class="text-end">₵{{ t.amount|floatformat:2|intcomma }}</td>
+                            <td>
+                                {% if t.journal_status == 'POSTED' %}<span class="badge bg-success">Posted</span>
+                                {% elif t.journal_status == 'APPROVED' %}<span class="badge bg-info">Approved</span>
+                                {% elif t.journal_status == 'REJECTED' %}<span class="badge bg-secondary">Rejected</span>
+                                {% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="11" class="text-center py-4 text-muted">No transactions match the filter.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if trans_list %}
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="9" class="text-end">TOTAL:</td>
+                            <td class="text-end">₵{{ total_amount|floatformat:2|intcomma }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

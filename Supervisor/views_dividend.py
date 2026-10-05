@@ -16,12 +16,18 @@ from SysSetup.models import SystemSettings
 from django.utils import timezone
 from decimal import Decimal
 from datetime import datetime, date
-
+from django_ledger.models import (
+    EntityModel,
+    LedgerModel,
+    JournalEntryModel,
+    AccountModel,
+    TransactionModel,
+)
 
 @staff_member_required
 def dividend_appropriation_preview(request):
     """Show form to enter dividend amount, preview list of members and calculated dividends."""
-    total_shares = Master.objects.filter(is_deleted=False).aggregate(total=Sum('tot_shares'))['total'] or Decimal('0')
+    total_shares = Master.objects.filter(entity=entity, is_deleted=False).aggregate(total=Sum('tot_shares'))['total'] or Decimal('0')
     dividend_amount = None
     per_share = Decimal('0')
     members_with_dividends = []
@@ -62,7 +68,7 @@ def dividend_appropriation_preview(request):
         per_share = dividend_amount / total_shares
 
         # Get all active members with shares > 0
-        members = Master.objects.filter(is_deleted=False, tot_shares__gt=0).order_by('last_name', 'first_name')
+        members = Master.objects.filter(entity=entity, is_deleted=False, tot_shares__gt=0).order_by('last_name', 'first_name')
         running_total = Decimal('0')
         for m in members:
             dividend = (per_share * m.tot_shares).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
@@ -194,9 +200,6 @@ def dividend_appropriation_execute(request):
     return render(request, 'Supervisor/dividend_appropriation_confirmation.html', context)
 
 
-
-
-
 def render_to_pdf(template_src, context_dict):
     template = get_template(template_src)
     html = template.render(context_dict)
@@ -276,5 +279,3 @@ def dividend_appropriation_excel(request):
     response['Content-Disposition'] = 'attachment; filename="dividend_appropriation.xlsx"'
     wb.save(response)
     return response
-
-

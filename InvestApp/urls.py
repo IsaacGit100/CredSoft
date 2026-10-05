@@ -3,7 +3,6 @@ from django.urls import path, include
 from . import views
 from django.urls import path
 from . import views
-from . import views_PDF
 from . import views_excel
 from django_ledger.models import EntityModel
 
@@ -24,7 +23,7 @@ urlpatterns = [
     path('entity/<slug:slug>/calculate-interest/', views.calculate_interest, name='calculate_interest'),
 
 
-    path('entity/<slug:slug>/investments/export/pdf/', views_PDF.export_investments_pdf, name='investment_export_pdf'),
+    path('entity/<slug:slug>/investments/export/pdf/', views.invest_export_pdf, name='invest_export_pdf'),
     path('entity/<slug:slug>/invest/export/excel/', views_excel.invest_export_excel, name='invest_export_excel'),
     path('entity/<slug:slug>/investments/export/print/', views.export_investments_print, name='investment_export_print'),
     path('entity/<slug:slug>/invest/update/list/', views.invest_update_list, name='invest_update_list'),
@@ -33,7 +32,7 @@ urlpatterns = [
     path('entity/<slug:slug>/update-status/<int:pk>/', views.investment_status_update, name='investment_status_update_pk'),
 
     path('entity/<slug:slug>/report/quarterly/', views.quarterly_investment_report, name='quarterly_report'),
-    path('entity/<slug:slug>/report/quarterly/pdf/', views_PDF.quarterly_report_pdf, name='quarterly_report_pdf'),
+    path('entity/<slug:slug>/report/quarterly/pdf/', views.quarterly_report_pdf, name='quarterly_report_pdf'),
     path('entity/<slug:slug>/report/quarterly/excel/', views_excel.quarterly_report_excel, name='quarterly_report_excel'),
     
 ]

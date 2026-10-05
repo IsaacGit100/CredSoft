@@ -15,7 +15,7 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         if not options['force']:
-            confirm = input("⚠️  This will DELETE ALL existing accounts and create new ones.\n"
+            confirm = input("  This will DELETE ALL existing accounts and create new ones.\n"
                           "Type 'YES' to continue: ")
             if confirm != 'YES':
                 self.stdout.write(self.style.WARNING("Operation cancelled."))
@@ -32,7 +32,7 @@ class Command(BaseCommand):
             cursor.execute("ALTER TABLE coa_chartofaccounts AUTO_INCREMENT = 1;")
             cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
         
-        self.stdout.write(self.style.SUCCESS("✅ Database cleared\n"))
+        self.stdout.write(self.style.SUCCESS(" Database cleared\n"))
         
         self.stdout.write("="*70)
         self.stdout.write("CREATING COMPLETE CHART OF ACCOUNTS")
@@ -42,7 +42,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 1: MAJOR CATEGORIES
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 1: Major Categories")
+        self.stdout.write("\n LEVEL 1: Major Categories")
         self.stdout.write("-"*50)
         
         assets = ChartOfAccounts.objects.create(
@@ -84,7 +84,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 2: UNDER ASSETS
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 2: Under ASSETS")
+        self.stdout.write("\n LEVEL 2: Under ASSETS")
         self.stdout.write("-"*50)
         
         assets_parent = ChartOfAccounts.objects.get(accountno='10000000')
@@ -110,7 +110,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 3: Under CURRENT ASSETS
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 3: Under CURRENT ASSETS")
+        self.stdout.write("\n LEVEL 3: Under CURRENT ASSETS")
         self.stdout.write("-"*50)
         
         current_parent = ChartOfAccounts.objects.get(accountno='10100000')
@@ -142,7 +142,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 4: Cash and Bank Accounts
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 4: Cash and Bank Accounts")
+        self.stdout.write("\n LEVEL 4: Cash and Bank Accounts")
         self.stdout.write("-"*50)
         
         cash_parent = ChartOfAccounts.objects.get(accountno='10101000')
@@ -164,7 +164,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 4: Loans Receivable Accounts
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 4: Loans Receivable Accounts")
+        self.stdout.write("\n LEVEL 4: Loans Receivable Accounts")
         self.stdout.write("-"*50)
         
         loans_parent = ChartOfAccounts.objects.get(accountno='10102000')
@@ -189,7 +189,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 4: Investment Accounts
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 4: Investment Accounts")
+        self.stdout.write("\n LEVEL 4: Investment Accounts")
         self.stdout.write("-"*50)
         
         invest_parent = ChartOfAccounts.objects.get(accountno='10103000')
@@ -217,7 +217,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 4: Other Asset Accounts
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 4: Other Asset Accounts")
+        self.stdout.write("\n LEVEL 4: Other Asset Accounts")
         self.stdout.write("-"*50)
         
         other_parent = ChartOfAccounts.objects.get(accountno='10104000')
@@ -238,7 +238,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 2: UNDER LIABILITIES
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 2: Under LIABILITIES")
+        self.stdout.write("\n LEVEL 2: Under LIABILITIES")
         self.stdout.write("-"*50)
         
         liab_parent = ChartOfAccounts.objects.get(accountno='20000000')
@@ -258,7 +258,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 3: Under MEMBER LIABILITIES
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 3: Under MEMBER LIABILITIES")
+        self.stdout.write("\n LEVEL 3: Under MEMBER LIABILITIES")
         self.stdout.write("-"*50)
         
         member_parent = ChartOfAccounts.objects.get(accountno='20100000')
@@ -284,7 +284,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 4: Savings Accounts
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 4: Savings Accounts")
+        self.stdout.write("\n LEVEL 4: Savings Accounts")
         self.stdout.write("-"*50)
         
         savings_parent = ChartOfAccounts.objects.get(accountno='20101000')
@@ -305,7 +305,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 4: Shares Accounts
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 4: Shares Accounts")
+        self.stdout.write("\n LEVEL 4: Shares Accounts")
         self.stdout.write("-"*50)
         
         shares_parent = ChartOfAccounts.objects.get(accountno='20102000')
@@ -327,7 +327,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 4: Other Payables Accounts
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 4: Other Payables Accounts")
+        self.stdout.write("\n LEVEL 4: Other Payables Accounts")
         self.stdout.write("-"*50)
         
         payables_parent = ChartOfAccounts.objects.get(accountno='20103000')
@@ -349,7 +349,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 3: Under OTHER LIABILITIES
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 3: Under OTHER LIABILITIES")
+        self.stdout.write("\n LEVEL 3: Under OTHER LIABILITIES")
         self.stdout.write("-"*50)
         
         other_liab_parent = ChartOfAccounts.objects.get(accountno='20200000')
@@ -369,7 +369,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 4: Tax Payables
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 4: Tax Payables Accounts")
+        self.stdout.write("\n LEVEL 4: Tax Payables Accounts")
         self.stdout.write("-"*50)
         
         tax_parent = ChartOfAccounts.objects.get(accountno='20201000')
@@ -390,7 +390,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 4: Provisions
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 4: Provisions Accounts")
+        self.stdout.write("\n LEVEL 4: Provisions Accounts")
         self.stdout.write("-"*50)
         
         provisions_parent = ChartOfAccounts.objects.get(accountno='20202000')
@@ -410,7 +410,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 2: UNDER EQUITY
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 2: Under EQUITY")
+        self.stdout.write("\n LEVEL 2: Under EQUITY")
         self.stdout.write("-"*50)
         
         equity_parent = ChartOfAccounts.objects.get(accountno='30000000')
@@ -430,7 +430,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 3 & 4: Share Capital
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 3 & 4: Share Capital Accounts")
+        self.stdout.write("\n LEVEL 3 & 4: Share Capital Accounts")
         self.stdout.write("-"*50)
         
         share_parent = ChartOfAccounts.objects.get(accountno='30100000')
@@ -457,7 +457,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 3 & 4: Reserves
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 3 & 4: Reserves Accounts")
+        self.stdout.write("\n LEVEL 3 & 4: Reserves Accounts")
         self.stdout.write("-"*50)
         
         reserves_parent = ChartOfAccounts.objects.get(accountno='30200000')
@@ -504,7 +504,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 2: UNDER INCOME
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 2: Under INCOME")
+        self.stdout.write("\n LEVEL 2: Under INCOME")
         self.stdout.write("-"*50)
         
         income_parent = ChartOfAccounts.objects.get(accountno='40000000')
@@ -524,7 +524,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 3 & 4: Operating Income
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 3 & 4: Operating Income Accounts")
+        self.stdout.write("\n LEVEL 3 & 4: Operating Income Accounts")
         self.stdout.write("-"*50)
         
         operating_parent = ChartOfAccounts.objects.get(accountno='40100000')
@@ -593,7 +593,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 3 & 4: Other Income
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 3 & 4: Other Income Accounts")
+        self.stdout.write("\n LEVEL 3 & 4: Other Income Accounts")
         self.stdout.write("-"*50)
         
         other_inc_parent = ChartOfAccounts.objects.get(accountno='40200000')
@@ -634,7 +634,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 2: UNDER EXPENSES
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 2: Under EXPENSES")
+        self.stdout.write("\n LEVEL 2: Under EXPENSES")
         self.stdout.write("-"*50)
         
         exp_parent = ChartOfAccounts.objects.get(accountno='50000000')
@@ -654,7 +654,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 3 & 4: Operating Expenses
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 3 & 4: Operating Expense Accounts")
+        self.stdout.write("\n LEVEL 3 & 4: Operating Expense Accounts")
         self.stdout.write("-"*50)
         
         operating_exp_parent = ChartOfAccounts.objects.get(accountno='50100000')
@@ -785,7 +785,7 @@ class Command(BaseCommand):
         # ============================================================
         # LEVEL 3 & 4: Financial Expenses
         # ============================================================
-        self.stdout.write("\n📁 LEVEL 3 & 4: Financial Expense Accounts")
+        self.stdout.write("\n LEVEL 3 & 4: Financial Expense Accounts")
         self.stdout.write("-"*50)
         
         financial_parent = ChartOfAccounts.objects.get(accountno='50200000')
@@ -875,5 +875,5 @@ class Command(BaseCommand):
         
         total = ChartOfAccounts.objects.count()
         self.stdout.write("\n" + "="*70)
-        self.stdout.write(self.style.SUCCESS(f"✅ TOTAL ACCOUNTS CREATED: {total}"))
+        self.stdout.write(self.style.SUCCESS(f" TOTAL ACCOUNTS CREATED: {total}"))
         self.stdout.write("="*70)

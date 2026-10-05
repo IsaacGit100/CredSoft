@@ -175,8 +175,8 @@
     <div class="form-card">
         <div class="section-title"> Transaction Type</div>
         <div style="text-align: center;">
-            <button type="button" class="tab-button active" id="btnReceipts">📥 Receipts (Money In)</button>
-            <button type="button" class="tab-button" id="btnPayments">📤 Payments (Money Out)</button>
+            <button type="button" class="tab-button active" id="btnReceipts"> Receipts (Money In)</button>
+            <button type="button" class="tab-button" id="btnPayments"> Payments (Money Out)</button>
             <input type="hidden" name="trans_type" id="trans_type" value="Receipts">
         </div>
     </div>
@@ -194,7 +194,7 @@
                 <input type="text" name="trans_no" id="trans_no" placeholder="Receipt No" required>
             </div>
             <div class="form-group">
-                <label>👤 Name Type</label>
+                <label> Name Type</label>
                 <select name="name_type" id="name_type">
                     <option value="Member">Member</option>
                     <option value="Non Member">Non Member</option>
@@ -223,13 +223,13 @@
 
     <!-- Party Information -->
     <div class="form-card">
-        <div class="section-title">👥 Party Information</div>
+        <div class="section-title"> Party Information</div>
         
         <!-- Member Section -->
         <div id="member-fields">
             <div class="form-row">
                 <div class="form-group" style="flex: 2;">
-                    <label>👥 Select Member</label>
+                    <label> Select Member</label>
                     <select name="member_id" id="member_id" style="width: 100%;">
                         <option value="">-- Select Member --</option>
                         {% for member in members %}
@@ -282,7 +282,7 @@
             </div>
             <div class="form-group">
                 <label>&nbsp;</label>
-                <button type="submit" name="save" class="btn-save" style="width: 100%;">💾 Save Transaction</button>
+                <button type="submit" name="save" class="btn-save" style="width: 100%;"> Save Transaction</button>
             </div>
         </div>
         <div id="ledger-display-fields" class="hidden">

@@ -1,26 +1,1043 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h3> {{ usher.name }}</h3>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <p><strong>Name:</strong> {{ usher.name }}</p>
-                    <p><strong>Phone:</strong> {{ usher.telephone|default:"—" }}</p>
-                    <p><strong>Address:</strong> {{ usher.address|default:"—" }}</p>
-                </div>
-                <div class="col-md-6">
-                    <p><strong>Church Member:</strong> {{ usher.member.full_name|default:"—" }}</p>
-                    <p><strong>Entity:</strong> {{ usher.entity.name }}</p>
-                </div>
+
+<div style="padding: 20px;">
+
+    <div style="background: white;
+                border-radius: 5px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+
+        <!-- HEADER -->
+        <div style="background: #007bff;
+                    color: white;
+                    padding: 15px;
+                    border-radius: 5px 5px 0 0;">
+
+            <h4 style="margin: 0;">
+                Service Details
+            </h4>
+
+            <div style="margin-top: 5px;">
+                {{ entity.name }}
             </div>
-            <a href="{% url 'ChurchApp:usher_update' entity.slug usher.pk %}" class="btn btn-primary">Edit</a>
-            <a href="{% url 'ChurchApp:usher_list_manage' entity.slug %}" class="btn btn-secondary">Back to List</a>
+
         </div>
+
+        <div style="padding: 20px;">
+
+            <!-- SERVICE INFORMATION -->
+
+            <h5 style="margin-bottom: 15px;">
+                Service Information
+            </h5>
+
+            <table style="width: 100%;
+                          border-collapse: collapse;
+                          margin-bottom: 25px;">
+
+                <tr>
+                    <th style="padding: 8px;
+                               border: 1px solid #ddd;
+                               text-align: left;
+                               width: 220px;">
+                        Service ID
+                    </th>
+
+                    <td style="padding: 8px;
+                               border: 1px solid #ddd;">
+                        {{ service.id }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th style="padding: 8px;
+                               border: 1px solid #ddd;
+                               text-align: left;">
+                        Date
+                    </th>
+
+                    <td style="padding: 8px;
+                               border: 1px solid #ddd;">
+                        {{ service.date|date:"Y-m-d" }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th style="padding: 8px;
+                               border: 1px solid #ddd;
+                               text-align: left;">
+                        Service Name
+                    </th>
+
+                    <td style="padding: 8px;
+                               border: 1px solid #ddd;">
+                        {{ service.name_of_service|default:"-" }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th style="padding: 8px;
+                               border: 1px solid #ddd;
+                               text-align: left;">
+                        Attendance
+                    </th>
+
+                    <td style="padding: 8px;
+                               border: 1px solid #ddd;">
+                        {{ service.attendance|default:"0" }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th style="padding: 8px;
+                               border: 1px solid #ddd;
+                               text-align: left;">
+                        Communicants
+                    </th>
+
+                    <td style="padding: 8px;
+                               border: 1px solid #ddd;">
+                        {{ service.communicants|default:"0" }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th style="padding: 8px;
+                               border: 1px solid #ddd;
+                               text-align: left;">
+                        Clergy
+                    </th>
+
+                    <td style="padding: 8px;
+                               border: 1px solid #ddd;">
+
+                        {% for clergy in service.clergy.all %}
+
+                            {{ clergy }}{% if not forloop.last %}, {% endif %}
+
+                        {% empty %}
+
+                            -
+
+                        {% endfor %}
+
+                    </td>
+                </tr>
+
+                <tr>
+                    <th style="padding: 8px;
+                               border: 1px solid #ddd;
+                               text-align: left;">
+                        Officiant
+                    </th>
+
+                    <td style="padding: 8px;
+                               border: 1px solid #ddd;">
+                        {{ service.officiant|default:"-" }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th style="padding: 8px;
+                               border: 1px solid #ddd;
+                               text-align: left;">
+                        Ushers
+                    </th>
+
+                    <td style="padding: 8px;
+                               border: 1px solid #ddd;">
+
+                        {% for usher in service.ushers.all %}
+
+                            {{ usher }}{% if not forloop.last %}, {% endif %}
+
+                        {% empty %}
+
+                            -
+
+                        {% endfor %}
+
+                    </td>
+                </tr>
+
+                <tr>
+                    <th style="padding: 8px;
+                               border: 1px solid #ddd;
+                               text-align: left;">
+                        Status
+                    </th>
+
+                    <td style="padding: 8px;
+                               border: 1px solid #ddd;">
+
+                        {% if service.posted_to_ledger %}
+
+                            <span style="background: #28a745;
+                                         color: white;
+                                         padding: 4px 10px;
+                                         border-radius: 3px;">
+                                Posted
+                            </span>
+
+                        {% else %}
+
+                            <span style="background: #ffc107;
+                                         color: black;
+                                         padding: 4px 10px;
+                                         border-radius: 3px;">
+                                Pending
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+                </tr>
+
+            </table>
+
+
+            <!-- BASIC FINANCIAL SUMMARY -->
+
+            <h5 style="margin-bottom: 15px;">
+                Financial Summary
+            </h5>
+
+            <table style="width: 100%;
+                          border-collapse: collapse;
+                          margin-bottom: 25px;">
+
+                <thead>
+                    <tr>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;
+                                   text-align: left;">
+                            GL Code
+                        </th>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;
+                                   text-align: left;">
+                            Accounting Item
+                        </th>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;
+                                   text-align: right;">
+                            Amount
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            4010
+                        </td>
+
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            General Offertory
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ service.general_offertory|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            4011
+                        </td>
+
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            Dues
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ service.dues|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            4012
+                        </td>
+
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            Tithes
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ service.tithes|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            4013
+                        </td>
+
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            Day Born
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ service.day_born_total|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            4014
+                        </td>
+
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            Guild
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ service.guild_total|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            4015
+                        </td>
+
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            Special Thanksgiving
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {% widthratio service.special_total 1 1 %}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            4016
+                        </td>
+
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            Easter
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            See details below
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            4017
+                        </td>
+
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            Christmas
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            See details below
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            4018
+                        </td>
+
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            Harvest
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            See details below
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            4019
+                        </td>
+
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            Other Collections
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            See details below
+                        </td>
+                    </tr>
+
+                    <tr>
+
+                        <th colspan="2"
+                            style="padding: 10px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            Grand Total
+                        </th>
+
+                        <th style="padding: 10px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ service.grand_total|floatformat:2 }}
+                        </th>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+
+            <!-- DAY BORN DETAILS -->
+
+            <h5 style="margin-bottom: 15px;">
+                Day Born Offerings
+            </h5>
+
+            <table style="width: 100%;
+                          border-collapse: collapse;
+                          margin-bottom: 25px;">
+
+                <thead>
+                    <tr>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;
+                                   text-align: left;">
+                            Day
+                        </th>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;
+                                   text-align: right;">
+                            Amount
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for day, amount in service.day_born_offerings.items %}
+
+                    <tr>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;">
+                            {{ day }}
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ amount|floatformat:2 }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="2"
+                            style="padding: 20px;
+                                   text-align: center;">
+                            No Day Born offerings recorded.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                    <tr>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            Total
+                        </th>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ service.day_born_total|floatformat:2 }}
+                        </th>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+
+            <!-- GUILD DETAILS -->
+
+            <h5 style="margin-bottom: 15px;">
+                Guild Offerings
+            </h5>
+
+            <div style="overflow-x: auto;">
+
+                <table style="width: 100%;
+                              border-collapse: collapse;
+                              margin-bottom: 25px;">
+
+                    <thead>
+                        <tr>
+
+                            <th style="padding: 9px;
+                                       border: 1px solid #454d55;">
+                                Guild ID
+                            </th>
+
+                            <th style="padding: 9px;
+                                       border: 1px solid #454d55;">
+                                Guild
+                            </th>
+
+                            <th style="padding: 9px;
+                                       border: 1px solid #454d55;
+                                       text-align: right;">
+                                Amount
+                            </th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in service.guild_offerings %}
+
+                        <tr>
+
+                            <td style="padding: 8px;
+                                       border: 1px solid #ddd;">
+                                {{ item.guild_id|default:"-" }}
+                            </td>
+
+                            <td style="padding: 8px;
+                                       border: 1px solid #ddd;">
+                                {{ item.guild_name|default:"-" }}
+                            </td>
+
+                            <td style="padding: 8px;
+                                       border: 1px solid #ddd;
+                                       text-align: right;">
+                                {{ item.amount|floatformat:2 }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="3"
+                                style="padding: 20px;
+                                       text-align: center;">
+                                No Guild offerings recorded.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                        <tr>
+
+                            <th colspan="2"
+                                style="padding: 9px;
+                                       border: 1px solid #ddd;
+                                       text-align: right;">
+                                Guild Total
+                            </th>
+
+                            <th style="padding: 9px;
+                                       border: 1px solid #ddd;
+                                       text-align: right;">
+                                {{ service.guild_total|floatformat:2 }}
+                            </th>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- SPECIAL THANKSGIVING -->
+
+            <h5 style="margin-bottom: 15px;">
+                Special Thanksgiving Offerings
+            </h5>
+
+            <table style="width: 100%;
+                          border-collapse: collapse;
+                          margin-bottom: 25px;">
+
+                <thead>
+                    <tr>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;">
+                            Description
+                        </th>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;
+                                   text-align: right;">
+                            Amount
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for item in service.special_thank_offering %}
+
+                    <tr>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;">
+                            {{ item.description|default:"-" }}
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ item.amount|floatformat:2 }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="2"
+                            style="padding: 20px;
+                                   text-align: center;">
+                            No Special Thanksgiving offerings recorded.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+
+            <!-- EASTER -->
+
+            <h5 style="margin-bottom: 15px;">
+                Easter Offerings
+            </h5>
+
+            <table style="width: 100%;
+                          border-collapse: collapse;
+                          margin-bottom: 25px;">
+
+                <thead>
+                    <tr>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;">
+                            Description
+                        </th>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;
+                                   text-align: right;">
+                            Amount
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for item in service.easter_offering %}
+
+                    <tr>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;">
+                            {{ item.description|default:"-" }}
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ item.amount|floatformat:2 }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="2"
+                            style="padding: 20px;
+                                   text-align: center;">
+                            No Easter offerings recorded.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+
+            <!-- CHRISTMAS -->
+
+            <h5 style="margin-bottom: 15px;">
+                Christmas Offerings
+            </h5>
+
+            <table style="width: 100%;
+                          border-collapse: collapse;
+                          margin-bottom: 25px;">
+
+                <thead>
+                    <tr>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;">
+                            Description
+                        </th>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;
+                                   text-align: right;">
+                            Amount
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for item in service.christmas_offering %}
+
+                    <tr>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;">
+                            {{ item.description|default:"-" }}
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ item.amount|floatformat:2 }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="2"
+                            style="padding: 20px;
+                                   text-align: center;">
+                            No Christmas offerings recorded.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+
+            <!-- HARVEST -->
+
+            <h5 style="margin-bottom: 15px;">
+                Harvest Offerings
+            </h5>
+
+            <table style="width: 100%;
+                          border-collapse: collapse;
+                          margin-bottom: 25px;">
+
+                <thead>
+                    <tr>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;">
+                            Description
+                        </th>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;
+                                   text-align: right;">
+                            Amount
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for item in service.harvest_offering %}
+
+                    <tr>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;">
+                            {{ item.description|default:"-" }}
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ item.amount|floatformat:2 }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="2"
+                            style="padding: 20px;
+                                   text-align: center;">
+                            No Harvest offerings recorded.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+
+            <!-- OTHER COLLECTIONS -->
+
+            <h5 style="margin-bottom: 15px;">
+                Other Collections
+            </h5>
+
+            <table style="width: 100%;
+                          border-collapse: collapse;
+                          margin-bottom: 25px;">
+
+                <thead>
+                    <tr>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;">
+                            Description
+                        </th>
+
+                        <th style="padding: 9px;
+                                   border: 1px solid #454d55;
+                                   text-align: right;">
+                            Amount
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for item in service.other_collections %}
+
+                    <tr>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;">
+                            {{ item.description|default:"-" }}
+                        </td>
+
+                        <td style="padding: 8px;
+                                   border: 1px solid #ddd;
+                                   text-align: right;">
+                            {{ item.amount|floatformat:2 }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="2"
+                            style="padding: 20px;
+                                   text-align: center;">
+                            No Other Collections recorded.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+
+            <!-- RELATED TRANSACTIONS -->
+
+            <h5 style="margin-bottom: 15px;">
+                Related Transactions
+            </h5>
+
+            <div style="overflow-x: auto;">
+
+                <table style="width: 100%;
+                              border-collapse: collapse;
+                              margin-bottom: 25px;">
+
+                    <thead>
+
+                        <tr>
+
+                            <th style="padding: 9px;
+                                       border: 1px solid #454d55;">
+                                Receipt / Transaction No.
+                            </th>
+
+                            <th style="padding: 9px;
+                                       border: 1px solid #454d55;">
+                                GL Code
+                            </th>
+
+                            <th style="padding: 9px;
+                                       border: 1px solid #454d55;">
+                                Account
+                            </th>
+
+                            <th style="padding: 9px;
+                                       border: 1px solid #454d55;
+                                       text-align: right;">
+                                Amount
+                            </th>
+
+                            <th style="padding: 9px;
+                                       border: 1px solid #454d55;">
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for trans in service_transactions %}
+
+                        <tr>
+
+                            <td style="padding: 8px;
+                                       border: 1px solid #ddd;">
+                                {{ trans.rec_vou_no|default:trans.trans_no|default:"-" }}
+                            </td>
+
+                            <td style="padding: 8px;
+                                       border: 1px solid #ddd;">
+                                {{ trans.ledger_code|default:"-" }}
+                            </td>
+
+                            <td style="padding: 8px;
+                                       border: 1px solid #ddd;">
+                                {{ trans.ledger_name|default:"-" }}
+                            </td>
+
+                            <td style="padding: 8px;
+                                       border: 1px solid #ddd;
+                                       text-align: right;">
+                                {{ trans.amount|floatformat:2 }}
+                            </td>
+
+                            <td style="padding: 8px;
+                                       border: 1px solid #ddd;">
+                                {{ trans.journal_status|default:"-" }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="5"
+                                style="padding: 30px;
+                                       text-align: center;">
+                                No related transactions found.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- BUTTONS -->
+
+            <div style="margin-top: 20px;">
+
+                <a
+                    href="{% url 'ChurchApp:church_dashboard' entity.slug %}"
+                    style="background: #007bff;
+                           color: white;
+                           padding: 7px 14px;
+                           text-decoration: none;
+                           border-radius: 4px;
+                           margin-right: 5px;"
+                >
+                    Home
+                </a>
+
+                <a
+                    href="{% url 'ChurchApp:service_list_manage' entity.slug %}"
+                    style="background: #6c757d;
+                           color: white;
+                           padding: 7px 14px;
+                           text-decoration: none;
+                           border-radius: 4px;"
+                >
+                    Close
+                </a>
+
+            </div>
+
+        </div>
+
     </div>
+
 </div>
+
 {% endblock %}
